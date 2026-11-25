@@ -29,6 +29,7 @@ No fence yet
    No fence yet
 7. Check local tickets. Skip this step for GitHub and GitLab. From the project root, run `node .claude/skills/tickets/scripts/tickets-lint.mjs`. Run it alone and with this relative path, so that a permission rule can match it. It checks every file under `.scratch/*/tickets/`. Fix every problem that it prints. It has no cap on the number of tickets. If the project or the user set a cap, add `--max <n>`. Run it again until it exits 0. Exit code 2 means that the script cannot run. If the script is missing or exits 2, read each file for the same checks. Then say in your report that the lint did not run. Held by: skills/tickets/scripts/tickets-lint.mjs
 8. Report. Do not close or edit the spec. Reply with the list of tickets (link or path, title, blockers). Then show the frontier. List the tickets that can start now. For each other ticket, name the tickets that it waits on. Then name the next command. For a ticket on the frontier, type `/build <ticket>` in a fresh session. A ticket with open blockers waits.
+   Before the first `/build`, run `git status --short -- GLOSSARY.md docs/`. If it lists files, name each one in the report. Tell the user to commit them and get them into `origin/main` first. `/build` makes every worktree from `origin/main`, so the build and its reviewers read the old glossary and records. Local spec and ticket files under `.scratch/` stay out of git. `/build` reads them from this checkout.
 
 ## Ticket rules
 
