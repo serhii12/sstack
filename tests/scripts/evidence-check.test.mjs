@@ -323,6 +323,12 @@ test("check text is matched after white space is normalized", () => {
   });
 });
 
+test("an Acceptance checks heading inside a code block is an example, not the section", () => {
+  const ticket = TICKET.replace("## What to build", "## What to build\n\nThe format:\n\n```md\n## Acceptance checks\n\n- [ ] example check\n```");
+  withProject((p) => assert.equal(run(p).code, 0, run(p).err), { ticket });
+  withProject((p) => assertProblem(mutate(p, (i) => (i.checks = [{ check: "example check", status: "untested", reason: "x" }])), "check-missing", C1), { ticket });
+});
+
 test("a ticket check that wraps over two lines is one check", () => {
   const ticket = TICKET.replace(`- [ ] ${C2}`, `- [ ] slugify returns\n  hello-world for Hello World`);
   withProject((p) => assert.equal(run(p).code, 0, run(p).err), { ticket });

@@ -163,7 +163,12 @@ function git(cwd, args) {
 /** Read the `## Acceptance checks` list. Returns the check texts in order. */
 export function parseAcceptanceChecks(text) {
   const lines = text.split(/\r?\n/);
-  const start = lines.findIndex((l) => /^##\s+Acceptance checks\s*$/i.test(l));
+  // A heading inside a code block is an example, not the section.
+  let inFence = false;
+  const start = lines.findIndex((l) => {
+    if (/^\s*(```|~~~)/.test(l)) inFence = !inFence;
+    return !inFence && /^##\s+Acceptance checks\s*$/i.test(l);
+  });
   if (start === -1) return null;
   const items = [];
   let fence = false;
