@@ -29,6 +29,7 @@ grill | agent | Interview the user with recommended answers until they confirm t
 domain-memory | agent | Keep GLOSSARY.md and ADRs current and challenge fuzzy terms
 decide | agent | List options with effort and undo cost, recommend one, then wait
 setup | typed | Record which issue tracker the repo uses
+code-craft | agent | Give the shared terms and rules for modules, interfaces and module boundaries
 <!-- skills:end -->
 
 **Not built yet:** `ship`, `pr-body`, `skill-craft`, `security-review`. Mention each one only as "not built yet". Say what to do by hand in the meantime. Never tell the user to type one. No fence yet
