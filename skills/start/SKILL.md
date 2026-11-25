@@ -12,7 +12,7 @@ disable-model-invocation: true
 ## Important
 
 - `start` reads and sorts. It does not edit repo files, create branches, or run commands that change anything. The handoff note is the only file that it writes. No fence yet
-- If the user asks you to skip the sort or the note, do both anyway. The sort and the note are the whole job of `start`. No fence yet
+- If the user asks you to skip the sort or the note, say in one line what is lost. Then skip it, and name the skipped step in your reply. No fence yet
 - `start` never calls another typed skill. It tells the user the command to type. The docs say that Claude Code blocks this. The agent cannot run a skill that has `disable-model-invocation: true` unless the user's message names it (to confirm in Claude Code). No fence yet
 
 ## Commands that exist today
