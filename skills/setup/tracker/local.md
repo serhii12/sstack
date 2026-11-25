@@ -19,7 +19,7 @@ Specs and tickets for this repo are markdown files under `.scratch/`. There is n
 - List open issues: the files whose `Status:` line is not `closed`.
 - Comment: append the text under a `## Comments` heading at the bottom of the file.
 - Add a label: there are no labels. Add the word to a `Labels:` line near the top of the file. If the line is missing, create it.
-- Link a blocker: the `Blocked by:` line near the top names the blocking ticket files in the same folder. Separate the names with commas, such as `Blocked by: 01-login-form.md, 02-session-store.md`. With no blockers it says `Blocked by: none`. A ticket is unblocked when every file it names has `Status: closed`.
+- Link a blocker: the `Blocked by:` line near the top names the blocking ticket files in the same folder. Separate the names with commas, such as `Blocked by: 01-login-form.md, 02-session-store.md`. With no blockers it says `Blocked by: None (can start immediately)`. The scripts also read the older form `none`. A ticket is unblocked when every file it names has `Status: closed`, and the work of each is in `origin/main`.
 - Make a sub-issue: a ticket belongs to the spec in its feature folder. Its `Spec:` line points to `../spec.md`.
 - Close an issue: append the reason under `## Comments`, then set `Status: closed`.
 

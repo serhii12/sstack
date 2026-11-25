@@ -228,7 +228,7 @@ export function checkIssue(issue) {
       const lines = issue.blockedBy;
       const fix = "keep one `Blocked by:` line near the top, with `none` or a comma-separated list of ticket files in the folder of this file.";
       if (lines.length === 0) {
-        add(labelLine, "blocked-by", "The local issue is `ready-for-agent` and has no `Blocked by:` line", "add `Blocked by: none`, or the blocking ticket files, near the top of the file.");
+        add(labelLine, "blocked-by", "The local issue is `ready-for-agent` and has no `Blocked by:` line", "add `Blocked by: None (can start immediately)`, or the blocking ticket files, near the top of the file.");
       } else if (lines.length > 1) {
         add(lines[1].n, "blocked-by", `The file has ${lines.length} \`Blocked by:\` lines`, fix);
       } else if (lines[0].value === "") {

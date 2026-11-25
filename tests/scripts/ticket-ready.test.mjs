@@ -201,6 +201,8 @@ test("a copy of the fixtures in a new folder works the same (no path is built in
 test("exports: the parsers and the exit table", () => {
   assert.deepEqual(EXIT, { READY: 0, OPEN: 1, USAGE: 2, BLOCKER_UNREADABLE: 3, TICKET_UNREADABLE: 4, NO_LINE: 5 });
   assert.equal(parseBlockedBy("Blocked by: none (can start now)\n").kind, "none");
+  assert.equal(parseBlockedBy("Blocked by: None (can start immediately)\n").kind, "none");
+  assert.equal(parseBlockedBy("Blocked by: none\n").kind, "none");
   assert.deepEqual(parseBlockedBy("**Blocked by:** `01-a.md`, [b](02-b.md)\n").blockers, ["01-a.md", "02-b.md"]);
   assert.equal(parseBlockedBy("# t\n").kind, "missing");
   assert.equal(parseStatus("Status:   closed  \n"), "closed");

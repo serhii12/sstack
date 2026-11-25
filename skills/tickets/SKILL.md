@@ -28,14 +28,15 @@ No fence yet
 6. Publish blockers first, so each ticket can name real blockers. Follow `docs/agents/tracker.md`. Use the templates in [TICKET-FORMAT.md](TICKET-FORMAT.md). For local files, use the same `<feature>` folder as the spec. On GitHub or GitLab, make each ticket a sub-issue of the spec. If the tracker doc has native blocking links, use them. Add no label.
    No fence yet
 7. Check local tickets. Skip this step for GitHub and GitLab. From the project root, run `node .claude/skills/tickets/scripts/tickets-lint.mjs`. Run it alone and with this relative path, so that a permission rule can match it. It checks every file under `.scratch/*/tickets/`. Fix every problem that it prints. It has no cap on the number of tickets. If the project or the user set a cap, add `--max <n>`. Run it again until it exits 0. Exit code 2 means that the script cannot run. If the script is missing or exits 2, read each file for the same checks. Then say in your report that the lint did not run. Held by: skills/tickets/scripts/tickets-lint.mjs
-8. Report. Do not close or edit the spec. Reply with the list of tickets (link or path, title, blockers). Add the frontier: the tickets with no open blockers. Then name the next command. For a ticket on the frontier, type `/build <ticket>` in a fresh session. A ticket with open blockers waits.
+8. Report. Do not close or edit the spec. Reply with the list of tickets (link or path, title, blockers). Then show the frontier. List the tickets that can start now. For each other ticket, name the tickets that it waits on. Then name the next command. For a ticket on the frontier, type `/build <ticket>` in a fresh session. A ticket with open blockers waits.
 
 ## Ticket rules
 
 - One thin working piece. Ask of each ticket: "what can I demo or check when this is done?". An answer that names a layer shows a horizontal slice. An example is "the schema is in". Recut it. No fence yet
 - One context window. A fresh session that has never seen this conversation can finish the ticket. No fence yet
 - Acceptance checks that can fail. Each check names what to observe and where. Each check fails before the work of the ticket and passes after it. A check that already passes at the start checks nothing. Rewrite it or drop it. No fence yet
-- Real blockers only. `Blocked by:` names only tickets that must finish before this ticket can start, or says `none`. The first ticket has no blockers. No chain of blockers leads from a ticket back to itself. Held by: skills/tickets/scripts/tickets-lint.mjs (local tickets only)
+- Real blockers only. `Blocked by:` names only tickets that must finish before this ticket can start, or says `None (can start immediately)`. The first ticket has no blockers. No chain of blockers leads from a ticket back to itself. Held by: skills/tickets/scripts/tickets-lint.mjs (local tickets only)
+- Shared code. If a ticket cannot be built correctly without the change of another ticket, that is a real blocker. An example is two tickets that must rewrite the same function. Tickets that only touch nearby code stay parallel. The user approves each edge in the breakdown. No fence yet
 - No source file paths or code. They go stale. One exception: a snippet from a prototype that states a decision more exactly than prose. Mark it as from the prototype. No fence yet
 
 ## Fewer, bigger tickets
@@ -58,7 +59,7 @@ Breakdown for <spec title>. 4 tickets.
 Gaps: <a clash or a missing test boundary, or "none">
 
 1. <Title>
-   Blocked by: none
+   Blocked by: None (can start immediately)
    Delivers: <the end-to-end behavior, in one line>
    Checks: <the acceptance checks, short>
 
@@ -68,8 +69,10 @@ Gaps: <a clash or a missing test boundary, or "none">
    Checks: ...
 
 Merged: <tickets you merged and why, or "none">
-Is each ticket the right size? Does each ticket name only real blockers?
-Reply "approve" to publish, or tell me what to merge, split or change.
+Is each ticket the right size, or is it too big or too small?
+Are the blocking edges right? Does each ticket depend only on tickets that must finish before it can start?
+Should any ticket be merged or split?
+Reply "approve" to publish, or tell me what to change.
 ```
 
 ## Provenance

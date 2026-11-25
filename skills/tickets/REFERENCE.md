@@ -46,7 +46,7 @@ A wide refactor can need many tickets. Each batch is still one ticket.
 | On GitHub, tickets are not sub-issues of the spec | The publish step skipped the parent link. | Use `--parent <spec>` from the tracker doc. |
 | "Blocked by" is body text on GitHub | The agent assumed that GitHub has no native blocking. It has native blocking: `gh issue create --blocked-by 12,15`. | Use native links. Use the body line only as the fallback. |
 | The spec text from the tracker is cut off | A long spec does not come back in full. | Run `/tickets` in the same session as `/spec`. |
-| A ticket does not close after the build | Nothing closes it by itself. | On GitHub or GitLab, close it by hand or let the pull request close it. For a local ticket, set `Status: closed` by hand. Until then, the tickets that it blocks stay blocked. |
+| A ticket that it blocks stays blocked after the build | The work of the blocker is not in `origin/main` yet. | On GitHub or GitLab, the merge of the pull request closes the issue. For a local ticket, `/build` sets `Status: closed` and writes a `Built on branch` line. `ticket-ready.mjs` waits until that commit is in `origin/main`. Merge the branch first. |
 | The spec is out of date when the tickets start | The spec is a snapshot. The code or the plan changed. | Name the clash in the breakdown. The user can type `/grill` to settle it. Do not edit the spec to follow the code. |
 
 ## It is working if

@@ -124,7 +124,7 @@ The runner gives no `Write` or `Edit`. A write attempt still shows in the transc
       "Breakdown for",
       "/Gaps:[\\s\\S]{0,300}[Tt]est boundar/",
       "/proposed by the agent/i",
-      "/^\\s*1\\. [^\\n]+\\n\\s*Blocked by: none/m",
+      "/^\\s*1\\. [^\\n]+\\n\\s*Blocked by: [Nn]one/m",
       "/\\/grill/",
       "approve"
     ]

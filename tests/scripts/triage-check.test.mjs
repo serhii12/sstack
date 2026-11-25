@@ -145,6 +145,7 @@ const withBlocked = (line, files, fn) => withFiles({ "02-a.md": "Status: closed\
 test("blocked-by: names of files that exist pass", () => {
   withBlocked("Blocked by: 02-a.md", {}, (p) => assert.deepEqual(p, []));
   withBlocked("Blocked by: none (nothing blocks it)", {}, (p) => assert.deepEqual(p, []));
+  withBlocked("Blocked by: None (can start immediately)", {}, (p) => assert.deepEqual(p, []));
 });
 
 test("blocked-by: an empty line, a missing file, a tracker reference, a mix or two lines fail", () => {

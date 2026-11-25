@@ -77,7 +77,7 @@ Prior art: None found
 - [ ] The agent loads the `tickets` skill and reads `.scratch/csv-export/spec.md`.
 - [ ] The reply is a breakdown in the format of SKILL.md: a title line with the ticket count, a `Gaps:` line, then numbered tickets.
 - [ ] The breakdown has 1 or 2 tickets. Each ticket has `Blocked by:`, `Delivers:` and `Checks:` lines.
-- [ ] The first ticket has `Blocked by: none`.
+- [ ] The first ticket has `Blocked by: None (can start immediately)`, or the older form `Blocked by: none`.
 - [ ] Each ticket delivers a behavior the user can see (for example, the download works). No ticket is named after a layer such as "the endpoint" or "the tests".
 - [ ] Each check names what to observe and where, and can fail before the work.
 - [ ] The breakdown has a `Merged:` line and ends with the question about size and blockers and the "approve" prompt.
@@ -127,7 +127,7 @@ The fixture has a boundary for the Export CSV link. Without one, the skill stops
     "outputMatches": [
       "Breakdown for",
       "[12] tickets?\\b",
-      "/^\\s*1\\. [^\\n]+\\n\\s*Blocked by: none/m",
+      "/^\\s*1\\. [^\\n]+\\n\\s*Blocked by: [Nn]one/m",
       "Delivers:",
       "/^\\s*Checks\\b[^\\n]*:/m",
       "Merged:",
