@@ -29,6 +29,7 @@ grill | agent | Interview the user with recommended answers until they confirm t
 domain-memory | agent | Keep GLOSSARY.md and ADRs current and challenge fuzzy terms
 decide | agent | List options with effort and undo cost, recommend one, then wait
 setup | typed | Record which issue tracker the repo uses
+spec | typed | Write the spec (the PRD) from the plan that the user confirmed
 code-craft | agent | Give the shared terms and rules for modules, interfaces and module boundaries
 <!-- skills:end -->
 
