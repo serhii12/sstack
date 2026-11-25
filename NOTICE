@@ -1,29 +1,266 @@
+agent-stack
+Copyright (c) 2026 Serhii Panchyshyn. MIT License, see LICENSE.
+
 agent-stack reuses and adapts text and code from the projects below.
-Each skill's "## Provenance" section lists the exact source files.
+Each entry names one source file, the files of this repo that use it, and how.
+"Adapted" means that we copied text or code and changed it. "Idea only" means
+that we took an idea and wrote our own text. The "## Provenance" section of each
+skill, and the header of each script, says what we changed.
 
-1. mattpocock/skills
-   https://github.com/mattpocock/skills
-   MIT License. Copyright (c) 2026 Matt Pocock
-   Used in: skills/grill, skills/domain-memory, skills/start, scripts/skill-lint.mjs
+Source repos and the commits we read:
 
-2. kentcdodds/kcd-skills
-   https://github.com/kentcdodds/kcd-skills
-   MIT License. Copyright (c) 2026 Kent C. Dodds
-   Used in: skills/decide, skills/domain-memory (decision record template),
-   scripts/skill-lint.mjs
+  1. mattpocock/skills       https://github.com/mattpocock/skills       commit 6f7f783
+     MIT License. Copyright (c) 2026 Matt Pocock
+  2. kentcdodds/kcd-skills   https://github.com/kentcdodds/kcd-skills   commit 21b8959
+     MIT License. Copyright (c) 2026 Kent C. Dodds
+  3. joelhooks/rat-stack     https://github.com/joelhooks/rat-stack     commit a218e38
+     MIT License. Copyright (c) 2026 Joel Hooks
+  4. michaelshimeles/rstack  https://github.com/michaelshimeles/rstack  commit 8ad3944
+     No top-level license file. Author: Michael Shimeles.
+     Some vendored folders carry their own license (see before-and-after below).
 
-3. joelhooks/rat-stack
-   https://github.com/joelhooks/rat-stack
-   MIT License. Copyright (c) 2026 Joel Hooks
-   Used in: hooks/git-policy.mjs, hooks/guard-git.mjs,
-   tests/hooks/git-policy.test.mjs, templates/githooks/prepare-commit-msg,
-   templates/AGENTS.md (error message format, "Held by" labels),
-   scripts/skill-lint.mjs (name must match folder)
 
-4. michaelshimeles/rstack
-   https://github.com/michaelshimeles/rstack
-   No licence file covers the files used. Author: Michael Shimeles.
-   Used in: skills/start and templates/AGENTS.md (task triage, worktree rules)
+1. mattpocock/skills (MIT, Matt Pocock)
+---------------------------------------
+
+skills/engineering/ask-matt/SKILL.md
+    -> skills/start/SKILL.md. Idea only: a typed router, read a SKILL.md before you describe it.
+    -> skills/triage/SKILL.md, skills/prototype/SKILL.md. Idea only: where the two side
+       entrances join the flow.
+skills/engineering/ask-matt/PHASE-BOUNDARIES.md
+    -> skills/start/PHASE-BOUNDARIES.md. Adapted.
+skills/productivity/handoff/SKILL.md
+    -> skills/start/SKILL.md. Adapted: the handoff note rules.
+.agents/invocation.md
+    -> skills/start/SKILL.md. Adapted: the typed and agent skill split.
+skills/productivity/grilling/SKILL.md
+    -> skills/grill/SKILL.md. Adapted. The base of the skill.
+skills/productivity/grill-me/SKILL.md
+    -> skills/grill/SKILL.md. Idea only: a grill needs no repo and writes no files.
+skills/engineering/grill-with-docs/SKILL.md
+    -> skills/grill/SKILL.md. Idea only: load domain-memory with the grill.
+docs/productivity/grilling.md
+docs/productivity/grill-me.md
+docs/engineering/grill-with-docs.md
+.out-of-scope/question-limits.md
+    -> skills/grill/SKILL.md, skills/grill/REFERENCE.md. Mostly ideas. A few sentences
+       in REFERENCE.md are close to the source.
+skills/engineering/domain-modeling/SKILL.md
+    -> skills/domain-memory/SKILL.md. Adapted. The base of the skill.
+skills/engineering/domain-modeling/ADR-FORMAT.md
+    -> skills/domain-memory/ADR-FORMAT.md, templates/adr/0000-template.md. Adapted.
+skills/engineering/domain-modeling/GLOSSARY-FORMAT.md
+    -> skills/domain-memory/GLOSSARY-FORMAT.md, templates/GLOSSARY.md. Adapted.
+docs/engineering/domain-modeling.md
+    -> skills/domain-memory/SKILL.md, skills/domain-memory/GLOSSARY-FORMAT.md.
+       Ideas, and two sentences close to the source.
+skills/engineering/setup-matt-pocock-skills/SKILL.md
+    -> skills/setup/SKILL.md. Adapted. The base of the skill.
+skills/engineering/setup-matt-pocock-skills/issue-tracker-github.md
+    -> skills/setup/tracker/github.md. Adapted, with its "PRs as a request surface" section.
+    -> skills/triage/TRACKERS.md (the commands and the pull request commands, through
+       skills/setup/tracker/).
+skills/engineering/setup-matt-pocock-skills/issue-tracker-gitlab.md
+    -> skills/setup/tracker/gitlab.md. Adapted, with its "MRs as a request surface" section.
+    -> skills/triage/TRACKERS.md (the commands, through skills/setup/tracker/).
+skills/engineering/setup-matt-pocock-skills/triage-labels.md
+    -> skills/setup/triage-labels.md. Adapted: the table of roles and labels.
+    -> skills/triage/scripts/triage-check.mjs. Idea only: map the label of the tracker to
+       its role.
+skills/engineering/setup-matt-pocock-skills/issue-tracker-local.md
+    -> skills/setup/tracker/local.md. Adapted.
+docs/engineering/setup-matt-pocock-skills.md
+    -> skills/setup/SKILL.md. Idea only.
+skills/engineering/to-spec/SKILL.md
+    -> skills/spec/SKILL.md, skills/spec/SPEC-FORMAT.md. Adapted. The base of the skill.
+docs/engineering/to-spec.md
+    -> skills/spec/SKILL.md, skills/spec/SPEC-FORMAT.md. Ideas, and one quoted line.
+skills/engineering/to-tickets/SKILL.md
+    -> skills/tickets/SKILL.md, skills/tickets/REFERENCE.md, skills/tickets/TICKET-FORMAT.md,
+       skills/tickets/scripts/tickets-lint.mjs (the ticket shape). Adapted.
+docs/engineering/to-tickets.md
+    -> skills/tickets/SKILL.md, skills/tickets/REFERENCE.md. Ideas, and a few quoted sentences.
+skills/engineering/triage/SKILL.md
+    -> skills/triage/SKILL.md, skills/triage/BRIEF.md (the needs-info template),
+       skills/triage/scripts/triage-check.mjs (the roles and the rules that the script
+       checks). Adapted. The base of the skill.
+skills/engineering/triage/AGENT-BRIEF.md
+    -> skills/triage/BRIEF.md. Adapted.
+    -> skills/tickets/SKILL.md. Idea only.
+skills/engineering/triage/OUT-OF-SCOPE.md
+    -> skills/triage/OUT-OF-SCOPE.md. Adapted.
+docs/engineering/triage.md
+    -> skills/triage/SKILL.md, skills/triage/TRACKERS.md (the `gh label create` advice).
+       Ideas only.
+docs/agents/triage-labels.md
+    -> skills/triage/SKILL.md. Idea only: the table of roles and meanings.
+skills/engineering/prototype/SKILL.md
+    -> skills/prototype/SKILL.md, skills/prototype/scripts/prototype-check.mjs (the
+       branch rule). Adapted. The base of the skill.
+skills/engineering/prototype/LOGIC.md
+    -> skills/prototype/LOGIC.md. Adapted.
+skills/engineering/prototype/UI.md
+    -> skills/prototype/UI.md. Adapted.
+docs/engineering/prototype.md
+    -> skills/prototype/SKILL.md, skills/prototype/scripts/prototype-check.mjs. Ideas only.
+skills/engineering/implement/SKILL.md
+    -> skills/build/SKILL.md. Adapted. The base of the skill.
+skills/engineering/implement-spec/SKILL.md
+    -> skills/build/SKILL.md. Idea only.
+docs/engineering/implement.md
+    -> skills/build/SKILL.md, skills/build/WORKTREES.md. Ideas, and a field report close
+       to the source.
+skills/engineering/tdd/SKILL.md
+    -> skills/test-craft/SKILL.md. Adapted. One of the two bases of the skill.
+skills/engineering/tdd/tests.md
+skills/engineering/tdd/mocking.md
+    -> skills/test-craft/REFERENCE.md. Copied, with the prose lightly reworded.
+docs/engineering/tdd.md
+    -> skills/test-craft/SKILL.md. Idea only.
+skills/in-progress/setup-ts-deep-modules/SKILL.md
+    -> skills/test-craft/SKILL.md. Idea only: the pass, fail, pass order.
+    -> skills/code-craft/TYPESCRIPT.md. Idea only: entry files and dependency rules.
+skills/engineering/code-review/SKILL.md
+    -> skills/peer-review/SKILL.md, skills/peer-review/SMELLS.md (the smell list, close to
+       the source), skills/peer-review/scripts/review-range.mjs (idea only),
+       skills/prove/SKILL.md and skills/prove/REVIEWER-BRIEF.md (idea only: a fresh
+       reviewer that gets no reasoning from the author). Adapted.
+docs/engineering/code-review.md
+    -> skills/peer-review/SKILL.md. Idea only.
+skills/engineering/codebase-design/SKILL.md
+    -> skills/code-craft/SKILL.md. Adapted. The base of the terms, the principles and
+       the rules for testable code.
+skills/engineering/codebase-design/DEEPENING.md
+    -> skills/code-craft/RESTRUCTURE.md. Adapted.
+docs/engineering/codebase-design.md
+    -> skills/code-craft/SKILL.md. Idea only: the report of a reference skill that
+       an agent ran as a process.
+skills/engineering/improve-codebase-architecture/SKILL.md
+    -> skills/improve-codebase/SKILL.md, skills/improve-codebase/SCAN-BRIEF.md (the
+       Explore step), skills/improve-codebase/scripts/survey-lint.mjs (the candidate
+       fields and ranks). Adapted.
+    -> skills/improve-codebase/scripts/churn.mjs. Idea only: scope the survey by churn.
+docs/engineering/improve-codebase-architecture.md
+    -> skills/improve-codebase/SKILL.md. Idea only.
+skills/engineering/diagnosing-bugs/SKILL.md
+    -> skills/diagnose/SKILL.md, skills/diagnose/REFERENCE.md. Adapted. The base of the skill.
+docs/engineering/diagnosing-bugs.md
+    -> skills/diagnose/SKILL.md. Idea only.
+skills/engineering/retro/SKILL.md
+    -> skills/retro/SKILL.md, skills/retro/REFERENCE.md. Adapted. The base of the skill.
+docs/engineering/retro.md
+    -> skills/retro/SKILL.md. Idea only.
+scripts/check-frontmatter.mjs
+    -> scripts/skill-lint.mjs. Adapted: the frontmatter match and the name and
+       description check.
+
+
+2. kentcdodds/kcd-skills (MIT, Kent C. Dodds)
+---------------------------------------------
+
+skills/review-and-recommend/SKILL.md
+    -> skills/decide/SKILL.md. Adapted. The base of the skill.
+skills/autopilot/references/templates.md (lines 177-199)
+    -> skills/domain-memory/SKILL.md, skills/domain-memory/ADR-FORMAT.md,
+       templates/adr/0000-template.md. Adapted: the decision record template.
+skills/friction-log/SKILL.md
+    -> skills/friction/SKILL.md. Adapted. The base of the skill.
+skills/autopilot/scripts/audit-report.mjs (lines 200-310)
+    -> skills/prove/SKILL.md, skills/prove/scripts/evidence-check.mjs. Idea only.
+skills/visual-recap/SKILL.md
+    -> skills/prove/SKILL.md. Idea only.
+test/kcd-skills-cli.test.mjs
+    -> scripts/skill-lint.mjs. Idea only: every file that a skill points to must exist.
+test/skill-text.test.mjs
+    -> scripts/skill-lint.mjs. Adapted: the dash scan for each line.
+
+
+3. joelhooks/rat-stack (MIT, Joel Hooks)
+----------------------------------------
+
+scripts/vcs-command-policy.js
+    -> hooks/git-policy.mjs, hooks/guard-git.mjs. Adapted: the tokenizer, the prefix and
+       wrapper skipping, the commit flag scan, the hooksPath check, the .git/hooks check and
+       the nested shell check.
+packages/core/test/vcs-command-policy.test.ts
+    -> tests/hooks/git-policy.test.mjs. Adapted.
+examples/tokenmaxx-starter/.githooks/prepare-commit-msg
+    -> templates/githooks/prepare-commit-msg. Adapted.
+AGENTS.md
+    -> templates/AGENTS.md. Adapted: the error message format and the Held by labels.
+apps/site/scripts/generate-content.ts
+    -> scripts/skill-lint.mjs. Adapted: the rule that the name matches the folder.
+skills/rat-stack-mode/SKILL.md
+    -> skills/start/SKILL.md. Idea only, no text.
+skills/rat-stack-mode/principles/separate-writers-verify-readers.md
+    -> skills/peer-review/SKILL.md. Idea only.
+skills/test-behaviour/SKILL.md
+    -> skills/test-craft/SKILL.md, skills/test-craft/REFERENCE.md. Adapted. One of the two
+       bases of the skill.
+skills/investigate-a-failure/SKILL.md
+    -> skills/diagnose/SKILL.md, skills/diagnose/REFERENCE.md. Adapted.
+skills/ship/SKILL.md (line 92)
+skills/model-a-protocol/SKILL.md (line 62)
+    -> skills/prove/SKILL.md. Idea only.
+skills/gardener/SKILL.md
+    -> skills/retro/SKILL.md. Adapted.
+skills/uncomplect/SKILL.md (line 63)
+    -> skills/retro/SKILL.md, skills/retro/REFERENCE.md. Idea only: the No fence yet label.
+
+The rat-stack router credits pstack by Lauren Tan (MIT). We copied nothing from pstack.
+
+
+4. michaelshimeles/rstack (no top-level license file, Michael Shimeles)
+-----------------------------------------------------------------------
+
+AGENTS.md (lines 3-13), no license file
+    -> skills/start/SKILL.md, skills/prove/SKILL.md, templates/AGENTS.md. Idea only: sort the
+       task by type, and let the type set the proof.
+AGENTS.md (lines 54-72), no license file
+    -> skills/build/SKILL.md, skills/build/WORKTREES.md. Adapted: the worktree rules.
+new-feature/SKILL.md, no license file
+    -> skills/build/SKILL.md, skills/build/WORKTREES.md. Adapted: the worktree steps and the
+       cleanup commands.
+evidence-driven-testing/SKILL.md, no license file
+evidence-driven-testing/scripts/evidence.py, no license file
+    -> skills/prove/SKILL.md, skills/prove/CAPTURE.md (the Playwright recipe, from the
+       record.mjs example). Adapted.
+    -> skills/prove/scripts/evidence-check.mjs. Idea only: the three results, the commit
+       stamp, and the counts in the report table.
+    -> skills/prove/SKILL.md, skills/prove/CAPTURE.md. Adapted: install Playwright outside
+       the project with no ask when the project has no browser test tool.
+evidence-driven-testing/scripts/run-playwright.sh, no license file
+    -> skills/prove/scripts/run-playwright.mjs. Adapted into Node: npm ci of a pinned
+       manifest in a temp folder, the capture script copied beside it, Chromium installed,
+       the temp folder deleted on exit. New code.
+evidence-driven-testing/scripts/playwright/package.json and package-lock.json, no license file
+    -> skills/prove/scripts/playwright/package.json and package-lock.json. Copied as they are.
+before-and-after/SKILL.md, PolyForm Shield License 1.0.0, Copyright (c) 2026 James Clements
+    -> skills/prove/SKILL.md. Adapted: the phone size 375x812, reuse of a capture that
+       exists, and the before and after table of the report. Its license notice is below.
+    -> skills/prove/scripts/evidence-check.mjs. Idea only: the before and after table that
+       the `report` command prints.
+
+
+5. The owner's own skills (no license file, Serhii Panchyshyn)
+--------------------------------------------------------------
+
+engineering-protocol/SKILL.md and rules/*.md
+    -> skills/code-craft/SKILL.md, skills/code-craft/RULES.md. Adapted. The base of the
+       order of checks and of most of RULES.md. Three figures of speech renamed. The error
+       statistics are not copied.
+    -> skills/code-craft/RESTRUCTURE.md. Idea only (rules/abstraction.md): a test fake is
+       a second adapter only at a system boundary.
+typescript-engineering/SKILL.md and rules/*.md
+    -> skills/code-craft/RULES.md, skills/code-craft/TYPESCRIPT.md. Adapted. Size numbers
+       kept only as signs. The error statistics, the quotes and the type tutorial are not
+       copied.
+    -> skills/code-craft/RESTRUCTURE.md. Idea only (rules/ts-simplicity.md): no refactor
+       inside a bug fix or outside the task.
+engineering-protocol and typescript-engineering
+    -> skills/improve-codebase/SKILL.md. Idea only: the rule pass reads them through
+       code-craft.
+
 
 The MIT License, which applies to the material from projects 1 to 3:
 
@@ -44,3 +281,35 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+
+The license of rstack before-and-after/LICENSE, as it ships at commit 8ad3944,
+which applies to the material from before-and-after/SKILL.md:
+
+PolyForm Shield License 1.0.0
+
+Copyright (c) 2026 James Clements
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, and distribute the Software, subject to the following conditions:
+
+1. You may not use the Software to provide a product or service that competes
+   with the Software or any product or service offered by the Licensor that
+   includes the Software.
+
+2. You may not remove or obscure any licensing, copyright, or other notices
+   included in the Software.
+
+3. If you distribute the Software or any derivative works, you must include a
+   copy of this license.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+For more information, see https://polyformproject.org/licenses/shield/1.0.0
