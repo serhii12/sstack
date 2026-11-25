@@ -1,0 +1,6 @@
+# Generated from SKILL.md by scripts/openai-yaml.mjs. Do not edit. Run: bun run gen:codex
+interface:
+  display_name: "retro"
+  short_description: "Lists the agent's mistakes in a session"
+policy:
+  allow_implicit_invocation: false

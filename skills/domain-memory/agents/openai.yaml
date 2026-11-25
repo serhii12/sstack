@@ -1,0 +1,4 @@
+# Generated from SKILL.md by scripts/openai-yaml.mjs. Do not edit. Run: bun run gen:codex
+interface:
+  display_name: "domain-memory"
+  short_description: "Keeps a project's GLOSSARY.md and decision records current"

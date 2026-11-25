@@ -1,0 +1,4 @@
+# Generated from SKILL.md by scripts/openai-yaml.mjs. Do not edit. Run: bun run gen:codex
+interface:
+  display_name: "peer-review"
+  short_description: "Reviews code changes in this repo on two separate axes"

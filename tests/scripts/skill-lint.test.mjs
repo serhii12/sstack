@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { BUILT_IN_COMMANDS, lint, parseFrontmatter } from "../../scripts/skill-lint.mjs";
+import { openaiYaml } from "../../scripts/openai-yaml.mjs";
 
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "scripts", "skill-lint.mjs");
 
@@ -42,6 +43,14 @@ function fixture(overrides = {}) {
     "skills/helper/SKILL.md": skillText({ name: "helper", body: "Help. No fence yet" }),
     ...overrides,
   };
+  // Each skill gets its generated agents/openai.yaml, unless the test names that file (null leaves it out).
+  for (const [rel, content] of Object.entries({ ...files })) {
+    const m = rel.match(/^skills\/([^/]+)\/SKILL\.md$/);
+    const yamlRel = m && `skills/${m[1]}/agents/openai.yaml`;
+    if (!m || content === null || Object.hasOwn(files, yamlRel)) continue;
+    const fm = parseFrontmatter(content);
+    if (!fm.error && fm.data.name && fm.data.description) files[yamlRel] = openaiYaml(fm.data);
+  }
   for (const [rel, content] of Object.entries(files)) {
     if (content === null) continue;
     const p = join(root, rel);
@@ -281,6 +290,48 @@ test("text: 150 lines pass, 151 fail", () => {
   };
   assert.deepEqual(rules(run({ "skills/helper/SKILL.md": sized(150) }), "max-lines"), []);
   assert.equal(rules(run({ "skills/helper/SKILL.md": sized(151) }), "max-lines").length, 1);
+});
+
+// ---- rule 7: agents/openai.yaml for Codex ----
+
+const POLICY = "policy:\n  allow_implicit_invocation: false\n";
+
+test("codex-meta: a skill with no agents/openai.yaml fails", () => {
+  const hits = rules(run({ "skills/helper/agents/openai.yaml": null }), "codex-meta");
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].path, "skills/helper/agents/openai.yaml");
+  assert.match(hits[0].message, /has no agents\/openai\.yaml/);
+  assert.match(hits[0].fix, /bun run gen:codex/);
+});
+
+test("codex-meta: a file that drifted from the frontmatter fails", () => {
+  const good = openaiYaml(parseFrontmatter(skillText({ name: "helper" })).data);
+  const drifted = good.replace(/short_description: ".*"/, 'short_description: "Edited by hand"');
+  assert.notEqual(drifted, good);
+  const hits = rules(run({ "skills/helper/agents/openai.yaml": drifted }), "codex-meta");
+  assert.equal(hits.length, 1);
+  assert.match(hits[0].message, /differs from what its frontmatter gives/);
+});
+
+test("codex-meta: a typed skill without the policy line fails", () => {
+  const typed = openaiYaml(parseFrontmatter(skillText({ name: "deliver", typed: true })).data);
+  assert.ok(typed.endsWith(POLICY));
+  const hits = rules(run({ "skills/deliver/agents/openai.yaml": typed.replace(POLICY, "") }), "codex-meta");
+  assert.equal(hits.length, 1);
+  assert.match(hits[0].message, /typed skill `deliver` has no `allow_implicit_invocation: false`/);
+});
+
+test("codex-meta: an agent skill with the policy line fails", () => {
+  const agent = openaiYaml(parseFrontmatter(skillText({ name: "helper" })).data);
+  assert.ok(!agent.includes("allow_implicit_invocation"));
+  const hits = rules(run({ "skills/helper/agents/openai.yaml": agent + POLICY }), "codex-meta");
+  assert.equal(hits.length, 1);
+  assert.match(hits[0].message, /agent skill `helper` has `allow_implicit_invocation: false`/);
+});
+
+test("codex-meta: the files in this repo match their frontmatter", () => {
+  const r = lint(join(dirname(fileURLToPath(import.meta.url)), "..", ".."));
+  assert.deepEqual(rules(r, "codex-meta"), []);
 });
 
 // ---- CLI ----

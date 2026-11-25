@@ -1,0 +1,4 @@
+# Generated from SKILL.md by scripts/openai-yaml.mjs. Do not edit. Run: bun run gen:codex
+interface:
+  display_name: "prototype"
+  short_description: "Builds throwaway code on a prototype branch"

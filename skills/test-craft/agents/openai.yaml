@@ -1,0 +1,4 @@
+# Generated from SKILL.md by scripts/openai-yaml.mjs. Do not edit. Run: bun run gen:codex
+interface:
+  display_name: "test-craft"
+  short_description: "Chooses the kind of test and where it goes for a change"

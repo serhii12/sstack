@@ -1,0 +1,6 @@
+# Generated from SKILL.md by scripts/openai-yaml.mjs. Do not edit. Run: bun run gen:codex
+interface:
+  display_name: "triage"
+  short_description: "Sort reports, requests and opted-in outside pull requests"
+policy:
+  allow_implicit_invocation: false

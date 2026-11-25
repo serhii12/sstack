@@ -1,0 +1,6 @@
+# Generated from SKILL.md by scripts/openai-yaml.mjs. Do not edit. Run: bun run gen:codex
+interface:
+  display_name: "improve-codebase"
+  short_description: "Scan the code for shallow modules and rule breaks"
+policy:
+  allow_implicit_invocation: false
