@@ -31,6 +31,7 @@ decide | agent | List options with effort and undo cost, recommend one, then wai
 setup | typed | Record which issue tracker the repo uses
 spec | typed | Write the spec (the PRD) from the plan that the user confirmed
 tickets | typed | Split one spec into small tickets with blocking links
+build | typed | Work one ticket in its own worktree: failing test, code, commit, review
 test-craft | agent | Pick the test, write it failing first, and plant a bug in each new check
 peer-review | agent | Review a change with two fresh reviewers, Standards and Spec
 diagnose | agent | Find the cause of a failure, starting from a command that fails
@@ -58,7 +59,7 @@ code-craft | agent | Give the shared terms and rules for modules, interfaces and
 | --- | --- | --- | --- | --- |
 | Read-only question | Explain, review, or investigate. Nothing changes in the repo. | `cite` | None. Ask the question in this session. | |
 | Docs-only change | Edits only to docs, comments or text files. | `content` | If the change is unclear, `/grill`. Otherwise none: edit by hand on a new branch. | `ship` |
-| Code change | Changes behavior, config or dependencies. | `behavior` | `/grill`. After it, the user types `/spec`, then `/tickets`. | |
+| Code change | Changes behavior, config or dependencies. | `behavior` | `/grill`. After it, the user types `/spec`, then `/tickets`, then `/build` for each ticket. | |
 | Bug | Something works wrong today. | `red-then-green` | If the right behavior is unclear, `/grill`. Otherwise `/diagnose`. | |
 | Ship request | The change is made. The user wants it delivered, as a pull request or a finished change in the repo. | `checks` | None. Follow `AGENTS.md` by hand. | `pr-body`, `ship` |
 
