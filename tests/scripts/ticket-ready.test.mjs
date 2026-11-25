@@ -67,6 +67,31 @@ test("exit 1: a Status line inside a code block does not count", () => {
   assert.match(r.err, /says `open`/);
 });
 
+test("exit 1: a blocker with two Status lines is open, also when one is in a comment or indented code", () => {
+  for (const [ticket, lines] of [
+    ["29-blocker-status-comment.md", "6, 8"],
+    ["30-blocker-status-indented.md", "7, 9"],
+    ["31-blocker-status-twice.md", "4, 5"],
+  ]) {
+    const r = run([join(T, ticket)]);
+    assert.equal(r.code, 1, ticket);
+    assert.match(r.err, new RegExp(`has 2 \`Status:\` lines \\(lines ${lines}\\)`), ticket);
+    assertMessageForm(r.err);
+  }
+});
+
+test("exit 1: a tilde fence that holds a backtick line hides only its own lines", () => {
+  const r = run([join(T, "27-nested-fence.md")]);
+  assert.equal(r.code, 1);
+  assert.match(r.err, /Blocker 02-open\.md is still open/);
+});
+
+test("exit 0: a four-backtick fence that holds a three-backtick block hides its Blocked by line", () => {
+  const r = run([join(T, "28-long-fence.md")]);
+  assert.equal(r.code, 0, r.err);
+  assert.match(r.out, /no blocker/);
+});
+
 test("exit 3: a blocker file is missing", () => {
   const r = run([join(T, "13-missing-blocker.md")]);
   assert.equal(r.code, 3);
@@ -207,6 +232,7 @@ test("exports: the parsers and the exit table", () => {
   assert.equal(parseBlockedBy("# t\n").kind, "missing");
   assert.equal(parseStatus("Status:   closed  \n"), "closed");
   assert.equal(parseStatus("```\nStatus: closed\n```\n"), null);
+  assert.equal(parseStatus("Status: closed\nStatus: open\n"), null);
   assert.equal(checkTicket(join(T, "14-none.md")).code, 0);
 });
 
