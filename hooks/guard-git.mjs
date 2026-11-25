@@ -18,10 +18,20 @@ import { execFileSync } from "node:child_process";
 import { writeSync } from "node:fs";
 import { homedir } from "node:os";
 
-const readStdin = async () => {
+// Input above this size is refused. The policy refuses commands above 256 KB by itself.
+const MAX_INPUT_BYTES = 4 * 1024 * 1024;
+// If stdin never closes, the hook must not wait forever. The settings timeout is a second fence.
+// The test sets GUARD_GIT_WATCHDOG_MS to a small number. The hook runs with the environment of Claude Code, not of the command.
+const WATCHDOG_MS = Number(process.env.GUARD_GIT_WATCHDOG_MS) > 0 ? Number(process.env.GUARD_GIT_WATCHDOG_MS) : 10_000;
+
+const readStdin = async (onTooLarge) => {
   const chunks = [];
+  let size = 0;
   for await (const chunk of process.stdin) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    size += buffer.length;
+    if (size > MAX_INPUT_BYTES) onTooLarge();
+    chunks.push(buffer);
   }
   return Buffer.concat(chunks).toString("utf8");
 };
@@ -41,9 +51,15 @@ process.on("uncaughtException", (error) => {
 });
 
 const main = async () => {
+  setTimeout(() => {
+    block("a Bash call that the guard could not read in time", `The hook input did not end within ${WATCHDOG_MS / 1000} seconds, so the guard cannot judge the call.`, "Send the hook input and close stdin.");
+  }, WATCHDOG_MS).unref();
+
   let payload;
   try {
-    payload = JSON.parse(await readStdin());
+    payload = JSON.parse(
+      await readStdin(() => block("a Bash call with more than 4 MB of hook input", "The input is too large to check in a safe time.", "Write the large text to a file with the file tool, then run a short command.")),
+    );
   } catch {
     block("a Bash call whose hook input is not valid JSON", "The guard cannot read what the command is, so it refuses.", "Send a Bash tool call as JSON with tool_input.command.");
   }
@@ -61,7 +77,15 @@ const main = async () => {
   }
 
   const base = typeof payload.cwd === "string" ? payload.cwd : process.cwd();
+  // One git call for each distinct list of folders, so a long command with many commits stays fast.
+  const seen = new Map();
   const branchOf = (dirs) => {
+    const key = dirs.join("\0");
+    // After 64 different folders the guard stops asking git and treats the branch as main, so it blocks.
+    if (!seen.has(key)) seen.set(key, seen.size >= 64 ? "main" : lookup(dirs));
+    return seen.get(key);
+  };
+  const lookup = (dirs) => {
     try {
       return (
         execFileSync("git", ["-C", policy.resolveDirs(base, dirs, homedir()), "symbolic-ref", "--short", "-q", "HEAD"], {

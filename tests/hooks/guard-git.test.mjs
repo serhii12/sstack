@@ -1,13 +1,24 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, copyFileSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, copyFileSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { before, describe, it } from "node:test";
+import { after, before, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const hook = path.resolve(here, "../../hooks/guard-git.mjs");
+
+// Every temp folder that a test makes. They are removed after the last test.
+const temps = [];
+const tempDir = (prefix) => {
+  const dir = mkdtempSync(path.join(tmpdir(), prefix));
+  temps.push(dir);
+  return dir;
+};
+after(() => {
+  for (const dir of temps) rmSync(dir, { recursive: true, force: true });
+});
 
 const run = (input, options = {}) =>
   spawnSync("node", [options.hook ?? hook], { input, encoding: "utf8" });
@@ -53,21 +64,21 @@ describe("guard-git: input that cannot be read blocks with exit 2", () => {
 
 describe("guard-git: failure inside the guard blocks", () => {
   it("blocks when the policy file is missing", () => {
-    const dir = mkdtempSync(path.join(tmpdir(), "guard-"));
+    const dir = tempDir("guard-");
     const copy = path.join(dir, "guard-git.mjs");
     copyFileSync(hook, copy);
     assertBlocked(run(JSON.stringify({ tool_input: { command: "git status" } }), { hook: copy }), /could not be loaded/u);
   });
 
   it("blocks when the policy file has a syntax error", () => {
-    const dir = mkdtempSync(path.join(tmpdir(), "guard-"));
+    const dir = tempDir("guard-");
     copyFileSync(hook, path.join(dir, "guard-git.mjs"));
     writeFileSync(path.join(dir, "git-policy.mjs"), "export const = ;");
     assertBlocked(run(JSON.stringify({ tool_input: { command: "git status" } }), { hook: path.join(dir, "guard-git.mjs") }));
   });
 
   it("blocks when the policy throws", () => {
-    const dir = mkdtempSync(path.join(tmpdir(), "guard-"));
+    const dir = tempDir("guard-");
     copyFileSync(hook, path.join(dir, "guard-git.mjs"));
     writeFileSync(
       path.join(dir, "git-policy.mjs"),
@@ -82,9 +93,9 @@ describe("guard-git: decisions", () => {
   let feature;
 
   before(() => {
-    repo = mkdtempSync(path.join(tmpdir(), "guard-repo-"));
+    repo = tempDir("guard-repo-");
     git(repo, "init", "-q", "-b", "main");
-    feature = mkdtempSync(path.join(tmpdir(), "guard-feat-"));
+    feature = tempDir("guard-feat-");
     git(feature, "init", "-q", "-b", "feature/x");
     mkdirSync(path.join(repo, "sub"));
   });
@@ -168,5 +179,21 @@ describe("guard-git: settings template", () => {
     for (const rule of ["Edit(/.claude/settings.json)", "Edit(/.claude/hooks/**)", "Edit(/.githooks/**)", "Edit(/.stack/**)", "Edit(/.git/hooks/**)", "Edit(/.git/config)"]) {
       assert.ok(settings.permissions.deny.includes(rule), rule);
     }
+  });
+});
+
+describe("guard-git: protected paths are judged by what the command does to them", () => {
+  const reported = "ls; cat -n GLOSSARY.md README.md; find . -iname 'glossary*' -not -path './.git/*'";
+
+  it("lets the read-only find that excludes .git through", () => {
+    const result = bash(reported, process.cwd());
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stderr, "");
+  });
+
+  it("lets a read of .git/config through, and blocks a write to it", () => {
+    assert.equal(bash("cat .git/config", process.cwd()).status, 0);
+    assertBlocked(bash("echo x >> .git/config", process.cwd()), /protected-path|\.git\/config/u);
+    assertBlocked(bash("find .githooks -delete", process.cwd()), /Fix:/u);
   });
 });
