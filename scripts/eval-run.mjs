@@ -575,7 +575,7 @@ export const AGENT_ENV = Object.freeze({ CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1" })
 
 /** The full environment of one agent run: `childEnv`, the fixed git identity, `TMPDIR` of the run and `AGENT_ENV`. */
 export function agentEnv(base, layout) {
-  const env = { ...childEnv(base), ...GIT_ENV, TMPDIR: layout.tmp, ...AGENT_ENV };
+  const env = { ...withoutGitVars(childEnv(base)), ...GIT_ENV, TMPDIR: layout.tmp, ...AGENT_ENV };
   delete env.GIT_CONFIG_GLOBAL; // the agent keeps the user git config; only the identity is fixed
   delete env.GIT_CONFIG_NOSYSTEM;
   return env;
@@ -716,8 +716,13 @@ const GIT_ENV = {
   GIT_TERMINAL_PROMPT: "0",
 };
 
+/** A copy of env with no GIT_* variable. GIT_DIR or GIT_WORK_TREE of the owner would send git to another repo. */
+export function withoutGitVars(env) {
+  return Object.fromEntries(Object.entries(env).filter(([k]) => !k.startsWith("GIT_")));
+}
+
 export function git(cwd, args) {
-  const r = spawnSync("git", ["-c", "commit.gpgsign=false", ...args], { cwd, env: { ...process.env, ...GIT_ENV }, encoding: "utf8" });
+  const r = spawnSync("git", ["-c", "commit.gpgsign=false", ...args], { cwd, env: { ...withoutGitVars(process.env), ...GIT_ENV }, encoding: "utf8" });
   return { ok: r.status === 0, out: (r.stdout ?? "").trim(), err: (r.stderr ?? "").trim() };
 }
 
@@ -848,7 +853,7 @@ function fileHash(repo, rel) {
  */
 export function workTreeState(repo) {
   // `-z` keeps the leading space of the status code and gives paths without quotes.
-  const r = spawnSync("git", ["status", "--porcelain", "-z", "--untracked-files=all"], { cwd: repo, env: { ...process.env, ...GIT_ENV }, encoding: "utf8" });
+  const r = spawnSync("git", ["status", "--porcelain", "-z", "--untracked-files=all"], { cwd: repo, env: { ...withoutGitVars(process.env), ...GIT_ENV }, encoding: "utf8" });
   if (r.status !== 0) return { ok: false, status: "", hashes: {} };
   const tokens = (r.stdout ?? "").split("\0").filter(Boolean);
   const lines = [];
@@ -1086,7 +1091,7 @@ export function evaluateAsserts(assertSpec, ctx) {
     if (found.error) add(name, false, found.error);
     else if (e.file && (file === null || !existsSync(file))) add(name, false, `file missing: ${e.file}`);
     else {
-      const r = spawnSync(process.execPath, [script, ...(file ? [file] : []), ...(e.args ?? [])], { cwd: layout.repo, encoding: "utf8", timeout: 60_000, stdio: ["ignore", "pipe", "pipe"] });
+      const r = spawnSync(process.execPath, [script, ...(file ? [file] : []), ...(e.args ?? [])], { cwd: layout.repo, env: withoutGitVars(process.env), encoding: "utf8", timeout: 60_000, stdio: ["ignore", "pipe", "pipe"] });
       const first = ((r.stderr || r.stdout || "").trim().split("\n")[0] ?? "").slice(0, 200);
       add(name, r.status === 0, `exit ${r.status ?? r.signal}${r.status === 0 || !first ? "" : `: ${first}`}`);
     }
@@ -1170,7 +1175,7 @@ export function prepareSetup(setup, layout, { stackRoot = STACK_ROOT } = {}) {
   };
   if (s.gitInit) must(git(layout.repo, ["init", "-q", "-b", "main"]), "git init");
   if (s.installStack) {
-    const r = spawnSync(process.execPath, [join(stackRoot, "scripts", "install.mjs"), layout.repo], { encoding: "utf8" });
+    const r = spawnSync(process.execPath, [join(stackRoot, "scripts", "install.mjs"), layout.repo], { env: { ...withoutGitVars(process.env), ...GIT_ENV }, encoding: "utf8" });
     if (r.status !== 0) throw new Error(`setup step failed: install: ${(r.stderr || r.stdout || "").trim()}`);
   }
   write(s.files);
