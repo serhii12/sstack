@@ -223,6 +223,13 @@ test("a copy of the fixtures in a new folder works the same (no path is built in
   }
 });
 
+test("a long run of spaces inside a Blocked by or Status line parses in one pass", () => {
+  const gap = " ".repeat(160_000);
+  assert.deepEqual(parseBlockedBy(`Blocked by: 01-a.md,${gap}02-b.md\n`).blockers, ["01-a.md", "02-b.md"]);
+  assert.equal(parseStatus(`Status: not${gap}closed\n`), `not${gap}closed`);
+  assert.equal(parseStatus(`Status:${gap}\n`), "");
+});
+
 test("exports: the parsers and the exit table", () => {
   assert.deepEqual(EXIT, { READY: 0, OPEN: 1, USAGE: 2, BLOCKER_UNREADABLE: 3, TICKET_UNREADABLE: 4, NO_LINE: 5 });
   assert.equal(parseBlockedBy("Blocked by: none (can start now)\n").kind, "none");

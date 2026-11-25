@@ -44,8 +44,8 @@ import { fileURLToPath } from "node:url";
 const USAGE = "Usage: node .claude/skills/build/scripts/ticket-ready.mjs <ticket file>";
 // The next three patterns match the forms that skills/tickets/scripts/tickets-lint.mjs accepts.
 // A line can start with a list marker and can bold the key. The key is not case sensitive.
-const BLOCKED_BY = /^\s*(?:[-*]\s+)?(?:\*\*)?Blocked by:(?:\*\*)?\s*(.*?)\s*$/i;
-const STATUS = /^\s*(?:[-*]\s+)?(?:\*\*)?Status:(?:\*\*)?\s*(.*?)\s*$/i;
+const BLOCKED_BY = /^\s*(?:[-*]\s+)?(?:\*\*)?Blocked by:(?:\*\*)?\s*(.*\S|)\s*$/i;
+const STATUS = /^\s*(?:[-*]\s+)?(?:\*\*)?Status:(?:\*\*)?\s*(.*\S|)\s*$/i;
 const NONE = /^none(?:\s*\([^)]*\))?\.?$/i;
 // The close line that skills/build/SKILL.md step 9 writes, and a line that records a merge by hand.
 const BUILT = /^\s*(?:[-*]\s+)?Built on branch\s+(\S+?),?\s+(?:last\s+)?commit\s+`?([0-9a-f]{7,40})`?/i;
