@@ -1120,3 +1120,30 @@ test("the script has no dependency outside node:", () => {
   const src = readFileSync(SCRIPT, "utf8");
   for (const m of src.matchAll(/^import .* from "([^"]+)"/gm)) assert.match(m[1], /^node:/, m[1]);
 });
+
+// ---- nested bullets belong to their check (e2e run 1 break 7) ----
+
+test("parseAcceptanceChecks: nested bullets and the line after them fold into their check, and an indented checkbox stays a check", async () => {
+  const { parseAcceptanceChecks } = await import("../../skills/prove/scripts/evidence-check.mjs");
+  const ticket = [
+    "# 02: Filter",
+    "",
+    "## Acceptance checks",
+    "",
+    "- [ ] HTTP API: `GET /api/items?tag=Rust` returns only the links tagged `rust`.",
+    "- [ ] Page, by screenshot:",
+    "  - the tag buttons with counts",
+    "  - a filtered list with `/?tag=rust` in the address",
+    "",
+    "  Anything without a screenshot is reported as untested.",
+    "  - [ ] A nested checkbox is a check of its own.",
+    "- [ ] The README shows `?tag=`.",
+    "",
+  ].join("\n");
+  assert.deepEqual(parseAcceptanceChecks(ticket), [
+    "HTTP API: `GET /api/items?tag=Rust` returns only the links tagged `rust`.",
+    "Page, by screenshot: - the tag buttons with counts - a filtered list with `/?tag=rust` in the address Anything without a screenshot is reported as untested.",
+    "A nested checkbox is a check of its own.",
+    "The README shows `?tag=`.",
+  ]);
+});
