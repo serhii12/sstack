@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { chmodSync, copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { beforeEach, describe, it } from "node:test";
+import { afterEach, beforeEach, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -30,6 +30,8 @@ describe("prepare-commit-msg template", () => {
     git(repo, "config", "core.hooksPath", ".githooks");
     writeFileSync(path.join(repo, "a"), "a\n");
   });
+
+  afterEach(() => rmSync(repo, { recursive: true, force: true }));
 
   const commit = (...flags) => git(repo, "commit", "-q", "--allow-empty", ...flags, "-m", "x");
 
