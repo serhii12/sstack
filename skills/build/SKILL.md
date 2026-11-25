@@ -115,17 +115,26 @@ A local ticket has no pull request, so nothing else closes it. An open ticket bl
 - The user can make a decision during the build that changes the spec. Then add it with the date under `## Comments` of the ticket and of the spec. A later ticket then reads it.
 No fence yet
 
-
-Write the report in the exact form of [REPORT.md](REPORT.md). Read that file now.
+Write the report in this exact form:
+```markdown
+## Build report: <ticket title>
+Worktree: <path>   Branch: <branch>
+Commits: <short sha> <subject> (one per line)
+Failing test first: <test>. Failed with: <message>. Passes now: yes | no
+Boundary chosen by build: <interface> (or "none, the ticket named them")
+Acceptance checks: <check>: pass | fail | untested (one per line)
+Checks: <command>: pass | fail | untested (one per line)
+Review: <n> findings. Fixed: <ids>. Won't fix (user agreed): <id>: <why>. Open: <id> (<severity>). Or: not run
+Changed after the review: <short sha> <files> (one per line), and "follow-up review: <n> findings" (or "None")
+Skipped at the user's request: <step>: <what is lost> (or "None")
+Not tested: <behavior or case>: <why> (or "None")
+Design notes: <a shallow module or a missing module boundary outside the ticket, not changed> (or "None")
+Ticket: closed in <path> | open, closes when the pull request merges | open, blocked by <what blocks the close>, edit for the user: <the exact edit>
+```
 
 ## 10. Pull request and next command
 
-If the text after `/build` asks for a pull request, push the branch. Then open the pull request. On GitHub, run:
-
-```bash
-git -C <worktree> push -u origin <branch>
-cd <worktree> && gh pr create --head <branch> --title "<ticket title>" --body "Closes #<ticket number>"
-```
+If the text after `/build` asks for a pull request, push the branch. Then open the pull request. On GitHub, run `git -C <worktree> push -u origin <branch>`, then `cd <worktree> && gh pr create --head <branch> --title "<ticket title>" --body "Closes #<ticket number>"`.
 
 On another host, use its own pull request tool. For a local ticket, name the ticket file in the body in place of `Closes`. Add the pull request link to the report. Never push to `main`. Held by: hooks/guard-git.mjs
 
