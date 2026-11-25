@@ -19,7 +19,7 @@ The name is `peer-review` because Claude Code already includes the commands `/re
 
 ## 1. Get the diff
 
-Run `node .claude/skills/peer-review/scripts/review-range.mjs --stat` from the project root. If the user or the caller named a base, add `--base <ref>` to the command. The script covers commits since the base, staged and unstaged changes, and new files. Read the header to see what the script included.
+Run `node .claude/skills/peer-review/scripts/review-range.mjs --stat` from the project root. If the user or the caller named a base, add `--base <ref>` to the command. The script covers commits since the base, staged and unstaged changes, and new files. It lists lockfiles but leaves their diff out. `--include-lockfiles` shows it. Read the header to see what the script included.
 
 - Exit 0: continue.
 - Exit 3: there is nothing to review. Tell the user, and stop. Do not start reviewers. Do not write a review file.

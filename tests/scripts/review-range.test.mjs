@@ -459,3 +459,40 @@ test("--base <reviewed commit>: only .artifacts/ changed after the review gives 
     assert.doesNotMatch(changed.out, /review\.md/);
   });
 });
+
+// ---- lockfiles: in the file list, out of the diff (e2e run 2 break 9) ----
+
+test("a lockfile is listed in the header, its diff is left out, and --include-lockfiles shows it", () => {
+  withRepo({}, (repo) => {
+    git(repo, "checkout", "-q", "-b", "feature");
+    write(repo, "src/app.mjs", "APP-CHANGE\n");
+    write(repo, "pnpm-lock.yaml", "LOCK-LINE-1\nLOCK-LINE-2\n");
+    write(repo, "web/package-lock.json", "{\"NESTED-LOCK\": 1}\n");
+    git(repo, "add", "src/app.mjs", "pnpm-lock.yaml");
+    git(repo, "commit", "-q", "-m", "change");
+    const r = run([], repo);
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /\+APP-CHANGE/);
+    assert.match(r.out, /# {5}pnpm-lock\.yaml/, "the lockfile is in the file list");
+    assert.match(r.out, /# Diff left out, lockfiles .*: pnpm-lock\.yaml, web\/package-lock\.json/);
+    assert.doesNotMatch(r.out, /LOCK-LINE-1/);
+    assert.doesNotMatch(r.out, /NESTED-LOCK/, "an untracked lockfile in a folder is left out too");
+    const all = run(["--include-lockfiles"], repo);
+    assert.equal(all.code, 0, all.err);
+    assert.match(all.out, /\+LOCK-LINE-1/);
+    assert.match(all.out, /NESTED-LOCK/);
+    assert.doesNotMatch(all.out, /# Diff left out/);
+  });
+});
+
+test("a change to a lockfile alone is still something to review (exit 0, not 3)", () => {
+  withRepo({}, (repo) => {
+    git(repo, "checkout", "-q", "-b", "feature");
+    write(repo, "yarn.lock", "only the lock\n");
+    git(repo, "add", "-A");
+    git(repo, "commit", "-q", "-m", "lock");
+    const r = run(["--stat"], repo);
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /yarn\.lock/);
+  });
+});
