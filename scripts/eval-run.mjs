@@ -38,7 +38,7 @@ export class UsageError extends Error {}
 // 1. Parse an eval file
 // ---------------------------------------------------------------------------
 
-const SETUP_KEYS = ["files", "gitInit", "installStack", "origin", "branch", "githooks", "commit", "uncommitted"];
+const SETUP_KEYS = ["files", "gitInit", "installStack", "origin", "remote", "branch", "githooks", "commit", "uncommitted"];
 const CHECK_KEYS = [
   "setup", "prompt", "allowedTools", "budgetUsd", "assert",
   "tools", "disallowedTools", "turns", "baseline", "set", "permissionMode",
@@ -172,12 +172,27 @@ function validateSetup(s) {
       s[k].forEach((f, i) => {
         if (!f || typeof f.path !== "string" || typeof f.content !== "string") errs.push(`setup.${k}[${i}] needs string "path" and "content"`);
         else if (!isSafeRelPath(f.path)) errs.push(`setup.${k}[${i}].path must be relative and stay inside the repo`);
+        else if (isGuardPath(f.path)) errs.push(`setup.${k}[${i}].path is under .claude/ or .git/. Fix: remove it. An eval can never turn off hooks or permission checks.`);
       });
     }
   }
-  if ((s.branch || s.origin || s.githooks || s.commit || s.uncommitted) && !s.gitInit) errs.push('setup: "branch", "origin", "githooks", "commit" and "uncommitted" need "gitInit": true');
+  if (s.remote !== undefined) {
+    if (!(typeof s.remote === "string" && /^https:\/\/[A-Za-z0-9.-]+(?:\/[A-Za-z0-9._-]+)+$/.test(s.remote))) errs.push("setup.remote must be an https URL, such as https://github.com/acme/widgets.git");
+    else if (s.origin) errs.push('setup: "remote" and "origin" both add the remote origin. Fix: keep one of them.');
+  }
+  if ((s.branch || s.origin || s.remote || s.githooks || s.commit || s.uncommitted) && !s.gitInit) errs.push('setup: "branch", "origin", "remote", "githooks", "commit" and "uncommitted" need "gitInit": true');
   if (s.uncommitted && s.commit === false) errs.push('setup: "uncommitted" needs the setup commit. Fix: remove "commit": false, or put the files in "files".');
   return errs;
+}
+
+/**
+ * True for a path that the agent settings or git read as config: any `.claude` part, or a `.git` part.
+ * `.git/refs/` is allowed, because a ref file holds only a commit or a ref name.
+ */
+export function isGuardPath(p) {
+  const parts = p.split(/[\\/]/).filter((x) => x !== "" && x !== ".").map((x) => x.toLowerCase());
+  if (parts.includes(".claude")) return true;
+  return parts.includes(".git") && !(parts[0] === ".git" && parts[1] === "refs" && parts.lastIndexOf(".git") === 0);
 }
 
 export function isSafeRelPath(p) {
@@ -1136,7 +1151,7 @@ function hasGitAbove(p) {
 
 /**
  * Prepare the repo from the setup block. The steps run in this order: gitInit, installStack, files, commit,
- * origin (a bare repo in the temp folder, with the setup commit pushed to `main`), branch, githooks, uncommitted.
+ * origin (a bare repo in the temp folder, with the setup commit pushed to `main`), remote, branch, githooks, uncommitted.
  * Returns the baseline { head, branches, state } or null without git. `state` is `workTreeState` after the setup.
  */
 export function prepareSetup(setup, layout, { stackRoot = STACK_ROOT } = {}) {
@@ -1147,7 +1162,7 @@ export function prepareSetup(setup, layout, { stackRoot = STACK_ROOT } = {}) {
   };
   const write = (list) => {
     for (const f of list ?? []) {
-      if (!isSafeRelPath(f.path)) throw new Error(`setup file path is not safe: ${f.path}`);
+      if (!isSafeRelPath(f.path) || isGuardPath(f.path)) throw new Error(`setup file path is not safe: ${f.path}`);
       const full = join(layout.repo, f.path);
       mkdirSync(dirname(full), { recursive: true });
       writeFileSync(full, f.content);
@@ -1173,6 +1188,7 @@ export function prepareSetup(setup, layout, { stackRoot = STACK_ROOT } = {}) {
       must(git(layout.repo, ["push", "-q", "-u", "origin", "main"]), "git push origin main");
     }
   }
+  if (s.remote) must(git(layout.repo, ["remote", "add", "origin", s.remote]), "git remote add");
   if (s.branch) must(git(layout.repo, ["switch", "-q", "-c", s.branch]), "git switch");
   if (s.githooks) must(git(layout.repo, ["config", "core.hooksPath", ".githooks"]), "git config");
   write(s.uncommitted);
