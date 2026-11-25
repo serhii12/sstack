@@ -17,7 +17,8 @@
 //   scope       every file that the prototype changes, compared with the base, is inside
 //               `prototypes/<name>/` or is named on the `Host files:` line
 //   merged      the base branch and the current checkout do not contain the commits of the
-//               prototype branch
+//               prototype branch. The check uses the oldest commit of the branch that touches
+//               `prototypes/<name>/`, so a later commit on the branch cannot hide a merge
 //   base-clean  the base branch and the current checkout have no `prototypes/<name>/` folder,
 //               committed or not
 //
@@ -128,16 +129,18 @@ export function check(name, { cwd = process.cwd(), base: baseArg } = {}) {
   }
 
   // Where the prototype must not appear: the base, and the checkout that the user is on.
-  const targets = [{ label: `The base \`${base}\``, ref: base }];
+  // The full ref, so that a tag with the name of the base cannot stand in for the branch.
+  const baseRef = `refs/heads/${base}`;
+  const targets = [{ label: `The base \`${base}\``, ref: baseRef }];
   if (!onBranch && current !== base) {
     const head = git(top, ["rev-parse", "--verify", "--quiet", "HEAD"], { allowFail: true });
-    if (head.status === 0 && head.stdout.trim() !== git(top, ["rev-parse", base]).stdout.trim()) {
+    if (head.status === 0 && head.stdout.trim() !== git(top, ["rev-parse", baseRef]).stdout.trim()) {
       targets.push({ label: `The checkout of ${current ? `\`${current}\`` : "a detached HEAD"}`, ref: "HEAD" });
     }
   }
 
   if (branchExists(top, branch)) {
-    const mb = git(top, ["merge-base", base, branch]).stdout.trim();
+    const mb = git(top, ["merge-base", baseRef, branch]).stdout.trim();
     let changed;
     if (onBranch) {
       changed = new Set([
@@ -153,10 +156,10 @@ export function check(name, { cwd = process.cwd(), base: baseArg } = {}) {
       add("scope", `\`${f}\` changed outside \`${dir}\` and is not on the \`Host files:\` line`, `move it into \`${dir}\`, undo the change, or add it to \`Host files:\` if the prototype must edit that page.`);
     }
 
-    const tipHasRecord = git(top, ["cat-file", "-e", `${branch}:${recordPath}`], { allowFail: true }).status === 0;
+    const first = git(top, ["rev-list", "--reverse", branch, "--", dir]).stdout.split("\n")[0];
     for (const t of targets) {
-      const ancestor = git(top, ["merge-base", "--is-ancestor", branch, t.ref], { allowFail: true }).status === 0;
-      if (tipHasRecord && ancestor) {
+      const ancestor = first !== "" && git(top, ["merge-base", "--is-ancestor", first, t.ref], { allowFail: true }).status === 0;
+      if (ancestor) {
         add("merged", `${t.label} contains the commits of \`${branch}\``, `revert the merge in a pull request. The prototype branch is never merged. To keep its tested logic, copy that module into a task branch with \`/build\`, with tests.`);
       }
     }

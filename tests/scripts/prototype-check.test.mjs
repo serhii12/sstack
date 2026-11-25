@@ -236,6 +236,29 @@ test("base-clean: prototype files left in the main checkout fail", () => {
   });
 });
 
+test("merged: a merge that drops the folder, then a new commit on the branch, still fails", () => {
+  inRepo({}, (root) => {
+    sh(root, "switch", "-q", "main");
+    sh(root, "merge", "-q", "--no-ff", "--no-commit", "prototype/refund-states");
+    sh(root, "rm", "-r", "-q", "-f", "prototypes/refund-states");
+    sh(root, "commit", "-q", "-m", "merge, keep the rest");
+    sh(root, "switch", "-q", "prototype/refund-states");
+    write(root, "prototypes/refund-states/PROTOTYPE.md", RECORD({ verdict: "accepted" }));
+    sh(root, "commit", "-q", "-am", "verdict");
+    sh(root, "switch", "-q", "main");
+    assert.deepEqual(rules(check("refund-states", { cwd: root })), ["merged"]);
+  });
+});
+
+test("merged: a tag with the name of the base does not hide a merge into the base", () => {
+  inRepo({}, (root) => {
+    sh(root, "switch", "-q", "main");
+    sh(root, "tag", "main", "HEAD");
+    sh(root, "merge", "-q", "--no-ff", "-m", "merge prototype", "prototype/refund-states");
+    assert.deepEqual(rules(check("refund-states", { cwd: root })), ["base-clean", "merged"]);
+  });
+});
+
 test("merged: a new prototype branch with no commits is not merged", () => {
   inRepo({ commitPrototype: false }, (root) => {
     assert.ok(!rules(check("refund-states", { cwd: root })).includes("merged"));
