@@ -436,10 +436,7 @@ export const FORBIDDEN_FLAGS = [
  */
 export function assertSafeArgs(args) {
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === "-p") {
-      i++; // the prompt is free text
-      continue;
-    }
+    if (args[i] === "--") break; // the prompt is free text after `--`, and the CLI reads no flag there
     const a = String(args[i]);
     const flag = a.split("=")[0];
     if (FORBIDDEN_FLAGS.includes(a) || FORBIDDEN_FLAGS.includes(flag)) {
@@ -462,7 +459,7 @@ export function buildCommand({
   tools, disallowedTools, permissionMode, resumeId, persistSession = false, baselineSkill, extraArgs = [],
 }) {
   const args = [
-    "-p", prompt,
+    "-p",
     "--setting-sources", "project",
     "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
     "--output-format", "stream-json", "--verbose", "--include-hook-events",
@@ -478,6 +475,8 @@ export function buildCommand({
   if (permissionMode) args.push("--permission-mode", permissionMode);
   if (baselineSkill) args.push("--settings", baselineSettings(baselineSkill));
   args.push(...extraArgs);
+  // The prompt goes last, after `--`, so a prompt that starts with `-` is not read as a flag.
+  args.push("--", prompt);
   assertSafeArgs(args);
   return { cmd: claudePath, args };
 }
