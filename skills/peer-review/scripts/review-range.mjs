@@ -13,10 +13,14 @@
 // exists and shares history with HEAD. The diff starts at the merge base of that
 // ref and HEAD, so changes that landed on the base after you branched stay out.
 // Files under `.artifacts/` are left out. They hold review notes, not code.
+// Lockfiles stay in the file lists, but their diff is left out. A package manager writes them, and one
+// lockfile can be most of the diff (e2e run 2: 111 KB of a 141 KB diff, and a reviewer cut it with
+// `head -c`). `--include-lockfiles` shows them.
 //
-// Usage: node .claude/skills/peer-review/scripts/review-range.mjs [--base <ref>] [--stat] [--json] [repo]
+// Usage: node .claude/skills/peer-review/scripts/review-range.mjs [--base <ref>] [--stat] [--json] [--include-lockfiles] [repo]
 //   --stat  print only the header (the file list), without the diff
 //   --json  print machine-readable output
+//   --include-lockfiles  show the diff of lockfiles too
 // Exit 0 a diff was printed.
 // Exit 3 nothing to review. An empty review must fail loudly.
 // Exit 2 usage error, not a git repo, no commits, or no base found.
@@ -27,9 +31,13 @@ import { realpathSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-const USAGE = "Usage: node .claude/skills/peer-review/scripts/review-range.mjs [--base <ref>] [--stat] [--json] [repo]";
+const USAGE = "Usage: node .claude/skills/peer-review/scripts/review-range.mjs [--base <ref>] [--stat] [--json] [--include-lockfiles] [repo]";
 const DEFAULT_BASES = ["origin/main", "main", "master"];
 const EXCLUDE = ":(exclude).artifacts";
+// Lockfiles that package managers write. Matched by file name, in any folder.
+export const LOCKFILES = ["package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "yarn.lock", "bun.lock", "bun.lockb", "Cargo.lock", "poetry.lock", "uv.lock", "Gemfile.lock", "composer.lock", "go.sum"];
+const LOCK_EXCLUDES = LOCKFILES.map((f) => `:(exclude,glob)**/${f}`);
+const isLockfile = (p) => LOCKFILES.includes(p.split("/").pop());
 
 export class UsageError extends Error {}
 export class NothingToReview extends Error {}
@@ -69,7 +77,7 @@ function findBase(top, wanted) {
 }
 
 /** Collect what to review. Throws UsageError or NothingToReview. */
-export function collect(repoArg, baseArg, { withDiff = true } = {}) {
+export function collect(repoArg, baseArg, { withDiff = true, includeLockfiles = false } = {}) {
   const dir = resolve(repoArg ?? ".");
   const top = git(dir, ["rev-parse", "--show-toplevel"]);
   if (top.status !== 0) {
@@ -91,18 +99,20 @@ export function collect(repoArg, baseArg, { withDiff = true } = {}) {
   if (u.status !== 0) throw new UsageError(`git ls-files failed (${u.err}). Fix: run \`git status\` in the repo.`);
   const untracked = names(u.out).filter((p) => p !== ".artifacts" && !p.startsWith(".artifacts/"));
 
-  const result = { repo: root, base: { ref: base.ref, mergeBase: base.mergeBase }, head: headSha, committed, staged, unstaged, untracked };
+  const lockfiles = includeLockfiles ? [] : [...new Set([...changed, ...untracked].filter(isLockfile))].sort();
+  const result = { repo: root, base: { ref: base.ref, mergeBase: base.mergeBase }, head: headSha, committed, staged, unstaged, untracked, lockfilesLeftOut: lockfiles };
   if (changed.length + untracked.length === 0) {
     throw Object.assign(new NothingToReview(`nothing to review: no net change since ${base.ref} (merge base ${base.mergeBase.slice(0, 7)}) in commits, the index or the working tree, and no untracked files. Fix: make the change first, or pass an older \`--base <ref>\`.`), { result });
   }
 
   if (withDiff) {
     // Tracked files: the merge base against the working tree covers commits, staged and unstaged work in one diff.
-    const d = git(root, ["diff", "--no-ext-diff", "--no-textconv", "--no-color", "--src-prefix=a/", "--dst-prefix=b/", base.mergeBase, "--", ".", EXCLUDE]);
+    const d = git(root, ["diff", "--no-ext-diff", "--no-textconv", "--no-color", "--src-prefix=a/", "--dst-prefix=b/", base.mergeBase, "--", ".", EXCLUDE, ...(includeLockfiles ? [] : LOCK_EXCLUDES)]);
     if (d.status !== 0) throw new UsageError(`git diff failed (${d.err}). Fix: run \`git status\` in the repo and fix what it reports.`);
     let diff = d.out;
     for (const f of untracked) {
       if (f.endsWith("/")) continue; // a nested repo: git lists the folder, not its files
+      if (!includeLockfiles && isLockfile(f)) continue;
       const n = git(root, ["diff", "--no-index", "--no-ext-diff", "--no-textconv", "--no-color", "--src-prefix=a/", "--dst-prefix=b/", "--", "/dev/null", f]);
       if (n.status !== 0 && n.status !== 1) throw new UsageError(`git diff failed on untracked file \`${f}\` (${n.err}). Fix: check the file can be read.`);
       diff += n.out;
@@ -123,15 +133,17 @@ export function header(r) {
     for (const f of list) lines.push(`#     ${f}`);
   }
   lines.push("# Left out: .artifacts/");
+  if (r.lockfilesLeftOut?.length) lines.push(`# Diff left out, lockfiles (run with --include-lockfiles to see them): ${r.lockfilesLeftOut.join(", ")}`);
   return lines.join("\n") + "\n";
 }
 
 function parseArgs(argv) {
-  const o = { json: false, stat: false, base: undefined, repo: undefined };
+  const o = { json: false, stat: false, base: undefined, repo: undefined, includeLockfiles: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--json") o.json = true;
     else if (a === "--stat") o.stat = true;
+    else if (a === "--include-lockfiles") o.includeLockfiles = true;
     else if (a === "--base") {
       const v = argv[++i];
       if (v === undefined || v.startsWith("-") || v === "") throw new UsageError("`--base` needs a ref. Fix: write `--base main`.");
@@ -147,7 +159,7 @@ export function main(argv, out = process.stdout, err = process.stderr) {
   let o;
   try {
     o = parseArgs(argv);
-    const r = collect(o.repo, o.base, { withDiff: !o.stat });
+    const r = collect(o.repo, o.base, { withDiff: !o.stat, includeLockfiles: o.includeLockfiles });
     if (o.json) out.write(JSON.stringify({ ok: true, ...r }, null, 2) + "\n");
     else out.write(header(r) + (o.stat ? "" : "\n" + r.diff));
     return 0;
