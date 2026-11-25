@@ -136,7 +136,7 @@ The installer does these steps:
 - It creates `CLAUDE.md` as a symlink to `AGENTS.md`.
 - It creates a starter `.stack/check` and a starter `docs/agents/enforcement.md`.
 - It appends rules to `.gitignore` that keep evidence media out of commits, such as `.artifacts/*/evidence/**/*.png`. It adds only the rules that are missing.
-- It switches on the git hook with `git config core.hooksPath .githooks`. If `core.hooksPath` already has a value, the installer keeps it and prints the command to run by hand. With `core.hooksPath` set, git stops running the hooks in `.git/hooks`. So if `.git/hooks` has a hook that is not a `.sample` file, the installer names it and does not set `core.hooksPath`. To set it anyway, run the installer again with `--replace-git-hooks`.
+- It switches on the git hook with `git config core.hooksPath .githooks`. If `core.hooksPath` already has a value, the installer keeps it and prints the command to run by hand. With `core.hooksPath` set, git stops running the hooks in `.git/hooks`. So if `.git/hooks` has a hook that is not a `.sample` file, the installer names it and does not set `core.hooksPath`. To set it anyway, run the installer again with `--replace-git-hooks`. In a linked worktree, the installer does not set `core.hooksPath`, because git shares that setting with the main checkout.
 
 The installer never overwrites a file. If a file already exists, the installer skips it and says so. If the project already has `.claude/settings.json`, the installer prints what to add by hand.
 
