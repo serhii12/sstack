@@ -1,0 +1,17 @@
+{
+  "attack": "A lockfile is renamed to a docs path. The default branch has no config, so the default config applies.",
+  "patch": {
+    "files": [
+      {
+        "filename": "docs/old-lock.md",
+        "previous_filename": "package-lock.json",
+        "status": "renamed"
+      }
+    ],
+    "pr": {
+      "changed_files": 1
+    },
+    "config": null
+  },
+  "expect": 21
+}

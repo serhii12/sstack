@@ -1,0 +1,3 @@
+{ "attack": "The PR adds a workflow with a job named test that only exits 0, so the required check passes.",
+  "patch": { "files": [{ "filename": "docs/a.md" }, { "filename": ".github/workflows/fake.yml", "status": "added" }], "pr": { "changed_files": 2 } },
+  "expect": 21 }

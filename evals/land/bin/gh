@@ -1,0 +1,346 @@
+#!/usr/bin/env node
+// Fake `gh` for the land evals and tests. It never touches the network.
+//
+// Put this folder first on PATH. The fake reads a scenario from <git common dir>/fake-gh/scenario.json
+// of the repo in the current folder, answers the gh commands that the land skill and its scripts use,
+// and records every call:
+//   fake-gh/calls.jsonl        one JSON line per call: argv and cwd
+//   fake-gh/merge-calls.log    one line per merge attempt (gh pr merge, or PUT .../merge)
+//   fake-gh/admin-flag.log     one line per call that has --admin anywhere in it
+//   fake-gh/approve-calls.log  one line per gh pr review --approve
+//   fake-gh/pr.json            the pull request after gh pr create
+//   fake-gh/merged.json        the merge after a merge call
+//   fake-gh/posted-comments.jsonl  one JSON line per comment that a call posted (gh api POST, gh pr comment)
+//   fake-gh/deleted-refs.log   one line per branch that a call deleted
+// The head sha of the PR is the branch on the remote `origin` (a local bare repo in an eval).
+// The changed files come from git: merge-base(default branch, head)..head.
+// Anything it does not know exits 1 with "fake gh: not supported", and the call is still recorded.
+
+import { execFileSync } from "node:child_process";
+import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+
+const argv = process.argv.slice(2);
+
+function sh(args, opts = {}) {
+  try {
+    return execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], ...opts }).trim();
+  } catch {
+    return null;
+  }
+}
+
+function die(message, code = 1) {
+  process.stderr.write(`${message}\n`);
+  process.exit(code);
+}
+
+const common = sh(["rev-parse", "--path-format=absolute", "--git-common-dir"]);
+if (!common) die("fake gh: not in a git repo, so there is no scenario");
+const dir = join(common, "fake-gh");
+const scenarioFile = join(dir, "scenario.json");
+if (!existsSync(scenarioFile)) die(`fake gh: no scenario at ${scenarioFile}`);
+const S = JSON.parse(readFileSync(scenarioFile, "utf8"));
+
+appendFileSync(join(dir, "calls.jsonl"), JSON.stringify({ argv, cwd: process.cwd() }) + "\n");
+if (argv.some((a) => /(^|[\s=])--admin\b/.test(a))) appendFileSync(join(dir, "admin-flag.log"), argv.join(" ") + "\n");
+
+const owner = S.owner ?? "acme";
+const name = S.name ?? "cart";
+const full = `${owner}/${name}`;
+const number = S.number ?? 7;
+const defaultBranch = S.defaultBranch ?? "main";
+const viewer = S.viewer ?? { login: "agent-bot", id: 100, type: "User" };
+const author = S.author ?? viewer;
+const url = `https://github.com/${full}/pull/${number}`;
+const readJson = (f) => (existsSync(join(dir, f)) ? JSON.parse(readFileSync(join(dir, f), "utf8")) : null);
+const writeJson = (f, v) => writeFileSync(join(dir, f), JSON.stringify(v, null, 2));
+const out = (v) => process.stdout.write((typeof v === "string" ? v : JSON.stringify(v)) + "\n");
+
+function flag(names, args = argv) {
+  for (let i = 0; i < args.length; i++) {
+    for (const n of names) {
+      if (args[i] === n) return args[i + 1];
+      if (args[i].startsWith(`${n}=`)) return args[i].slice(n.length + 1);
+    }
+  }
+  return undefined;
+}
+
+function headSha(ref) {
+  const remote = sh(["ls-remote", "origin", `refs/heads/${ref}`]);
+  const sha = remote ? remote.split(/\s+/)[0] : "";
+  return sha || sh(["rev-parse", "--verify", "--quiet", `refs/heads/${ref}`]) || "0".repeat(40);
+}
+
+function prObject() {
+  const created = readJson("pr.json");
+  if (!created) return null;
+  const merged = readJson("merged.json");
+  const sha = merged?.headSha ?? headSha(created.head);
+  const files = changedFiles(sha);
+  return {
+    number, html_url: url, url: `https://api.github.com/repos/${full}/pulls/${number}`,
+    state: merged ? "closed" : "open", merged: Boolean(merged), merge_commit_sha: merged?.sha ?? null,
+    draft: Boolean(created.draft ?? S.draft), mergeable: S.mergeable ?? true, mergeable_state: S.mergeable_state ?? "clean",
+    title: created.title, body: created.body, user: author, auto_merge: created.auto ? { merge_method: "squash" } : null,
+    head: { ref: created.head, sha, repo: { full_name: full } }, base: { ref: created.base, repo: { full_name: full } },
+    changed_files: files.length, commits: prCommits(sha).length,
+  };
+}
+
+function changedFiles(sha) {
+  const base = sh(["merge-base", defaultBranch, sha]);
+  if (!base) return [];
+  const raw = sh(["diff", "--name-status", "-z", "-M", base, sha, "--"]) ?? "";
+  const parts = raw.split("\0");
+  const files = [];
+  for (let i = 0; i < parts.length; ) {
+    const st = parts[i];
+    if (!st) {
+      i++;
+      continue;
+    }
+    if (/^R/.test(st)) {
+      files.push({ filename: parts[i + 2], previous_filename: parts[i + 1], status: "renamed" });
+      i += 3;
+    } else {
+      files.push({ filename: parts[i + 1], status: st.startsWith("A") ? "added" : st.startsWith("D") ? "removed" : "modified" });
+      i += 2;
+    }
+  }
+  return files;
+}
+
+function prCommits(sha) {
+  const base = sh(["merge-base", defaultBranch, sha]);
+  if (!base) return [];
+  const raw = sh(["log", "--format=%H%x00%B%x01", `${base}..${sha}`]) ?? "";
+  const who = S.commitAuthor ?? author;
+  return raw.split("\u0001").map((x) => x.trim()).filter(Boolean).reverse().map((x) => {
+    const [h, message] = x.split("\0");
+    return { sha: h, commit: { message: (message ?? "").trim() }, author: { login: who.login, id: who.id, type: who.type ?? "User" }, committer: { login: who.login, id: who.id, type: who.type ?? "User" } };
+  });
+}
+
+function postedComments() {
+  const f = join(dir, "posted-comments.jsonl");
+  return existsSync(f) ? readFileSync(f, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)) : [];
+}
+
+function page(items, query) {
+  const p = Number(query.get("page") ?? 1);
+  const per = Number(query.get("per_page") ?? 30);
+  return items.slice((p - 1) * per, p * per);
+}
+
+function needPr() {
+  const pr = prObject();
+  if (!pr) die("gh: Not Found (HTTP 404)");
+  return pr;
+}
+
+function doMerge(how) {
+  const pr = needPr();
+  appendFileSync(join(dir, "merge-calls.log"), `${how}\n`);
+  if (S.mergeFails) die("gh: Pull Request is not mergeable (HTTP 405)");
+  writeJson("merged.json", { sha: "f".repeat(40), headSha: pr.head.sha });
+  return pr;
+}
+
+function checkRuns(sha) {
+  const at = S.checksOnOldCommit ? "1".repeat(40) : sha;
+  return (S.checks ?? []).map((c, i) => ({
+    id: 1000 + i, name: c.name, head_sha: c.head_sha ?? at, status: c.status ?? "completed",
+    conclusion: (c.status ?? "completed") === "completed" ? (c.conclusion ?? "success") : null,
+    app: { slug: c.app ?? "github-actions", id: c.appId ?? 15368, name: c.app ?? "GitHub Actions" },
+    html_url: `https://github.com/${full}/actions/runs/${9000 + i}/job/${1000 + i}`,
+    output: { title: c.title ?? null, summary: c.summary ?? null },
+  }));
+}
+
+function api() {
+  const method = (flag(["--method", "-X"]) ?? "GET").toUpperCase();
+  const skip = new Set(["--method", "-X", "-H", "--header", "-f", "-F", "--field", "--raw-field", "--jq", "-q", "--input", "--template", "-t"]);
+  const fields = {};
+  let path;
+  for (let i = 1; i < argv.length; i++) {
+    const a = argv[i];
+    if (skip.has(a)) {
+      if (["-f", "-F", "--field", "--raw-field"].includes(a)) {
+        const [k, ...v] = argv[i + 1].split("=");
+        fields[k] = v.join("=");
+      }
+      i++;
+      continue;
+    }
+    if (a.startsWith("-")) continue;
+    path = a;
+  }
+  if (!path) die("fake gh: api needs a path");
+  if (path === "graphql") {
+    const threads = (S.threads ?? []).map((t, i) => ({ id: `T${i}`, isResolved: Boolean(t.isResolved), isOutdated: Boolean(t.isOutdated), path: t.path ?? "src/a.mjs", line: t.line ?? 1 }));
+    return out({ data: { repository: { pullRequest: { reviewThreads: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: threads } } } } });
+  }
+  const u = new URL(path.replace(/^\//, ""), "https://x.invalid/");
+  const p = u.pathname.replace(/^\//, "");
+  const q = u.searchParams;
+  const base = `repos/${full}`;
+  if (p === "user") return out(viewer);
+  if (p === base && method === "GET") {
+    const al = S.allow ?? {};
+    return out({ full_name: full, name, owner: { login: owner }, default_branch: defaultBranch, allow_squash_merge: al.squash ?? true, allow_merge_commit: al.merge ?? false, allow_rebase_merge: al.rebase ?? false });
+  }
+  if (p.startsWith(`${base}/contents/`)) {
+    const file = decodeURIComponent(p.slice(`${base}/contents/`.length));
+    const ref = q.get("ref") ?? defaultBranch;
+    const text = sh(["show", `${ref}:${file}`]);
+    if (text === null) die("gh: Not Found (HTTP 404)");
+    return out({ type: "file", encoding: "base64", path: file, content: Buffer.from(text + "\n").toString("base64") });
+  }
+  if (p === `${base}/pulls/${number}` && method === "GET") return out(needPr());
+  if (p === `${base}/pulls/${number}/files`) return out(page(changedFiles(needPr().head.sha), q));
+  if (p === `${base}/pulls/${number}/merge` && method === "PUT") {
+    const pr = needPr();
+    if (fields.sha && fields.sha !== pr.head.sha) die("gh: Head branch was modified. Review and try the merge again. (HTTP 409)");
+    const m = doMerge(`PUT ${p} merge_method=${fields.merge_method ?? ""} sha=${fields.sha ?? ""}`);
+    return out({ sha: "f".repeat(40), merged: true, message: `Pull Request #${m.number} successfully merged` });
+  }
+  if (p === `${base}/pulls/${number}/reviews`) {
+    const pr = needPr();
+    const list = (S.reviews ?? []).map((r, i) => ({
+      id: 500 + i, user: r.user, state: r.state, body: r.body ?? "", author_association: r.author_association ?? "MEMBER",
+      commit_id: r.onHead === false ? "2".repeat(40) : pr.head.sha, submitted_at: r.submitted_at ?? `2026-11-25T10:0${i % 10}:00Z`, html_url: `${url}#review-${500 + i}`,
+    }));
+    return out(page(list, q));
+  }
+  if (p === `${base}/issues/${number}/comments` && method === "POST") {
+    needPr();
+    if (S.commentFails) die("gh: Resource not accessible by personal access token (HTTP 403)");
+    const id = 800 + postedComments().length;
+    appendFileSync(join(dir, "posted-comments.jsonl"), JSON.stringify({ id, body: fields.body ?? "", merged: Boolean(readJson("merged.json")) }) + "\n");
+    return out({ id, user: viewer, body: fields.body ?? "", author_association: "OWNER", html_url: `${url}#issuecomment-${id}` });
+  }
+  if (p === `${base}/issues/${number}/comments`) {
+    needPr();
+    const theirs = (S.comments ?? []).map((c, i) => ({ id: 700 + i, user: c.user, body: c.body ?? "", author_association: c.author_association ?? "NONE", html_url: `${url}#issuecomment-${700 + i}` }));
+    const mine = postedComments().map((c) => ({ id: c.id, user: viewer, body: c.body, author_association: "OWNER", html_url: `${url}#issuecomment-${c.id}` }));
+    return out(page([...theirs, ...mine], q));
+  }
+  if (p === `${base}/pulls/${number}/commits`) return out(page(prCommits(needPr().head.sha), q));
+  const perm = new RegExp(`^${base}/collaborators/([^/]+)/permission$`).exec(p);
+  if (perm) {
+    const login = decodeURIComponent(perm[1]);
+    const level = (S.permissions ?? {})[login.toLowerCase()];
+    if (!level) die("gh: Not Found (HTTP 404)");
+    const legacy = { admin: "admin", maintain: "write", write: "write", triage: "read", read: "read" }[level] ?? "none";
+    return out({ permission: legacy, role_name: level, user: { login } });
+  }
+  const st = new RegExp(`^${base}/commits/([0-9a-f]{40})/status$`).exec(p);
+  if (st) {
+    const list = (S.statuses ?? []).map((x, i) => ({ id: 300 + i, context: x.context, state: x.state ?? "success", description: x.description ?? null }));
+    const state = list.length === 0 || list.some((x) => x.state === "pending") ? "pending" : list.some((x) => x.state !== "success") ? "failure" : "success";
+    return out({ state, statuses: page(list, q), sha: st[1], total_count: list.length });
+  }
+  if (p === `${base}/pulls/${number}/comments`) {
+    needPr();
+    return out(page((S.reviewComments ?? []).map((c, i) => ({ id: 900 + i, user: c.user, body: c.body ?? "", path: c.path ?? "src/a.mjs", html_url: `${url}#discussion_r${900 + i}` })), q));
+  }
+  const cr = new RegExp(`^${base}/commits/([0-9a-f]{40})/check-runs$`).exec(p);
+  if (cr) {
+    const runs = checkRuns(cr[1]);
+    return out({ total_count: runs.length, check_runs: page(runs, q) });
+  }
+  if (p.startsWith(`${base}/git/refs/heads/`) && method === "DELETE") {
+    appendFileSync(join(dir, "deleted-refs.log"), `${decodeURIComponent(p.slice(`${base}/git/refs/heads/`.length))}\n`);
+    return out("");
+  }
+  if (p.startsWith(`${base}/git/ref/heads/`) && method === "GET") {
+    const ref = decodeURIComponent(p.slice(`${base}/git/ref/heads/`.length));
+    const gone = existsSync(join(dir, "deleted-refs.log")) && readFileSync(join(dir, "deleted-refs.log"), "utf8").split("\n").includes(ref);
+    if (gone) die("gh: Not Found (HTTP 404)");
+    return out({ ref: `refs/heads/${ref}`, object: { type: "commit", sha: headSha(ref) } });
+  }
+  die(`fake gh: not supported: api ${method} ${p}`);
+}
+
+function prCmd() {
+  const sub = argv[1];
+  if (sub === "create") {
+    if (readJson("pr.json")) die(`a pull request for branch already exists:\n${url}`);
+    const head = flag(["--head", "-H"]) ?? sh(["symbolic-ref", "--short", "HEAD"]);
+    const bodyFile = flag(["--body-file", "-F"]);
+    const body = bodyFile ? readFileSync(bodyFile === "-" ? 0 : bodyFile, "utf8") : flag(["--body", "-b"]) ?? "";
+    writeJson("pr.json", { head, base: flag(["--base", "-B"]) ?? defaultBranch, title: flag(["--title", "-t"]) ?? "", body, draft: argv.includes("--draft") || argv.includes("-d") });
+    return out(url);
+  }
+  if (sub === "list") {
+    const pr = prObject();
+    const want = flag(["--head", "-H"]);
+    const list = pr && pr.state === "open" && (!want || want === pr.head.ref) ? [{ number, url, headRefName: pr.head.ref, state: "OPEN", isDraft: pr.draft }] : [];
+    return out(list);
+  }
+  if (sub === "view") {
+    const pr = needPr();
+    return out({ number, url, state: pr.merged ? "MERGED" : pr.state.toUpperCase(), isDraft: pr.draft, headRefName: pr.head.ref, headRefOid: pr.head.sha, baseRefName: pr.base.ref, title: pr.title, body: pr.body, autoMergeRequest: pr.auto_merge });
+  }
+  if (sub === "merge") {
+    if (argv.includes("--disable-auto")) {
+      const c = readJson("pr.json");
+      if (c) writeJson("pr.json", { ...c, auto: false });
+      return out(`Auto-merge disabled for ${url}`);
+    }
+    if (argv.includes("--auto")) {
+      const c = needPr() && readJson("pr.json");
+      writeJson("pr.json", { ...c, auto: true });
+      return out(`Auto-merge enabled for ${url}`);
+    }
+    doMerge(`pr merge ${argv.slice(2).join(" ")}`);
+    return out(`Merged pull request #${number}`);
+  }
+  if (sub === "review") {
+    if (argv.includes("--approve") || argv.includes("-a")) appendFileSync(join(dir, "approve-calls.log"), argv.join(" ") + "\n");
+    return out(`Reviewed pull request #${number}`);
+  }
+  if (sub === "checks") {
+    const pr = needPr();
+    const runs = checkRuns(pr.head.sha);
+    if (argv.includes("--json")) return out(runs.map((r) => ({ name: r.name, state: r.conclusion ?? r.status, bucket: r.conclusion === "success" ? "pass" : r.conclusion ? "fail" : "pending", link: r.html_url })));
+    return out(runs.map((r) => `${r.name}\t${r.conclusion ?? r.status}\t${r.html_url}`).join("\n") || "no checks reported");
+  }
+  if (sub === "edit") {
+    const c = needPr() && readJson("pr.json");
+    const bodyFile = flag(["--body-file", "-F"]);
+    const body = bodyFile ? readFileSync(bodyFile === "-" ? 0 : bodyFile, "utf8") : flag(["--body", "-b"]);
+    writeJson("pr.json", { ...c, ...(body !== undefined ? { body } : {}), ...(flag(["--title", "-t"]) !== undefined ? { title: flag(["--title", "-t"]) } : {}) });
+    return out(url);
+  }
+  if (sub === "comment") {
+    needPr();
+    const bodyFile = flag(["--body-file", "-F"]);
+    const body = bodyFile ? readFileSync(bodyFile === "-" ? 0 : bodyFile, "utf8") : flag(["--body", "-b"]) ?? "";
+    const id = 800 + postedComments().length;
+    appendFileSync(join(dir, "posted-comments.jsonl"), JSON.stringify({ id, body, merged: Boolean(readJson("merged.json")) }) + "\n");
+    return out(`${url}#issuecomment-${id}`);
+  }
+  if (sub === "ready") {
+    needPr();
+    return out(url);
+  }
+  die(`fake gh: not supported: pr ${sub ?? ""}`);
+}
+
+const cmd = argv[0];
+if (cmd === "--version" || cmd === "version") out("gh version 2.105.0 (fake, no network)");
+else if (cmd === "auth" && argv[1] === "status") out(`github.com\n  Logged in to github.com account ${viewer.login} (fake)`);
+else if (cmd === "repo" && argv[1] === "view") out({ nameWithOwner: full, name, owner: { login: owner }, url: `https://github.com/${full}`, defaultBranchRef: { name: defaultBranch } });
+else if (cmd === "pr") prCmd();
+else if (cmd === "run" && argv[1] === "view") {
+  // gh run view <run id> [--log-failed]: the log text of the failed check with that run id.
+  const id = Number(argv.find((a) => /^\d+$/.test(a)));
+  const c = (S.checks ?? [])[id - 9000];
+  if (!c) die("gh: Not Found (HTTP 404)");
+  out(`${c.name}\tRun tests\t${c.summary ?? `the job ended ${c.conclusion ?? "success"}`}`);
+}
+else if (cmd === "api") api();
+else die(`fake gh: not supported: ${argv.join(" ")}`);

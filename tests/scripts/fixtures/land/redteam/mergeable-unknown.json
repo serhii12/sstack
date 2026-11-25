@@ -1,0 +1,9 @@
+{
+  "attack": "GitHub has not computed mergeability yet.",
+  "patch": {
+    "pr": {
+      "mergeable": null
+    }
+  },
+  "expect": 12
+}

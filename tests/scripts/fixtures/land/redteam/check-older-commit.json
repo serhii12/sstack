@@ -1,0 +1,19 @@
+{
+  "attack": "A passing check on an older commit.",
+  "patch": {
+    "checkRuns": [
+      {
+        "id": 11,
+        "name": "test",
+        "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "status": "completed",
+        "conclusion": "success",
+        "app": {
+          "slug": "github-actions",
+          "id": 15368
+        }
+      }
+    ]
+  },
+  "expect": 15
+}

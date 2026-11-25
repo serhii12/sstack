@@ -1,0 +1,11 @@
+{
+  "attack": "The PR targets a release branch with a weaker config.",
+  "patch": {
+    "pr": {
+      "base": {
+        "ref": "release"
+      }
+    }
+  },
+  "expect": 13
+}

@@ -1,0 +1,19 @@
+{
+  "attack": "A required check ends neutral.",
+  "patch": {
+    "checkRuns": [
+      {
+        "id": 11,
+        "name": "test",
+        "head_sha": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "status": "completed",
+        "conclusion": "neutral",
+        "app": {
+          "slug": "github-actions",
+          "id": 15368
+        }
+      }
+    ]
+  },
+  "expect": 17
+}

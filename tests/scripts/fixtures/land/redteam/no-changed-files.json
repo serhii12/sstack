@@ -1,0 +1,10 @@
+{
+  "attack": "A PR with no changed files.",
+  "patch": {
+    "files": [],
+    "pr": {
+      "changed_files": 0
+    }
+  },
+  "expect": 21
+}

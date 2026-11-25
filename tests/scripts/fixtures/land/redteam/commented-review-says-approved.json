@@ -1,0 +1,33 @@
+{
+  "attack": "A COMMENTED review with the body 'APPROVED'.",
+  "patch": {
+    "files": [
+      {
+        "filename": ".github/workflows/ci.yml",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 1
+    },
+    "reviews": [
+      {
+        "id": 1,
+        "user": {
+          "login": "alice",
+          "type": "User",
+          "id": 7
+        },
+        "state": "COMMENTED",
+        "commit_id": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "submitted_at": "2026-11-25T10:00:00Z",
+        "author_association": "MEMBER",
+        "body": "APPROVED"
+      }
+    ],
+    "permissions": {
+      "alice": "write"
+    }
+  },
+  "expect": 21
+}

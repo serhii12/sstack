@@ -1,0 +1,7 @@
+{
+  "attack": "No check run at all on the head.",
+  "patch": {
+    "checkRuns": []
+  },
+  "expect": 15
+}

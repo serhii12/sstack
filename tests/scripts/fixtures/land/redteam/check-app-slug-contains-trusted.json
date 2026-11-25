@@ -1,0 +1,19 @@
+{
+  "attack": "An app whose slug contains the trusted slug.",
+  "patch": {
+    "checkRuns": [
+      {
+        "id": 11,
+        "name": "test",
+        "head_sha": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "status": "completed",
+        "conclusion": "success",
+        "app": {
+          "slug": "github-actions-fake",
+          "id": 2
+        }
+      }
+    ]
+  },
+  "expect": 15
+}

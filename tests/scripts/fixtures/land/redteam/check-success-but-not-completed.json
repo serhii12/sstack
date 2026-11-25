@@ -1,0 +1,19 @@
+{
+  "attack": "A run says conclusion success but status in_progress.",
+  "patch": {
+    "checkRuns": [
+      {
+        "id": 11,
+        "name": "test",
+        "head_sha": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "status": "in_progress",
+        "conclusion": "success",
+        "app": {
+          "slug": "github-actions",
+          "id": 15368
+        }
+      }
+    ]
+  },
+  "expect": 16
+}

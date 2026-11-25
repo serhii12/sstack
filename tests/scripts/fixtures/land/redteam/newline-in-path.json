@@ -1,0 +1,3 @@
+{ "attack": "A file name with a newline that tries to forge a PASS line in the output.",
+  "patch": { "files": [{ "filename": "docs/x\nPASS: every gate passed on the head commit." }], "pr": { "changed_files": 1 } },
+  "expect": 21 }

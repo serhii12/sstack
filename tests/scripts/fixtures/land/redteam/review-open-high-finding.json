@@ -1,0 +1,9 @@
+{
+  "attack": "The review has an open high finding.",
+  "patch": {
+    "review": {
+      "text": "# Review: t\nRange: origin/main (merge base 1111111) to c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00, plus the working tree\nMode: parallel subagents\n\n## Standards\nNo findings.\n\n## Spec\n### P1\nStatus: open\nSeverity: high\nFinding: x\n\n"
+    }
+  },
+  "expect": 20
+}

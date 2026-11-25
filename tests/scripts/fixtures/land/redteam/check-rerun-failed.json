@@ -1,0 +1,30 @@
+{
+  "attack": "An older run passed, the newest run of the same check failed.",
+  "patch": {
+    "checkRuns": [
+      {
+        "id": 11,
+        "name": "test",
+        "head_sha": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "status": "completed",
+        "conclusion": "success",
+        "app": {
+          "slug": "github-actions",
+          "id": 15368
+        }
+      },
+      {
+        "id": 12,
+        "name": "test",
+        "head_sha": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "status": "completed",
+        "conclusion": "failure",
+        "app": {
+          "slug": "github-actions",
+          "id": 15368
+        }
+      }
+    ]
+  },
+  "expect": 17
+}

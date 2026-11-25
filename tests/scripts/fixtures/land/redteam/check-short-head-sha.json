@@ -1,0 +1,19 @@
+{
+  "attack": "A passing check whose head_sha is a short prefix of the head.",
+  "patch": {
+    "checkRuns": [
+      {
+        "id": 11,
+        "name": "test",
+        "head_sha": "c0ffee0",
+        "status": "completed",
+        "conclusion": "success",
+        "app": {
+          "slug": "github-actions",
+          "id": 15368
+        }
+      }
+    ]
+  },
+  "expect": 15
+}

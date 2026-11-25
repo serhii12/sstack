@@ -1,0 +1,10 @@
+{
+  "attack": "The review names a commit that is not in the head history.",
+  "patch": {
+    "review": {
+      "text": "# Review: t\nRange: origin/main (merge base 1111111) to bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, plus the working tree\nMode: parallel subagents\n\n## Standards\nNo findings.\n\n## Spec\nNo findings.\n",
+      "ancestor": false
+    }
+  },
+  "expect": 20
+}

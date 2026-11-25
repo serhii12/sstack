@@ -1,0 +1,19 @@
+{
+  "attack": "A required check is skipped.",
+  "patch": {
+    "checkRuns": [
+      {
+        "id": 11,
+        "name": "test",
+        "head_sha": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "status": "completed",
+        "conclusion": "skipped",
+        "app": {
+          "slug": "github-actions",
+          "id": 15368
+        }
+      }
+    ]
+  },
+  "expect": 17
+}

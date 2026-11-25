@@ -1,0 +1,32 @@
+{
+  "attack": "A past contributor without write access approves.",
+  "patch": {
+    "files": [
+      {
+        "filename": ".github/workflows/ci.yml",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 1
+    },
+    "reviews": [
+      {
+        "id": 1,
+        "user": {
+          "login": "old-friend",
+          "type": "User",
+          "id": 7
+        },
+        "state": "APPROVED",
+        "commit_id": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "submitted_at": "2026-11-25T10:00:00Z",
+        "author_association": "CONTRIBUTOR"
+      }
+    ],
+    "permissions": {
+      "old-friend": "write"
+    }
+  },
+  "expect": 21
+}

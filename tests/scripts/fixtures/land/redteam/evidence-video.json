@@ -1,0 +1,19 @@
+{
+  "attack": "A video under .artifacts is in the PR.",
+  "patch": {
+    "files": [
+      {
+        "filename": "docs/a.md",
+        "status": "modified"
+      },
+      {
+        "filename": ".artifacts/t/evidence/video/run.webm",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 2
+    }
+  },
+  "expect": 23
+}

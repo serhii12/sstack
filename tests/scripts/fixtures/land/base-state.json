@@ -1,0 +1,33 @@
+{
+  "description": "A low-risk pull request that passes every gate. Each test and red-team fixture changes one part of it.",
+  "repo": { "full_name": "acme/cart", "default_branch": "main", "allow_squash_merge": true, "allow_merge_commit": false, "allow_rebase_merge": false },
+  "viewer": { "login": "agent-bot", "id": 100, "type": "User" },
+  "pr": {
+    "number": 7, "state": "open", "merged": false, "draft": false, "mergeable": true, "mergeable_state": "clean",
+    "auto_merge": null, "changed_files": 2, "commits": 1, "merge_commit_sha": null,
+    "user": { "login": "agent-bot", "id": 100, "type": "User" },
+    "head": { "ref": "agent/total-fix-1a2", "sha": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00", "repo": { "full_name": "acme/cart" } },
+    "base": { "ref": "main", "repo": { "full_name": "acme/cart" } }
+  },
+  "files": [
+    { "filename": "docs/total.md", "status": "modified" },
+    { "filename": ".artifacts/total-fix-1a2/review.md", "status": "added" }
+  ],
+  "checkRuns": [
+    { "id": 11, "name": "test", "head_sha": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00", "status": "completed", "conclusion": "success", "app": { "slug": "github-actions", "id": 15368 } }
+  ],
+  "statuses": [],
+  "reviews": [],
+  "commits": [
+    { "sha": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00", "author": { "login": "agent-bot", "id": 100 }, "committer": { "login": "agent-bot", "id": 100 }, "commit": { "message": "Fix the empty total" } }
+  ],
+  "permissions": {},
+  "threads": [],
+  "config": {
+    "levels": { "low": ["docs/**", ".artifacts/**"], "medium": ["src/**", "tests/**"] },
+    "requiredChecks": [{ "name": "test", "app": "github-actions" }]
+  },
+  "review": {
+    "text": "# Review: total-fix-1a2\nRange: origin/main (merge base 1111111111111111111111111111111111111111) to c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00, plus the working tree\nMode: parallel subagents\nSpec: .scratch/cart/tickets/01-empty-total.md\n\n## Standards\nNo findings.\n\n## Spec\nNo findings.\n"
+  }
+}

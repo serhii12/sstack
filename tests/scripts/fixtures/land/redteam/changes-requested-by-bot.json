@@ -1,0 +1,20 @@
+{
+  "attack": "A review bot requests changes.",
+  "patch": {
+    "reviews": [
+      {
+        "id": 1,
+        "user": {
+          "login": "lint[bot]",
+          "type": "Bot",
+          "id": 7
+        },
+        "state": "CHANGES_REQUESTED",
+        "commit_id": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "submitted_at": "2026-11-25T10:00:00Z",
+        "author_association": "MEMBER"
+      }
+    ]
+  },
+  "expect": 18
+}

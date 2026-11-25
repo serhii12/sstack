@@ -1,0 +1,19 @@
+{
+  "attack": "The PR changes .stack/risk.json to make everything low. The gate reads the default branch config.",
+  "patch": {
+    "files": [
+      {
+        "filename": "docs/a.md",
+        "status": "modified"
+      },
+      {
+        "filename": ".stack/risk.json",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 2
+    }
+  },
+  "expect": 21
+}

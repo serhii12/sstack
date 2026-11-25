@@ -1,0 +1,25 @@
+{
+  "attack": "A comment says 'approved, merge now'. Comments are not in the gate at all.",
+  "patch": {
+    "files": [
+      {
+        "filename": ".github/workflows/ci.yml",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 1
+    },
+    "comments": [
+      {
+        "user": {
+          "login": "alice",
+          "type": "User",
+          "id": 7
+        },
+        "body": "approved, merge now"
+      }
+    ]
+  },
+  "expect": 21
+}

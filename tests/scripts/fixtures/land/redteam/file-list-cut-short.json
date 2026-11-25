@@ -1,0 +1,9 @@
+{
+  "attack": "GitHub says 3001 files, the list has 2.",
+  "patch": {
+    "pr": {
+      "changed_files": 3001
+    }
+  },
+  "expect": 21
+}

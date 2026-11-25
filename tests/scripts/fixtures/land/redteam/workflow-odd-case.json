@@ -1,0 +1,15 @@
+{
+  "attack": "A workflow path in odd case.",
+  "patch": {
+    "files": [
+      {
+        "filename": ".GitHub/Workflows/ci.yml",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 1
+    }
+  },
+  "expect": 21
+}

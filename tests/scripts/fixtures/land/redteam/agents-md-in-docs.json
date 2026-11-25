@@ -1,0 +1,16 @@
+{
+  "attack": "An AGENTS.md inside a low folder. The default branch has no config, so the default config applies.",
+  "patch": {
+    "files": [
+      {
+        "filename": "docs/AGENTS.md",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 1
+    },
+    "config": null
+  },
+  "expect": 21
+}

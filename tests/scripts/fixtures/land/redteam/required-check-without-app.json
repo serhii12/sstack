@@ -1,0 +1,19 @@
+{
+  "attack": "The config names a required check with no app.",
+  "patch": {
+    "config": {
+      "levels": {
+        "low": [
+          "docs/**",
+          ".artifacts/**"
+        ]
+      },
+      "requiredChecks": [
+        {
+          "name": "test"
+        }
+      ]
+    }
+  },
+  "expect": 14
+}

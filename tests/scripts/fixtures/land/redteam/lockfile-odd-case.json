@@ -1,0 +1,20 @@
+{
+  "attack": "A lockfile with odd case. The default branch has no config, so the default config applies.",
+  "patch": {
+    "files": [
+      {
+        "filename": "docs/a.md",
+        "status": "modified"
+      },
+      {
+        "filename": "web/YARN.LOCK",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 2
+    },
+    "config": null
+  },
+  "expect": 21
+}

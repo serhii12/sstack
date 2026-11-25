@@ -1,0 +1,25 @@
+{
+  "attack": "An approval from a deleted account (user null).",
+  "patch": {
+    "files": [
+      {
+        "filename": ".github/workflows/ci.yml",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 1
+    },
+    "reviews": [
+      {
+        "id": 1,
+        "user": null,
+        "state": "APPROVED",
+        "commit_id": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "submitted_at": "2026-11-25T10:00:00Z",
+        "author_association": "MEMBER"
+      }
+    ]
+  },
+  "expect": 21
+}

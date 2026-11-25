@@ -42,6 +42,7 @@ code-craft | agent | Give the shared terms and rules for modules, interfaces and
 improve-codebase | typed | Scan the code for shallow modules and rule breaks, and write a ranked report
 triage | typed | Sort issues that other people filed into a state, with a brief, questions or a close reason
 prototype | agent | Build throwaway code on its own branch to answer one design question
+land | typed | Push a finished ticket branch, open its pull request, wait for checks, and merge
 <!-- skills:end -->
 
 **Not built yet:** `ship`, `pr-body`, `skill-craft`, `security-review`. Mention each one only as "not built yet". Say what to do by hand in the meantime. Never tell the user to type one. No fence yet

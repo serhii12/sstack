@@ -1,0 +1,32 @@
+{
+  "attack": "A bot whose login contains the name of a real reviewer approves a high change.",
+  "patch": {
+    "files": [
+      {
+        "filename": ".github/workflows/ci.yml",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 1
+    },
+    "reviews": [
+      {
+        "id": 1,
+        "user": {
+          "login": "alice-reviewer[bot]",
+          "type": "Bot",
+          "id": 7
+        },
+        "state": "APPROVED",
+        "commit_id": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "submitted_at": "2026-11-25T10:00:00Z",
+        "author_association": "MEMBER"
+      }
+    ],
+    "permissions": {
+      "alice-reviewer[bot]": "write"
+    }
+  },
+  "expect": 21
+}

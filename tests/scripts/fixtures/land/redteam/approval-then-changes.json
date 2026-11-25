@@ -1,0 +1,41 @@
+{
+  "attack": "A reviewer approves, then requests changes.",
+  "patch": {
+    "files": [
+      {
+        "filename": "src/total.mjs",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 1
+    },
+    "reviews": [
+      {
+        "id": 1,
+        "user": {
+          "login": "alice",
+          "type": "User",
+          "id": 7
+        },
+        "state": "APPROVED",
+        "commit_id": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "submitted_at": "2026-11-25T10:00:00Z",
+        "author_association": "MEMBER"
+      },
+      {
+        "id": 2,
+        "user": {
+          "login": "alice",
+          "type": "User",
+          "id": 7
+        },
+        "state": "CHANGES_REQUESTED",
+        "commit_id": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "submitted_at": "2026-11-25T11:00:00Z",
+        "author_association": "MEMBER"
+      }
+    ]
+  },
+  "expect": 18
+}

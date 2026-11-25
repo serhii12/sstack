@@ -1,0 +1,32 @@
+{
+  "attack": "A human approved an older commit, then the branch got a new push.",
+  "patch": {
+    "files": [
+      {
+        "filename": ".github/workflows/ci.yml",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 1
+    },
+    "reviews": [
+      {
+        "id": 1,
+        "user": {
+          "login": "alice",
+          "type": "User",
+          "id": 7
+        },
+        "state": "APPROVED",
+        "commit_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submitted_at": "2026-11-25T10:00:00Z",
+        "author_association": "MEMBER"
+      }
+    ],
+    "permissions": {
+      "alice": "write"
+    }
+  },
+  "expect": 21
+}

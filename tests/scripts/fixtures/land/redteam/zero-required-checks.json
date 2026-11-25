@@ -1,0 +1,16 @@
+{
+  "attack": "The config names no required check, and the head has no check at all.",
+  "patch": {
+    "config": {
+      "levels": {
+        "low": [
+          "docs/**",
+          ".artifacts/**"
+        ]
+      },
+      "requiredChecks": []
+    },
+    "checkRuns": []
+  },
+  "expect": 14
+}

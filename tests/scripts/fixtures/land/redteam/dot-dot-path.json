@@ -1,0 +1,15 @@
+{
+  "attack": "A path with .. that points at a workflow.",
+  "patch": {
+    "files": [
+      {
+        "filename": "docs/../.github/workflows/ci.yml",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 1
+    }
+  },
+  "expect": 21
+}

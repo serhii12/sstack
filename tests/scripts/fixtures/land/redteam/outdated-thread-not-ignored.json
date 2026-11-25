@@ -1,0 +1,12 @@
+{
+  "attack": "An outdated unresolved thread while the config does not ignore outdated threads.",
+  "patch": {
+    "threads": [
+      {
+        "isResolved": false,
+        "isOutdated": true
+      }
+    ]
+  },
+  "expect": 19
+}

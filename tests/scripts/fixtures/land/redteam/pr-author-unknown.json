@@ -1,0 +1,37 @@
+{
+  "attack": "GitHub sends no author for the PR, so the author check cannot run. The author approves a high change.",
+  "patch": {
+    "files": [
+      {
+        "filename": ".github/workflows/ci.yml"
+      }
+    ],
+    "pr": {
+      "changed_files": 1,
+      "user": null
+    },
+    "reviews": [
+      {
+        "id": 1,
+        "user": {
+          "login": "agent-bot",
+          "type": "User",
+          "id": 100
+        },
+        "state": "APPROVED",
+        "commit_id": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "submitted_at": "2026-11-25T10:00:00Z",
+        "author_association": "MEMBER"
+      }
+    ],
+    "viewer": {
+      "login": "runner-acct",
+      "type": "User",
+      "id": 300
+    },
+    "permissions": {
+      "agent-bot": "write"
+    }
+  },
+  "expect": 21
+}

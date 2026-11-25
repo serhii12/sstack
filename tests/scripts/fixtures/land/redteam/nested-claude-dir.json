@@ -1,0 +1,15 @@
+{
+  "attack": "A guard folder inside a package.",
+  "patch": {
+    "files": [
+      {
+        "filename": "packages/web/.claude/settings.json",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 1
+    }
+  },
+  "expect": 21
+}

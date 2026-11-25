@@ -1,0 +1,13 @@
+{
+  "attack": "The head branch is in a fork.",
+  "patch": {
+    "pr": {
+      "head": {
+        "repo": {
+          "full_name": "mallory/cart"
+        }
+      }
+    }
+  },
+  "expect": 13
+}

@@ -1,0 +1,52 @@
+{
+  "attack": "An automation account listed in notHuman approves.",
+  "patch": {
+    "files": [
+      {
+        "filename": ".github/workflows/ci.yml",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 1
+    },
+    "config": {
+      "levels": {
+        "low": [
+          "docs/**",
+          ".artifacts/**"
+        ],
+        "medium": [
+          "src/**"
+        ]
+      },
+      "requiredChecks": [
+        {
+          "name": "test",
+          "app": "github-actions"
+        }
+      ],
+      "notHuman": [
+        "release-robot"
+      ]
+    },
+    "reviews": [
+      {
+        "id": 1,
+        "user": {
+          "login": "release-robot",
+          "type": "User",
+          "id": 7
+        },
+        "state": "APPROVED",
+        "commit_id": "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00",
+        "submitted_at": "2026-11-25T10:00:00Z",
+        "author_association": "MEMBER"
+      }
+    ],
+    "permissions": {
+      "release-robot": "write"
+    }
+  },
+  "expect": 21
+}

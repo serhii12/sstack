@@ -1,0 +1,11 @@
+{
+  "attack": "Someone turned auto-merge on.",
+  "patch": {
+    "pr": {
+      "auto_merge": {
+        "merge_method": "squash"
+      }
+    }
+  },
+  "expect": 22
+}

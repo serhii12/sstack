@@ -1,0 +1,15 @@
+{
+  "attack": "A path with a ./ part.",
+  "patch": {
+    "files": [
+      {
+        "filename": "./.claude/settings.json",
+        "status": "modified"
+      }
+    ],
+    "pr": {
+      "changed_files": 1
+    }
+  },
+  "expect": 21
+}
