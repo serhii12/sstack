@@ -326,7 +326,7 @@ export function ensureGitignore(tgt, dryRun = false) {
   const lead = text === "" ? "" : (text.endsWith("\n") ? "" : eol) + eol;
   const verb = text === "" ? "create" : "append to";
   if (dryRun) return { state: "would-add", lines: [`would ${verb}  .gitignore (${missing.length} evidence media rule(s))`] };
-  if (text === "") writeFileSync(p, block, { flag: "wx", mode: 0o644 });
+  if (!present(p)) writeFileSync(p, block, { flag: "wx", mode: 0o644 });
   else appendFileSync(p, lead + block);
   return { state: "added", lines: [`${verb}  .gitignore (${missing.length} evidence media rule(s))`] };
 }
