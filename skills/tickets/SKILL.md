@@ -35,7 +35,7 @@ No fence yet
 
 - One thin working piece. Ask of each ticket: "what can I demo or check when this is done?". An answer that names a layer shows a horizontal slice. An example is "the schema is in". Recut it. No fence yet
 - One context window. A fresh session that has never seen this conversation can finish the ticket. No fence yet
-- Acceptance checks that can fail. Each check names what to observe and where. Each check fails before the work of the ticket and passes after it. A check that already passes at the start checks nothing. Rewrite it or drop it. No fence yet
+- Acceptance checks that can fail. Each check names what to observe and where. The "where" is a test boundary that the spec agreed and that exists when the ticket is done. Each check fails before the work of the ticket and passes after it. A check that already passes at the start checks nothing. Rewrite it or drop it. No fence yet
 - Real blockers only. `Blocked by:` names only tickets that must finish before this ticket can start, or says `None (can start immediately)`. The first ticket has no blockers. No chain of blockers leads from a ticket back to itself. Held by: skills/tickets/scripts/tickets-lint.mjs (local tickets only)
 - Shared code. If a ticket cannot be built correctly without the change of another ticket, that is a real blocker. An example is two tickets that must rewrite the same function. Tickets that only touch nearby code stay parallel. The user approves each edge in the breakdown. No fence yet
 - No source file paths or code. They go stale. One exception: a snippet from a prototype that states a decision more exactly than prose. Mark it as from the prototype. No fence yet
