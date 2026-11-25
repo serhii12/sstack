@@ -34,6 +34,7 @@ tickets | typed | Split one spec into small tickets with blocking links
 test-craft | agent | Pick the test, write it failing first, and plant a bug in each new check
 peer-review | agent | Review a change with two fresh reviewers, Standards and Spec
 diagnose | agent | Find the cause of a failure, starting from a command that fails
+friction | agent | File a repeated problem as an issue with a priority
 retro | typed | Turn the mistakes of a session into checks or reviewer standards
 prove | agent | Gather proof that a change works and mark each acceptance check pass, fail or untested
 code-craft | agent | Give the shared terms and rules for modules, interfaces and module boundaries
