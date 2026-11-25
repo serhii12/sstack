@@ -88,11 +88,14 @@ const main = async () => {
   const lookup = (dirs) => {
     try {
       return (
-        execFileSync("git", ["-C", policy.resolveDirs(base, dirs, homedir()), "symbolic-ref", "--short", "-q", "HEAD"], {
+        execFileSync("git", ["-C", policy.resolveDirs(base, dirs, homedir()), "symbolic-ref", "-q", "HEAD"], {
           encoding: "utf8",
           stdio: ["ignore", "pipe", "ignore"],
           timeout: 5000,
-        }).trim() || null
+        })
+          // The full ref, because --short gives `heads/main` when a tag named main exists.
+          .trim()
+          .replace(/^refs\/heads\//u, "") || null
       );
     } catch {
       return null;
