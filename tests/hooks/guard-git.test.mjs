@@ -163,6 +163,26 @@ describe("guard-git: decisions", () => {
   });
 });
 
+describe("guard-git: a tag cannot change the branch name", () => {
+  it("blocks a commit on main when a tag named main exists", () => {
+    const repo = tempDir("guard-tag-");
+    git(repo, "init", "-q", "-b", "main");
+    git(repo, "commit", "-q", "--allow-empty", "-m", "base");
+    // update-ref makes a light tag also where the git config asks for a signed tag.
+    assert.equal(git(repo, "update-ref", "refs/tags/main", "HEAD").status, 0);
+    for (const command of ["git commit -m x", "git commit -am x", "git commit --dry-run"]) {
+      assertBlocked(bash(command, repo), /main or master/u);
+    }
+  });
+
+  it("allows a commit on a branch named heads/main", () => {
+    const repo = tempDir("guard-tag-");
+    git(repo, "init", "-q", "-b", "heads/main");
+    git(repo, "commit", "-q", "--allow-empty", "-m", "base");
+    assert.equal(bash("git commit -m x", repo).status, 0);
+  });
+});
+
 describe("guard-git: settings template", () => {
   const settings = JSON.parse(readFileSync(path.resolve(here, "../../templates/claude-settings.json"), "utf8"));
   const entry = settings.hooks.PreToolUse.find((group) => group.matcher === "Bash");
