@@ -17,7 +17,7 @@ Take the first row that applies.
 | Nothing above, but a browser binary is installed, and screenshots in light are enough | Section 6 (screenshots only) |
 | Nothing above, or a check needs video, clicks or dark | Section 2, run with `run-playwright.mjs` |
 
-Find the browser with `which chromium chromium-browser google-chrome google-chrome-stable`. On macOS look in `/Applications/Google Chrome.app/Contents/MacOS/`. A browser folder in `~/.cache/ms-playwright` or `~/Library/Caches/ms-playwright` can be incomplete. Run it once to find out.
+Find the browser with `which chromium chromium-browser google-chrome google-chrome-stable`. On macOS, run `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --version`. A browser folder in `~/.cache/ms-playwright` or `~/Library/Caches/ms-playwright` can be incomplete. Run it once to find out.
 
 To use Playwright when the project has none, do not ask. Write the capture script of section 2. Then run it from the project root:
 

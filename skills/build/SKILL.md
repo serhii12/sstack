@@ -49,7 +49,7 @@ Do not use `git stash`. Every worktree of a repo shares one stash, so another se
    If the repo has conventions for worktrees, follow them. If not, use `agent/` as the branch prefix and `../<repo-folder>-worktrees` as the worktrees folder. A folder outside the checkout, or a gitignored folder inside it, keeps worktrees out of a commit.
 
    Then push the new branch at once: `git -C <worktree> push -u origin <branch>`. The in-work check on another machine sees only pushed branches. If the repo has no `origin` remote, or the push fails, say so in the report and go on. No fence yet
-6. Enter the worktree and check it. `git -C <worktree> branch --show-current` must print your new branch. If it prints `main`, stop. The shell can forget its folder between commands. So run each later git command as `git -C <worktree> ...`. Start each other command with `cd <worktree> &&`. Make sure that the runtime version fits the repo. If the checks need dependencies, install them inside the worktree.
+6. Enter the worktree and check it. `git -C <worktree> branch --show-current` must print your new branch. If it prints `main`, stop. The shell can forget its folder between commands. So run each later git command as `git -C <worktree> ...`, never after `cd`. For another command, use `cd <worktree> && <one command>`. Write the path in full. Put no shell variable, loop or heredoc in a command. To change a file, use the file edit tool. Make sure that the runtime version fits the repo. If the checks need dependencies, install them inside the worktree.
 
 In an existing checkout that no other task uses, `git switch -c <branch> origin/main` makes the branch. Never use `git checkout <branch>` to make or change a branch.
 
