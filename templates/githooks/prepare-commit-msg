@@ -1,0 +1,36 @@
+#!/bin/sh
+# What this guards: every commit must pass the project check.
+#
+# This is prepare-commit-msg and not pre-commit on purpose. `git commit -n` (or --no-verify)
+# skips the pre-commit and commit-msg hooks, but git still runs this one. So the check
+# still runs when an agent tries to skip the hooks.
+#
+# It only works while core.hooksPath points at .githooks (git config core.hooksPath .githooks).
+# guard-git blocks any change to core.hooksPath, and the settings template denies edits here.
+# git commit-tree makes commits without any hook. guard-git blocks it.
+#
+# Adapted from examples/tokenmaxx-starter/.githooks/prepare-commit-msg in joelhooks/rat-stack
+# (MIT, Copyright (c) 2026 Joel Hooks). The idea and the refuse-on-failure shape are kept.
+# The pnpm and worktree steps are replaced by a project check script.
+#
+# The project check is .stack/check (any executable). git runs this hook from the top of the
+# work tree, so the relative path works.
+#   - The check runs and fails: the commit is refused.
+#   - The check is in the repo (on disk, staged or in HEAD) but cannot run, because it was
+#     deleted or lost its execute bit: the commit is refused. Removing the check is a bypass.
+#   - The repo has never had a check: the commit is allowed and a warning is printed.
+#     A new project has nothing to run yet.
+# The check runs on the work tree, not on the staged snapshot. Unstaged changes count.
+check=.stack/check
+
+if [ -f "$check" ] && [ -x "$check" ]; then
+  if ! "./$check"; then
+    echo "Commit refused. $check failed. Fix: run ./$check, fix what it reports, then commit again." >&2
+    exit 1
+  fi
+elif [ -e "$check" ] || git ls-files --error-unmatch -- "$check" >/dev/null 2>&1 || git cat-file -e "HEAD:$check" 2>/dev/null; then
+  echo "Commit refused. $check is part of this repo but cannot run (missing or not executable). Fix: run git restore --source=HEAD --staged --worktree -- $check && chmod +x $check, then commit again." >&2
+  exit 1
+else
+  echo "warning: this repo has no $check, so no check ran for this commit." >&2
+fi
