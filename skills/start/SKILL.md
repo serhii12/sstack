@@ -31,6 +31,7 @@ decide | agent | List options with effort and undo cost, recommend one, then wai
 setup | typed | Record which issue tracker the repo uses
 spec | typed | Write the spec (the PRD) from the plan that the user confirmed
 tickets | typed | Split one spec into small tickets with blocking links
+test-craft | agent | Pick the test, write it failing first, and plant a bug in each new check
 code-craft | agent | Give the shared terms and rules for modules, interfaces and module boundaries
 <!-- skills:end -->
 
