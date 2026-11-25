@@ -64,6 +64,7 @@ try {
 - Rename the video file after `context.close()`. Playwright gives it a random name. Name it `video/<flow>.webm`.
 - For a sequence, call `page.screenshot` after each step. Name the files `01-open.png`, `02-fill.png`, `03-submit.png`.
 - To capture one element, use `locator.screenshot`. Add `"element"` to its index entry.
+- The screen does not show a URL, a redirect or a history entry. After each step, add `{ step, url: page.url(), history: await page.evaluate(() => history.length) }` to a list. Write the list with `writeFileSync` to `${out}/output/<flow>-url.json`. Name that file in the index entry of the check. Do not draw the URL into the page.
 - Video needs no ffmpeg on the machine. Playwright downloads its own build with the browser.
 - The project can have a `playwright.config.*` with a base URL and a web server. If so, write a test that calls `page.screenshot`, and run it with `npx playwright test`.
 - If Chrome says "No usable sandbox" inside a container that you trust, launch with `args: ["--no-sandbox"]`.
