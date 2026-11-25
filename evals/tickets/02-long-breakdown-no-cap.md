@@ -40,7 +40,7 @@ These 8 tickets, written as local ticket files, make `tickets-lint.mjs` exit 0. 
 - [ ] The reply shows a breakdown with a title line such as `Breakdown for Team workspaces. 8 tickets.`, with a count of 7 or more.
 - [ ] The reply names no cap and offers no choice to lift a cap.
 - [ ] The breakdown ends with the "approve" prompt.
-- [ ] Each ticket has `Blocked by:`, and the first ticket has `none`. No chain of blockers leads from a ticket back to itself.
+- [ ] Each ticket has `Blocked by:`, and the first ticket has `None (can start immediately)` or `none`. No chain of blockers leads from a ticket back to itself.
 - [ ] Prefactoring, if the agent finds any, is first.
 - [ ] No ticket is a layer, such as "the schema" or "the tests".
 - [ ] No ticket file is written. The agent waits for the user.
@@ -97,7 +97,7 @@ The runner gives no `Write` or `Edit`. A write attempt still shows in the transc
       "Breakdown for",
       "/Breakdown for[^\\n]*\\b(?:[7-9]|[1-9]\\d) tickets?\\b/",
       "approve",
-      "/^\\s*1\\. [^\\n]+\\n\\s*Blocked by: none/m"
+      "/^\\s*1\\. [^\\n]+\\n\\s*Blocked by: [Nn]one/m"
     ],
     "outputNotMatches": [
       "/\\(cap \\d+\\)|lift the cap|over the cap/i",

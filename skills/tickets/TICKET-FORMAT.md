@@ -9,7 +9,7 @@ One file per ticket at `.scratch/<feature>/tickets/NN-title.md`, in the same fea
 ```markdown
 # 01: <Ticket title>
 
-Blocked by: none
+Blocked by: None (can start immediately)
 Status: open
 Spec: ../spec.md
 
@@ -23,13 +23,13 @@ The end-to-end behavior that this ticket makes work, from the user's side. Descr
 - [ ] <Another check>
 ```
 
-The `Blocked by:` line says `none`, or names the blocking ticket files in the same folder, separated by commas:
+The `Blocked by:` line says `None (can start immediately)`, or names the blocking ticket files in the same folder, separated by commas. The scripts also read the older form `none`:
 
 ```markdown
 Blocked by: 01-login-form.md, 02-session-store.md
 ```
 
-`skills/tickets/scripts/tickets-lint.mjs` checks these files. In a project, run it from the project root as `node .claude/skills/tickets/scripts/tickets-lint.mjs`. It checks the file name, a number that no other ticket in the folder uses, and the `# ` title. It checks at least one `- [ ]` item under `## Acceptance checks`. It checks one `Blocked by:` line that names files that exist or says `none`. It checks that no blocking cycle exists. It checks that one folder holds 6 ticket files or fewer, unless the user lifted the cap with `--max <n>`. It does not check the `Status:` and `Spec:` lines. Held by: skills/tickets/scripts/tickets-lint.mjs
+`skills/tickets/scripts/tickets-lint.mjs` checks these files. In a project, run it from the project root as `node .claude/skills/tickets/scripts/tickets-lint.mjs`. It checks the file name, a number that no other ticket in the folder uses, and the `# ` title. It checks at least one `- [ ]` item under `## Acceptance checks`. It checks one `Blocked by:` line that names files that exist or says `None (can start immediately)`. It checks that no blocking cycle exists. With `--max <n>`, it checks that one folder holds n ticket files or fewer. With no `--max`, there is no cap. It does not check the `Status:` and `Spec:` lines. Held by: skills/tickets/scripts/tickets-lint.mjs
 
 ## GitHub or GitLab issue
 
@@ -50,7 +50,7 @@ The end-to-end behavior that this ticket makes work, from the user's side.
 ```
 
 - If the ticket is a sub-issue of the spec, leave out the `Part of` line.
-- If the blockers are native links, leave out the `Blocked by` line. If there are no blockers and no native links, write `Blocked by: none`.
+- If the blockers are native links, leave out the `Blocked by` line. If there are no blockers and no native links, write `Blocked by: None (can start immediately)`.
 
 ## Provenance
 

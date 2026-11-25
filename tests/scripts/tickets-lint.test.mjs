@@ -34,7 +34,7 @@ function cleanFiles() {
     [`${T}/01-login-form.md`]: ticket(),
     [`${T}/02-session-store.md`]: ticket({ title: "# 02: Keep the session", blockedBy: "Blocked by: 01-login-form.md" }),
     [`${T}/03-logout.md`]: ticket({ title: "# 03: Log out", blockedBy: "**Blocked by:** `01-login-form.md`, [02](02-session-store.md)" }),
-    ".scratch/export/tickets/01-csv.md": ticket({ title: "# 01: Export CSV" }),
+    ".scratch/export/tickets/01-csv.md": ticket({ title: "# 01: Export CSV", blockedBy: "Blocked by: None (can start immediately)" }),
     ".scratch/export/tickets/02-json.md": ticket({ title: "# 02: Export JSON", blockedBy: "Blocked by: none (can start now)" }),
     ".scratch/export/tickets/03-both.md": ticket({ title: "# 03: Both", blockedBy: "Blocked by: 01-csv.md, 02-json.md" }),
     ".scratch/export/tickets/04-docs.md": ticket({ title: "# 04: Docs", blockedBy: "Blocked by: 03-both.md, 01-csv.md" }),

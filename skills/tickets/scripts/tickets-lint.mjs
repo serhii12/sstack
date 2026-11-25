@@ -127,7 +127,7 @@ export function checkTicket(name, text) {
   const blockedLines = lines.filter((l) => !l.fence && BLOCKED_BY.test(l.t));
   const blockers = [];
   if (blockedLines.length === 0) {
-    add(1, "blocked-by", "no `Blocked by:` line", "add `Blocked by: none`, or `Blocked by:` and the file names of the tickets that must finish first.");
+    add(1, "blocked-by", "no `Blocked by:` line", "add `Blocked by: None (can start immediately)`, or `Blocked by:` and the file names of the tickets that must finish first.");
   } else {
     for (const extra of blockedLines.slice(1)) {
       add(extra.n, "blocked-by", `more than one \`Blocked by:\` line (the first is on line ${blockedLines[0].n})`, "keep one `Blocked by:` line and list every blocker on it, separated by commas.");
@@ -135,7 +135,7 @@ export function checkTicket(name, text) {
     const l = blockedLines[0];
     const value = l.t.match(BLOCKED_BY)[1].trim();
     if (value === "") {
-      add(l.n, "blocked-by", "`Blocked by:` is empty", "write `Blocked by: none`, or list the blocking ticket files.");
+      add(l.n, "blocked-by", "`Blocked by:` is empty", "write `Blocked by: None (can start immediately)`, or list the blocking ticket files.");
     } else if (!NONE.test(value)) {
       for (const entry of value.split(/\s*,\s*/)) {
         const target = entryTarget(entry);
