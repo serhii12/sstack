@@ -47,7 +47,7 @@ Each rule ends with what enforces it. `Held by:` names the hook, script or test 
    Held by: .claude/hooks/guard-git.mjs (Claude Code only), .githooks/prepare-commit-msg (every tool)
 5. Report the real result. Say what you ran and what you saw. Never claim a success that you did not see. If you did not run a check, report it as `untested`.
    No fence yet
-6. Write every message from our scripts, hooks, lint rules and checks in one form. Use `<what failed>. <why>. Fix: <step>.` The step names a command, a file or a change, in a code span. Example: `Commit blocked on main. Work on main skips review. Fix: run git switch -c fix/login-timeout first.`
+6. Write every message from our scripts, hooks, lint rules and checks in one form. This covers the stack and the developer tools of this repo. It does not cover the messages that the product shows to its users. Use `<what failed>. <why>. Fix: <step>.` The step names a command, a file or a change, in a code span. Example: `Commit blocked on main. Work on main skips review. Fix: run git switch -c fix/login-timeout first.`
    No fence yet
 7. Never merge a `prototype/` branch into `main`. Prototype code has no tests. To keep its tested logic, take it into a task branch with `/build`, with tests.
    Held by: .claude/skills/prototype/scripts/prototype-check.mjs (it finds a merge into `main` after the fact. A ruleset on the git host that blocks pull requests from `prototype/*` is the real fence.)
