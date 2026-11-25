@@ -156,6 +156,12 @@ test("acceptance: a ticked checkbox counts", () => {
 
 // ---- blocked-by ----
 
+test("blocked-by: a long run of spaces inside the line parses in one pass", () => {
+  const blockedBy = `Blocked by: 01-csv.md,${" ".repeat(160_000)}02-json.md`;
+  const r = run({ ".scratch/export/tickets/03-both.md": ticket({ title: "# 03: Both", blockedBy }) });
+  assert.deepEqual(r.problems, []);
+});
+
 test("blocked-by: missing line fails", () => {
   const hits = rules(run({ [`${T}/01-login-form.md`]: ticket({ blockedBy: null }) }), "blocked-by");
   assert.equal(hits.length, 1);

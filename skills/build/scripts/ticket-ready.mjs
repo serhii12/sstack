@@ -34,8 +34,8 @@ import { fileURLToPath } from "node:url";
 const USAGE = "Usage: node .claude/skills/build/scripts/ticket-ready.mjs <ticket file>";
 // The next three patterns match the forms that skills/tickets/scripts/tickets-lint.mjs accepts.
 // A line can start with a list marker and can bold the key. The key is not case sensitive.
-const BLOCKED_BY = /^\s*(?:[-*]\s+)?(?:\*\*)?Blocked by:(?:\*\*)?\s*(.*?)\s*$/i;
-const STATUS = /^\s*(?:[-*]\s+)?(?:\*\*)?Status:(?:\*\*)?\s*(.*?)\s*$/i;
+const BLOCKED_BY = /^\s*(?:[-*]\s+)?(?:\*\*)?Blocked by:(?:\*\*)?\s*(.*\S|)\s*$/i;
+const STATUS = /^\s*(?:[-*]\s+)?(?:\*\*)?Status:(?:\*\*)?\s*(.*\S|)\s*$/i;
 const NONE = /^none(?:\s*\([^)]*\))?\.?$/i;
 
 export const EXIT = { READY: 0, OPEN: 1, USAGE: 2, BLOCKER_UNREADABLE: 3, TICKET_UNREADABLE: 4, NO_LINE: 5 };

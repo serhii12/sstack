@@ -28,7 +28,7 @@ import { fileURLToPath } from "node:url";
 
 const USAGE = "Usage: node .claude/skills/tickets/scripts/tickets-lint.mjs [--max <n>] [rootDir]";
 const FILE_NAME = /^\d{2,}-[a-z0-9]+(?:-[a-z0-9]+)*\.md$/;
-const BLOCKED_BY = /^\s*(?:[-*]\s+)?(?:\*\*)?Blocked by:(?:\*\*)?\s*(.*?)\s*$/i;
+const BLOCKED_BY = /^\s*(?:[-*]\s+)?(?:\*\*)?Blocked by:(?:\*\*)?\s*(.*\S|)\s*$/i;
 const NONE = /^none(?:\s*\([^)]*\))?\.?$/i;
 const ACCEPTANCE_HEADING = /^##\s+Acceptance checks\s*$/i;
 const CHECKBOX = /^\s*[-*]\s+\[[ xX]\]\s+\S/;
