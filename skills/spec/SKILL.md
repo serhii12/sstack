@@ -26,7 +26,7 @@ Held by: skills/spec/scripts/spec-lint.mjs
 
 ## The spec is a snapshot
 
-The spec records what the user agreed on one day. Do not edit it later to follow the code. Lasting terms and decisions belong in `GLOSSARY.md` and `docs/adr/`, which `/grill` writes.
+The spec records what the user agreed on one day. Do not edit it later to follow the code. A dated note under `## Comments` that records a later decision of the user is not an edit. Lasting terms and decisions belong in `GLOSSARY.md` and `docs/adr/`, which `/grill` writes.
 No fence yet
 
 ## Steps

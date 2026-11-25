@@ -112,6 +112,7 @@ A local ticket has no pull request, so nothing else closes it. An open ticket bl
 - To close the ticket, append one line under `## Comments` in the file at the path from step 1. If the heading is missing, create it. The line reads: `Built on branch <branch>, last commit <short sha>. Merge the branch before you build a ticket that this one blocks.` Then set `Status: closed`.
 - If any of these is true, leave `Status: open`. A check is `fail` or `untested`. The review is `not run`. A `high` or `medium` finding is `open`. Say in the report what blocks the close. Give the user the exact edit. When that blocker is gone, set `Status: closed` in `<path>`.
 - A tracker ticket stays open. The pull request closes it.
+- The user can make a decision during the build that changes the spec. Then add it with the date under `## Comments` of the ticket and of the spec. A later ticket then reads it.
 No fence yet
 
 
