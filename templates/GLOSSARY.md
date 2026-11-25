@@ -11,7 +11,7 @@ _Avoid_: <words we do not use for this>
 <!--
 Starter file. The domain-memory skill replaces the placeholders above with the first real term.
 Rules:
-- Only words specific to this project. No general programming terms.
-- No code detail: no file names, function names, types, tables or settings.
-- One or two sentences per term. List rejected synonyms under _Avoid_.
+- Use only words that are specific to this project. Do not use general programming terms.
+- Write no code detail. Write no file names, function names, types, tables or settings.
+- Write one or two sentences for each term. List rejected synonyms under _Avoid_.
 -->

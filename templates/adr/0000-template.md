@@ -7,7 +7,7 @@
 
 ## Revisit if
 
-<Concrete conditions that would change the answer.>
+<Concrete conditions that change the answer.>
 
 <!--
 Template. Copy it to docs/adr/NNNN-short-title.md with the next free number. 0000 is this template.
@@ -19,9 +19,9 @@ The status line uses exactly one of these forms:
 **Status:** accepted
 **Status:** superseded by NNNN
 
-To change a decision, write a new record and set this one to "superseded by NNNN". Change nothing else here.
+To change a decision, write a new record. Then set this record to "superseded by NNNN". Change nothing else here.
 
-Optional sections, only when they add real value:
+Add optional sections only when they add real value:
 ## Considered options
 ## Consequences
 

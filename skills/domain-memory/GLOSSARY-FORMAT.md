@@ -24,23 +24,23 @@ _Avoid_: Client, buyer, account
 
 ## Rules
 
-- **Be opinionated.** When several words exist for the same concept, pick the best one and list the others under `_Avoid_`.
-- **Keep definitions tight.** One or two sentences at most. Say what the thing is. Leave out what it does.
-- **Bold other glossary terms inside a definition.** When a definition mentions another term, write it as `**Order**`, and let the sentence around it say how the two relate.
-- **Only include terms specific to this project's context.** General programming concepts (timeouts, error types, utility patterns) do not belong, even if the project uses them a lot. Before you add a term, ask: is this concept unique to this context, or a general programming concept? Only the first kind belongs.
-- **No code detail.** No file names, function names, types, tables, settings or implementation choices. Those belong in the code, a spec or a decision record.
-- **Group terms under subheadings** when natural clusters emerge. If all terms belong to one area, a flat list is fine.
-- **Keep it short.** A long glossary has usually taken in detail that never belonged there. When asked to clean it up, cut that detail before you think about splitting the file.
+- Be opinionated. When several words exist for the same concept, pick the best one and list the others under `_Avoid_`.
+- Keep definitions tight. Write one or two sentences at most. Say what the thing is. Leave out what it does.
+- Bold other glossary terms inside a definition. When a definition mentions another term, write it as `**Order**`. Let the sentence around it say how the two terms relate.
+- Include only terms specific to the context of this project. General programming concepts (timeouts, error types, utility patterns) do not belong, even if the project uses them often. Before you add a term, ask whether this concept is unique to this context or is a general programming concept. Only the first kind belongs.
+- Write no code detail. Write no file names, function names, types, tables, settings or implementation choices. Those belong in the code, a spec or a decision record.
+- When natural clusters of terms form, group the terms under subheadings. If all terms belong to one area, a flat list is fine.
+- Keep it short. A long glossary usually holds detail that never belonged there. When the user asks you to clean it up, cut that detail first. Then consider whether to split the file.
 
 ## The starter file
 
-A project may start with the stack's starter `GLOSSARY.md`, which holds only placeholders in angle brackets. Treat that file as empty. When the first term is settled, replace the placeholders with the real context name, description and term.
+A project can start with the starter `GLOSSARY.md` of the stack, which holds only placeholders in angle brackets. Treat that file as empty. When the first term is settled, replace the placeholders with the real context name, description and term.
 
 ## Single and multi-context repos
 
-**Single context (most repos):** One `GLOSSARY.md` at the repo root.
+Single context (most repos): one `GLOSSARY.md` at the repo root.
 
-**Multiple contexts:** A `GLOSSARY-MAP.md` at the repo root lists the contexts, where they live, and how they relate to each other:
+Multiple contexts: a `GLOSSARY-MAP.md` at the repo root lists the contexts, where each context lives, and how the contexts relate to each other:
 
 ```md
 # Glossary Map
@@ -58,16 +58,16 @@ A project may start with the stack's starter `GLOSSARY.md`, which holds only pla
 - **Ordering ↔ Billing**: Shared types for `CustomerId` and `Money`
 ```
 
-Work out which structure applies:
+Find which structure applies:
 
 - If `GLOSSARY-MAP.md` exists, read it to find the contexts.
 - If only a root `GLOSSARY.md` exists, there is one context.
 - If neither exists, create a root `GLOSSARY.md` when the first term is settled.
 
-When there are several contexts, work out which one the current topic belongs to. If that is unclear, ask.
+When there are several contexts, find the context that the current topic belongs to. If that is unclear, ask.
 
-Split one glossary into several only when the file is already lean and still covers two areas that a reader would not want to hold at once. Splitting a bloated file gives you several bloated files.
+If the file is already lean and still covers two areas that a reader does not want to hold at once, split it. If you split a bloated file, you get several bloated files.
 
 ## Provenance
 
-Adapted from `skills/engineering/domain-modeling/GLOSSARY-FORMAT.md` in [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock). The structure, the example and most rules are Matt's text with small edits (semicolons removed, wording simplified). Ours: the "No code detail" and "Keep it short" rules and the starter file section. The two sentences on when to split are close to Matt's wording in `docs/engineering/domain-modeling.md` (same repo, licence and holder).
+Adapted from `skills/engineering/domain-modeling/GLOSSARY-FORMAT.md` in [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock). The structure, the example and most rules are Matt's text with small edits (semicolons removed, wording simplified). Our own parts are the "No code detail" and "Keep it short" rules and the starter file section. The sentence on when to split is close to Matt's wording in `docs/engineering/domain-modeling.md` (same repo, license and holder).
