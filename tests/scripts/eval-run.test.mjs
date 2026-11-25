@@ -10,7 +10,7 @@ import {
   sessionDirName, stripSkillAsserts, summarizeBaseline, baselineSettings, defaultSpawn, buildPlan, discoverEvals, evaluateAsserts, childEnv, findClaude, formatReport,
   git, isWrapper, loadedSkills, main, makeLayout, networkWritingTools, parseCli, parseEvalFile, parseTranscript,
   prepareSetup, resolveClaude, runBudget, runOnce, summarize, toRegExp,
-  AGENT_ENV, agentEnv, scriptPath, workTreeState,
+  AGENT_ENV, agentEnv, scriptPath, workTreeState, withoutGitVars,
 } from "../../scripts/eval-run.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -398,6 +398,33 @@ test("setup remote: adds an https remote origin, and refuses other values", () =
   bad({ gitInit: true, remote: "ext::sh -c x" }, /setup\.remote must be an https URL/);
   bad({ gitInit: true, remote: "https://github.com/acme/w.git", origin: true }, /"remote" and "origin"/);
   bad({ remote: "https://github.com/acme/w.git" }, /need "gitInit"/);
+});
+
+test("git env: GIT_DIR and a global core.hooksPath of the owner do not reach the setup, the installer or the agent", () => {
+  const outside = tmp();
+  spawnSync("git", ["init", "-q", outside]);
+  const hooksConfig = join(outside, "global.gitconfig");
+  writeFileSync(hooksConfig, "[core]\n\thooksPath = /nowhere\n");
+  const saved = { GIT_DIR: process.env.GIT_DIR, GIT_CONFIG_GLOBAL: process.env.GIT_CONFIG_GLOBAL };
+  process.env.GIT_DIR = join(outside, ".git");
+  process.env.GIT_CONFIG_GLOBAL = hooksConfig;
+  let r;
+  try {
+    r = repoWithSetup({ gitInit: true, installStack: true, files: [{ path: "a.txt", content: "a\n" }] });
+  } finally {
+    for (const [k, v] of Object.entries(saved)) if (v === undefined) delete process.env[k];
+    else process.env[k] = v;
+  }
+  try {
+    assert.equal(spawnSync("git", ["-C", outside, "rev-parse", "--verify", "-q", "HEAD"], { encoding: "utf8", env: withoutGitVars(process.env) }).status, 1, "no commit in the outside repo");
+    assert.match(r.baseline.head, /^[0-9a-f]{40}$/);
+    assert.equal(git(r.layout.repo, ["config", "--local", "core.hooksPath"]).out, ".githooks");
+    const env = agentEnv({ PATH: "/bin", GIT_DIR: "/x", GIT_WORK_TREE: "/y", GIT_INDEX_FILE: "/z" }, r.layout);
+    assert.deepEqual(Object.keys(env).filter((k) => k.startsWith("GIT_")).sort(), ["GIT_AUTHOR_EMAIL", "GIT_AUTHOR_NAME", "GIT_COMMITTER_EMAIL", "GIT_COMMITTER_NAME", "GIT_TERMINAL_PROMPT"]);
+  } finally {
+    r.done();
+    rmSync(outside, { recursive: true, force: true });
+  }
 });
 
 test("prepareSetup: commit false leaves files uncommitted", () => {
