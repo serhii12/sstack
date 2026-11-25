@@ -13,8 +13,9 @@
 //   - Any other argument is the key itself, for example `issue-42`. It uses lowercase letters,
 //     digits and hyphens.
 // A branch or a worktree folder is work on the ticket when its last path part is the key, or the
-// key plus one suffix part that has a digit. With the key `slugify`, `agent/slugify-0a1` matches.
-// `agent/slugify-docs` and `agent/slugify-urls-0a1` do not match.
+// key plus a suffix in which each hyphen-separated part has a digit. The suffix can use capitals.
+// With the key `slugify`, `agent/slugify-0a1`, `agent/slugify-0A1` and `agent/slugify-2026-11-25`
+// match. `agent/slugify-docs` and `agent/slugify-urls-0a1` do not match.
 //
 // The check reads every worktree, every local branch and every remote branch that git knows.
 // Run `git fetch origin` first. Then the check also sees a branch that another machine pushed.
@@ -49,13 +50,13 @@ export function taskKey(arg) {
   return KEY.test(key) ? key : null;
 }
 
-/** True when the last path part of a branch or folder name is the key, or the key plus one suffix part with a digit. */
+/** True when the last path part of a branch or folder name is the key, or the key plus suffix parts that each have a digit. */
 export function matchesKey(name, key) {
   const last = String(name).split("/").pop();
   if (last === key) return true;
   if (!last.startsWith(`${key}-`)) return false;
   const rest = last.slice(key.length + 1);
-  return /^[a-z0-9]+$/.test(rest) && /\d/.test(rest);
+  return rest.split("-").every((part) => /^[A-Za-z0-9]*\d[A-Za-z0-9]*$/.test(part));
 }
 
 function git(cwd, args) {

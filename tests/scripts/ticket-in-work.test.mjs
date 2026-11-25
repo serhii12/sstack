@@ -61,7 +61,7 @@ test("taskKey: a ticket file gives the title part of its name", () => {
   assert.equal(taskKey(""), null);
 });
 
-test("matchesKey: the key, or the key plus one suffix part with a digit", () => {
+test("matchesKey: the key, or the key plus suffix parts that each have a digit, in any case", () => {
   assert.equal(matchesKey("agent/slugify-0a1", "slugify"), true);
   assert.equal(matchesKey("slugify", "slugify"), true);
   assert.equal(matchesKey("agent/slugify-docs", "slugify"), false);
@@ -69,6 +69,10 @@ test("matchesKey: the key, or the key plus one suffix part with a digit", () => 
   assert.equal(matchesKey("agent/slug-urls-0a1", "slug"), false);
   assert.equal(matchesKey("agent/issue-42-0816a", "issue-4"), false);
   assert.equal(matchesKey("agent/issue-42-0816a", "issue-42"), true);
+  assert.equal(matchesKey("agent/slugify-0A1", "slugify"), true);
+  assert.equal(matchesKey("agent/slugify-2026-11-25", "slugify"), true);
+  assert.equal(matchesKey("agent/slugify-2026-docs", "slugify"), false);
+  assert.equal(matchesKey("agent/slugify-", "slugify"), false);
 });
 
 test("parseWorktrees: reads paths and branches, skips a bare entry", () => {
