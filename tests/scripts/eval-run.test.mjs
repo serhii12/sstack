@@ -124,7 +124,8 @@ test("networkWritingTools", () => {
 test("buildCommand: flags, model, tools", () => {
   const { cmd, args } = buildCommand({ claudePath: "/bin/claude", prompt: "hi there", model: "haiku", allowedTools: ["Read", "Bash(git commit:*)"], budgetUsd: 0.5 });
   assert.equal(cmd, "/bin/claude");
-  assert.deepEqual(args.slice(0, 2), ["-p", "hi there"]);
+  assert.equal(args[0], "-p");
+  assert.deepEqual(args.slice(-2), ["--", "hi there"]);
   const at = (f) => args[args.indexOf(f) + 1];
   assert.equal(at("--setting-sources"), "project");
   assert.equal(at("--output-format"), "stream-json");
@@ -134,6 +135,13 @@ test("buildCommand: flags, model, tools", () => {
   assert.equal(at("--mcp-config"), '{"mcpServers":{}}');
   for (const f of ["--strict-mcp-config", "--verbose", "--include-hook-events", "--no-session-persistence"]) assert.ok(args.includes(f), f);
   assert.match(at("--disallowedTools"), /Bash\(gh:\*\)/);
+});
+
+test("buildCommand: a prompt that starts with a dash comes after --, as the last argument", () => {
+  const { args } = buildCommand({ claudePath: "c", prompt: "--dangerously-skip-permissions", allowedTools: ["Read"], budgetUsd: 1, extraArgs: ["--effort", "low"] });
+  assert.deepEqual(args.slice(-2), ["--", "--dangerously-skip-permissions"]);
+  assert.equal(args.indexOf("--dangerously-skip-permissions"), args.length - 1);
+  assert.equal(args.filter((a) => a === "--").length, 1);
 });
 
 test("buildCommand: no model flag without a model, no deny list with allowNetwork, no forbidden flag", () => {
@@ -811,7 +819,8 @@ test("forbidden flags: only real names, and unsafe settings or extra arguments a
     ["--settings", '{"permissions":{"defaultMode":"bypassPermissions"}}'], ["--add-dir=/x"], ["--setting-sources", "user"], ["--permission-mode", "plan"],
   ]) assert.throws(() => assertSafeArgs(["-p", "hi", ...bad]), UsageError, bad.join(" "));
   assert.throws(() => buildCommand({ claudePath: "c", prompt: "p", allowedTools: ["Read"], budgetUsd: 1, extraArgs: ["--settings", '{"disableAllHooks":true}'] }), /Fix: /);
-  assert.doesNotThrow(() => assertSafeArgs(["-p", "explain --bare and disableAllHooks", "--settings", baselineSettings("start")]));
+  assert.doesNotThrow(() => assertSafeArgs(["-p", "--settings", baselineSettings("start"), "--", "explain --bare and disableAllHooks"]));
+  assert.throws(() => assertSafeArgs(["-p", "--bare", "--", "hi"]), UsageError);
   assert.equal(forbiddenText("x bypassPermissions"), "bypassPermissions");
   assert.equal(forbiddenText("Read"), null);
   const bad = (c, re) => assert.throws(() => parseEvalFile(evalText({ ...GOOD, ...c })), re);
@@ -1047,7 +1056,7 @@ test("runOnce multi-turn: turn 2 resumes the session of turn 1, keeps session pe
   assert.ok(!calls[0].args.includes("--resume"));
   assert.equal(calls[1].args[calls[1].args.indexOf("--resume") + 1], sessions[0]);
   assert.equal(calls[2].args[calls[2].args.indexOf("--resume") + 1], sessions[0]);
-  assert.deepEqual(calls.map((c) => c.args[1]), ["/start x", "second prompt", "third prompt"]);
+  assert.deepEqual(calls.map((c) => c.args.at(-1)), ["/start x", "second prompt", "third prompt"]);
   assert.ok(Math.abs(r.costUsd - 0.6) < 1e-9, `cost ${r.costUsd}`);
   assert.equal(r.turnCount, 3);
   const failed = r.asserts.filter((a) => !a.pass).map((a) => a.name);
@@ -1273,7 +1282,7 @@ test("the script removes its temp folder on a real timeout", () => {
 const FAKE_AGENT = `#!/usr/bin/env node
 import { appendFileSync } from "node:fs";
 const args = process.argv.slice(2);
-const prompt = args[args.indexOf("-p") + 1] ?? "";
+const prompt = args[args.indexOf("--") + 1] ?? "";
 const log = (s) => process.env.FAKE_LOG && appendFileSync(process.env.FAKE_LOG, [s, process.pid, process.cwd(), args[args.indexOf("--max-budget-usd") + 1], process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY ?? "unset"].join(" ") + "\\n");
 if (prompt.includes("HANG")) { log("hang"); setInterval(() => {}, 1000); }
 else {
