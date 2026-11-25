@@ -150,6 +150,8 @@ After the install, the installer prints the next steps. Do them before the first
 4. Commit the new files and get them into `origin/main`, with a pull request or a push by a person. `/build` makes every worktree from `origin/main`. If the stack is not there, the build has no `AGENTS.md`, no git hook and no check.
 5. Type `/start` and say what you want done.
 
+Then commit and push the installed files before the first `/build`. Each task worktree starts from `origin/main`, so it has no git hook and no skills until these files are there.
+
 ## Check the stack
 
 The commands use Bun. The hooks and the installed scripts run on Node 22 or later.
