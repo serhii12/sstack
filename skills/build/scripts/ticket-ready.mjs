@@ -2,8 +2,12 @@
 // ticket-ready: checks that every blocker of one LOCAL ticket is closed.
 //
 // The ticket format is in skills/tickets/TICKET-FORMAT.md. The `Blocked by:` line says
-// `none` or names ticket files, separated by commas. The line parser is the one in
-// skills/tickets/scripts/tickets-lint.mjs. The checks are new code.
+// `none` or names ticket files, separated by commas. The line parser and the fence scanner are
+// copies of the ones in skills/tickets/scripts/tickets-lint.mjs, because a skill ships only its own
+// folder. The checks are new code.
+//
+// A blocker counts as closed only when it has exactly one `Status:` line and that line says
+// `closed`. Two or more lines (a stale copy, or one in a comment or indented code) count as open.
 //
 // Tracker tickets (GitHub, GitLab) are not read here. The `build` skill checks those by hand.
 //
@@ -36,17 +40,23 @@ const NONE = /^none(?:\s*\([^)]*\))?\.?$/i;
 
 export const EXIT = { READY: 0, OPEN: 1, USAGE: 2, BLOCKER_UNREADABLE: 3, TICKET_UNREADABLE: 4, NO_LINE: 5 };
 
-/** Lines outside fenced code blocks, with their line numbers. */
+/**
+ * Lines outside fenced code blocks, with their line numbers.
+ * A fence opens with 3 or more backticks or tildes. It closes only on a line of the same
+ * character, at least as long, with nothing after it.
+ */
 function proseLines(text) {
   const raw = text.split(/\r?\n/);
-  let inFence = false;
+  let open = null;
   const out = [];
   raw.forEach((t, i) => {
-    if (/^\s*(```|~~~)/.test(t)) {
-      inFence = !inFence;
+    const m = t.match(/^\s*(`{3,}|~{3,})(.*)$/);
+    if (open === null) {
+      if (m && !(m[1][0] === "`" && m[2].includes("`"))) open = { ch: m[1][0], len: m[1].length };
+      else out.push({ n: i + 1, t });
       return;
     }
-    if (!inFence) out.push({ n: i + 1, t });
+    if (m && m[1][0] === open.ch && m[1].length >= open.len && m[2].trim() === "") open = null;
   });
   return out;
 }
@@ -81,10 +91,17 @@ export function parseBlockedBy(text) {
   return { kind: "list", blockers, why: "" };
 }
 
-/** The value of the first `Status:` line outside code blocks, or null. */
+/** The `Status:` lines outside code blocks: { n, value } for each. */
+export function statusLines(text) {
+  return proseLines(text)
+    .filter((x) => STATUS.test(x.t))
+    .map((x) => ({ n: x.n, value: x.t.match(STATUS)[1].trim() }));
+}
+
+/** The value of the only `Status:` line outside code blocks, or null when there is none or more than one. */
 export function parseStatus(text) {
-  const l = proseLines(text).find((x) => STATUS.test(x.t));
-  return l ? l.t.match(STATUS)[1].trim() : null;
+  const lines = statusLines(text);
+  return lines.length === 1 ? lines[0].value : null;
 }
 
 /**
@@ -129,6 +146,11 @@ export function checkTicket(ticketArg) {
       btext = readFileSync(file, "utf8");
     } catch (e) {
       missing.push(`Blocker ${name} cannot be read at ${file} (${e.code ?? e.message}). Fix: correct the name, or run \`node .claude/skills/tickets/scripts/tickets-lint.mjs\`.`);
+      continue;
+    }
+    const statuses = statusLines(btext);
+    if (statuses.length > 1) {
+      open.push(`Blocker ${name} counts as open, because it has ${statuses.length} \`Status:\` lines (lines ${statuses.map((l) => l.n).join(", ")}). Fix: keep one \`Status:\` line in ${name}, then run this check again.`);
       continue;
     }
     const status = parseStatus(btext);
