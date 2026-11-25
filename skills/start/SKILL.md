@@ -30,6 +30,7 @@ domain-memory | agent | Keep GLOSSARY.md and ADRs current and challenge fuzzy te
 decide | agent | List options with effort and undo cost, recommend one, then wait
 setup | typed | Record which issue tracker the repo uses
 spec | typed | Write the spec (the PRD) from the plan that the user confirmed
+tickets | typed | Split one spec into small tickets with blocking links
 code-craft | agent | Give the shared terms and rules for modules, interfaces and module boundaries
 <!-- skills:end -->
 
@@ -51,7 +52,7 @@ code-craft | agent | Give the shared terms and rules for modules, interfaces and
 | --- | --- | --- | --- | --- |
 | Read-only question | Explain, review, or investigate. Nothing changes in the repo. | `cite` | None. Ask the question in this session. | |
 | Docs-only change | Edits only to docs, comments or text files. | `content` | If the change is unclear, `/grill`. Otherwise none: edit by hand on a new branch. | `ship` |
-| Code change | Changes behavior, config or dependencies. | `behavior` | `/grill`. | |
+| Code change | Changes behavior, config or dependencies. | `behavior` | `/grill`. After it, the user types `/spec`, then `/tickets`. | |
 | Bug | Something works wrong today. | `red-then-green` | If the right behavior is unclear, `/grill`. | |
 | Ship request | The change is made. The user wants it delivered, as a pull request or a finished change in the repo. | `checks` | None. Follow `AGENTS.md` by hand. | `pr-body`, `ship` |
 
