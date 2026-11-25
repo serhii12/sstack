@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { lint, parseFrontmatter } from "../../scripts/skill-lint.mjs";
+import { BUILT_IN_COMMANDS, lint, parseFrontmatter } from "../../scripts/skill-lint.mjs";
 
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "scripts", "skill-lint.mjs");
 
@@ -36,9 +36,9 @@ function fixture(overrides = {}) {
     "skills/start/SKILL.md": skillText({
       name: "start",
       typed: true,
-      body: `A rule. Held by: scripts/check.mjs\n\n${ROUTER(["start | typed | Sort a task", "ship | typed | Ship it", "helper | agent | Help out"])}`,
+      body: `A rule. Held by: scripts/check.mjs\n\n${ROUTER(["start | typed | Sort a task", "deliver | typed | Ship it", "helper | agent | Help out"])}`,
     }),
-    "skills/ship/SKILL.md": skillText({ name: "ship", typed: true, body: "Ship the change. No fence yet" }),
+    "skills/deliver/SKILL.md": skillText({ name: "deliver", typed: true, body: "Ship the change. No fence yet" }),
     "skills/helper/SKILL.md": skillText({ name: "helper", body: "Help. No fence yet" }),
     ...overrides,
   };
@@ -185,20 +185,20 @@ test("held-by: `Held by: No fence yet` passes and is counted", () => {
 // ---- rule 4: typed chain ----
 
 test("typed-chain: typed workflow that tells the agent to run another typed workflow fails", () => {
-  const r = run({ "skills/start/SKILL.md": startWith("Then run /ship to finish.\nOr load the `ship` skill.") });
+  const r = run({ "skills/start/SKILL.md": startWith("Then run /deliver to finish.\nOr load the `deliver` skill.") });
   const hits = rules(r, "typed-chain");
   assert.equal(hits.length, 2);
-  assert.match(hits[0].fix, /\/ship/);
+  assert.match(hits[0].fix, /\/deliver/);
 });
 
 test("typed-chain: lines that tell the USER to type it are allowed", () => {
-  const r = run({ "skills/start/SKILL.md": startWith("Tell the user: type `/ship` when ready.\nThe next command is /ship.") });
+  const r = run({ "skills/start/SKILL.md": startWith("Tell the user: type `/deliver` when ready.\nThe next command is /deliver.") });
   assert.deepEqual(rules(r, "typed-chain"), []);
 });
 
 test("typed-chain: an agent skill may mention a typed skill, and paths are not references", () => {
-  const helper = skillText({ name: "helper", body: "Suggest /ship at the end. No fence yet" });
-  const start = startWith("See skills/ship/SKILL.md for details.");
+  const helper = skillText({ name: "helper", body: "Suggest /deliver at the end. No fence yet" });
+  const start = startWith("See skills/deliver/SKILL.md for details.");
   const r = run({ "skills/helper/SKILL.md": helper, "skills/start/SKILL.md": start });
   assert.deepEqual(rules(r, "typed-chain"), []);
 });
@@ -207,7 +207,7 @@ function startWith(extra) {
   return skillText({
     name: "start",
     typed: true,
-    body: `${extra}\n\n${ROUTER(["start | typed | Sort a task", "ship | typed | Ship it", "helper | agent | Help out"])}`,
+    body: `${extra}\n\n${ROUTER(["start | typed | Sort a task", "deliver | typed | Ship it", "helper | agent | Help out"])}`,
   });
 }
 
@@ -218,12 +218,12 @@ test("router: wrong type, missing folder entry and unknown entry each fail", () 
     "skills/start/SKILL.md": skillText({
       name: "start",
       typed: true,
-      body: ROUTER(["start | typed | Sort", "ship | agent | Ship it", "ghost | agent | Not there"]),
+      body: ROUTER(["start | typed | Sort", "deliver | agent | Ship it", "ghost | agent | Not there"]),
     }),
   });
   const msgs = rules(r, "router").map((p) => p.message);
   assert.equal(msgs.length, 3);
-  assert.ok(msgs.some((m) => /ship.*agent.*typed/.test(m)));
+  assert.ok(msgs.some((m) => /deliver.*agent.*typed/.test(m)));
   assert.ok(msgs.some((m) => /ghost/.test(m)));
   assert.ok(msgs.some((m) => /skills\/helper\/ is not in the router/.test(m)));
 });
@@ -235,7 +235,7 @@ test("router: missing markers and malformed line fail", () => {
     "skills/start/SKILL.md": skillText({
       name: "start",
       typed: true,
-      body: ROUTER(["start | typed | Sort", "ship | typed | Ship", "helper | agent | Help", "just a sentence"]),
+      body: ROUTER(["start | typed | Sort", "deliver | typed | Ship", "helper | agent | Help", "just a sentence"]),
     }),
   });
   assert.equal(rules(bad, "router").length, 1);
@@ -342,4 +342,59 @@ test("pointers: a broken link in a file beside SKILL.md fails, links in code fen
     "skills/helper/REFERENCE.md": ["See [other](OTHER.md).", "```md", "- [example](./src/none/GLOSSARY.md)", "```", ""].join("\n"),
   });
   assert.deepEqual(rules(ok, "pointer"), []);
+});
+
+test("cli: run through a symlink still lints (exit 1 on a known problem)", () => {
+  const dirty = fixture({ "skills/helper/SKILL.md": skillText({ name: "helper", body: "First; second." }) });
+  const links = mkdtempSync(join(tmpdir(), "skill-lint-link-"));
+  try {
+    const link = join(links, "lint.mjs");
+    symlinkSync(SCRIPT, link);
+    // Spawn `node`, not process.execPath. Under `bun test` that is Bun, and Bun resolves a symlink in
+    // argv[1] by itself, so a script that lost its realpathSync call would still pass here.
+    const r = spawnSync("node", [link, dirty], { encoding: "utf8" });
+    assert.equal(r.status, 1, r.stderr);
+    assert.match(r.stdout, /semicolon/);
+  } finally {
+    rmSync(dirty, { recursive: true, force: true });
+    rmSync(links, { recursive: true, force: true });
+  }
+});
+
+// ---- built-in names and angle brackets ----
+
+test("name: a skill named like a built-in command is an error", () => {
+  const r = run({
+    "skills/review/SKILL.md": skillText({ name: "review", body: "Review. No fence yet" }),
+  });
+  const hits = rules(r, "name-builtin");
+  assert.equal(hits.length, 1);
+  assert.match(hits[0].message, /review/);
+  assert.match(hits[0].path, /skills\/review\/SKILL\.md/);
+});
+
+test("name: every built-in command name is flagged, and a near name is not", () => {
+  for (const name of BUILT_IN_COMMANDS) {
+    const r = run({ [`skills/${name}/SKILL.md`]: skillText({ name, body: "x. No fence yet" }) });
+    assert.equal(rules(r, "name-builtin").length, 1, name);
+  }
+  assert.equal(BUILT_IN_COMMANDS.length, 12);
+  const ok = run({ "skills/reviewer/SKILL.md": skillText({ name: "reviewer", body: "x. No fence yet" }) });
+  assert.equal(rules(ok, "name-builtin").length, 0);
+});
+
+test("description: an angle bracket is an error", () => {
+  for (const d of ["Use for <thing> tasks.", "Use when a > b.", "Use when a < b."]) {
+    const r = run({ "skills/helper/SKILL.md": skillText({ name: "helper", description: `"${d}"`, body: "Help. No fence yet" }) });
+    assert.equal(rules(r, "description-brackets").length, 1, d);
+  }
+  const ok = run({ "skills/helper/SKILL.md": skillText({ name: "helper", description: "Plain words only.", body: "Help. No fence yet" }) });
+  assert.equal(rules(ok, "description-brackets").length, 0);
+});
+
+test("provenance fix text uses American spelling", () => {
+  const r = run({ "skills/helper/SKILL.md": skillText({ name: "helper", provenance: false, body: "Help. No fence yet" }) });
+  const hit = rules(r, "provenance")[0];
+  assert.match(hit.fix, /license/);
+  assert.doesNotMatch(hit.fix, /licence/);
 });

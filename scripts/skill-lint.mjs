@@ -16,14 +16,18 @@
 // Usage: node scripts/skill-lint.mjs [--json] [rootDir]
 // Exit 0 clean, 1 problems found, 2 usage or read error.
 
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { join, relative, resolve, dirname } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 const REPO_PREFIXES = ["skills", "hooks", "scripts", "templates", "tests"];
 const MAX_LINES = 150;
 // Files that a skill names because they live in the user's project, not here.
 const PROJECT_FILES = new Set(["AGENTS.md", "CLAUDE.md", "GLOSSARY.md", "GLOSSARY-MAP.md", "README.md", "CONTEXT.md"]);
+
+// Built-in commands of the agent tool. A skill with one of these names would clash with the command.
+// Source: Claude Code built-in commands, checked 25 Nov 2026.
+export const BUILT_IN_COMMANDS = ["init", "debug", "review", "code-review", "security-review", "simplify", "verify", "run", "design", "loop", "ship", "doctor"];
 
 export class LintError extends Error {}
 
@@ -168,6 +172,12 @@ export function lint(rootArg) {
           add(file, 1, "frontmatter", `missing or empty \`${key}\``, `add \`${key}: ...\` to the frontmatter.`);
         }
       }
+      if (fm.data.name && BUILT_IN_COMMANDS.includes(fm.data.name)) {
+        add(file, 1, "name-builtin", `skill name \`${fm.data.name}\` is the same as a built-in command of the agent tool`, `rename the skill and its folder. The built-in commands are: ${BUILT_IN_COMMANDS.join(", ")}.`);
+      }
+      if (/[<>]/.test(fm.data.description ?? "")) {
+        add(file, 1, "description-brackets", "description contains an angle bracket (`<` or `>`)", "remove the angle brackets from the description. Use plain words instead.");
+      }
       if (fm.data.name && fm.data.name !== folder) {
         add(file, 1, "name-folder", `frontmatter name \`${fm.data.name}\` does not match folder \`${folder}\``, `set \`name: ${folder}\` in skills/${folder}/SKILL.md, or rename the folder.`);
       }
@@ -181,7 +191,7 @@ export function lint(rootArg) {
       add(file, MAX_LINES + 1, "max-lines", `SKILL.md has ${lines.length} lines (limit ${MAX_LINES})`, "move long reference material to a file beside SKILL.md and link to it.");
     }
     if (!lines.some((l) => !l.fence && /^##\s+Provenance\s*$/.test(l.t))) {
-      add(file, 1, "provenance", "no `## Provenance` section", "add a `## Provenance` section naming each source file, repo, licence, copyright holder and what changed.");
+      add(file, 1, "provenance", "no `## Provenance` section", "add a `## Provenance` section naming each source file, repo, license, copyright holder and what changed.");
     }
     for (const l of lines) {
       if (l.t.includes("\u2014") || l.t.includes("\u2013")) {
@@ -397,6 +407,16 @@ function main(argv) {
   return result.problems.length === 0 ? 0 : 1;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+// Compare real paths so a run through a symlink still counts as a direct run.
+function isMain() {
+  if (!process.argv[1]) return false;
+  try {
+    return realpathSync(resolve(process.argv[1])) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (isMain()) {
   process.exitCode = main(process.argv.slice(2));
 }
