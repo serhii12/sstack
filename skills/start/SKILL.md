@@ -41,6 +41,7 @@ prove | agent | Gather proof that a change works and mark each acceptance check 
 code-craft | agent | Give the shared terms and rules for modules, interfaces and module boundaries
 improve-codebase | typed | Scan the code for shallow modules and rule breaks, and write a ranked report
 triage | typed | Sort issues that other people filed into a state, with a brief, questions or a close reason
+prototype | agent | Build throwaway code on its own branch to answer one design question
 <!-- skills:end -->
 
 **Not built yet:** `ship`, `pr-body`, `skill-craft`, `security-review`. Mention each one only as "not built yet". Say what to do by hand in the meantime. Never tell the user to type one. No fence yet
@@ -64,6 +65,7 @@ triage | typed | Sort issues that other people filed into a state, with a brief,
 | Code change | Changes behavior, config or dependencies. | `behavior` | `/grill`. After it, the user types `/spec`, then `/tickets`, then `/build` for each ticket. | |
 | Bug | Something works wrong today. | `red-then-green` | If the right behavior is unclear, `/grill`. Otherwise `/diagnose`. | |
 | Report from someone else | A bug report or a request that another person filed on the tracker. | `cite` | The user types `/triage`. After it, `/build <issue>` for a `ready-for-agent` issue, or `/grill` for a design question. | |
+| Design question | A question about logic or a screen that talk cannot settle. Nothing ships. | `behavior` | `/prototype`. After it, `/grill` with the verdict. | |
 | Ship request | The change is made. The user wants it delivered, as a pull request or a finished change in the repo. | `checks` | None. Follow `AGENTS.md` by hand. | `pr-body`, `ship` |
 
 What each type needs:
@@ -73,6 +75,7 @@ What each type needs:
 - Code change: use its own worktree and branch. Run the repo's checks. Show proof that the changed behavior works.
 - Bug: do everything that a code change needs. Before you fix anything, get a command that fails on this bug.
 - Report from someone else: use no worktree and no branch. A triage change is a tracker write. The maintainer approves each change.
+- Design question: use a `prototype/<name>` branch and the folder `prototypes/<name>/`. Never merge the branch into `main`. The verdict goes to `/grill`.
 - Ship request: sort a task as this type only when the user asks for one. A plan, a review or a throwaway experiment is not a ship request.
 
 If the user wants to weigh trade-offs, the user can type `/decide`.
@@ -97,7 +100,7 @@ Use this template. It is strict: keep every field name.
 
 ```markdown
 # Handoff: <one-line task>
-Task type: <read-only | docs-only | code change | bug | report from someone else | ship request>
+Task type: <read-only | docs-only | code change | bug | report from someone else | design question | ship request>
 Evidence level: <cite | content | behavior | red-then-green | checks>
 Why this type: <one line>
 Next command: <command, or "none: ask in this session">
