@@ -823,3 +823,64 @@ test("ensureGitignore: works alone on a folder", () => {
     rmSync(t, { recursive: true, force: true });
   }
 });
+
+// ---- next steps: what a person must do before the first /build (e2e run 1 break 4, run 2 break 7) ----
+
+const stepsOf = (out) => out.slice(out.findIndex((l) => l.startsWith("Next steps")));
+
+test("next steps: an empty repo with no origin hears about AGENTS.md, the missing check, /setup, the remote and /start", () => {
+  const source = makeSource();
+  const target = mkdtempSync(join(tmpdir(), "install-next-"));
+  try {
+    write(source, "templates/AGENTS.md", "Project: `<one sentence>`. Replace this line.\n");
+    gitInit(target);
+    const out = [];
+    const r = install({ source, target, log: (l) => out.push(l), claudeVersion: () => null });
+    const steps = stepsOf(out);
+    assert.deepEqual(r.nextSteps, steps);
+    assert.match(steps[0], /^Next steps, before the first \/build:/);
+    assert.match(steps[1], /^1\. Fill in the Project line .* AGENTS\.md\./);
+    assert.match(steps[2], /^2\. This repo has no check command yet, so no commit runs a check\. That includes the commits of the first ticket\./);
+    assert.match(steps[3], /^3\. Type \/setup once/);
+    assert.match(steps[4], /^4\. This repo has no origin remote\. \/build makes every worktree from origin\/main\./);
+    assert.match(steps[5], /^5\. Then type \/start/);
+    assert.equal(steps.length, 6);
+  } finally {
+    rmSync(source, { recursive: true, force: true });
+    rmSync(target, { recursive: true, force: true });
+  }
+});
+
+test("next steps: a repo with an origin and a package.json is told to fill .stack/check and to get the files into origin/main", () => {
+  withGitTarget((source, target) => {
+    write(target, "package.json", "{}\n");
+    assert.equal(gitOut(target, "remote", "add", "origin", "https://example.invalid/r.git").status, 0);
+    const steps = install({ source, target, log: quiet, claudeVersion: () => null }).nextSteps;
+    const text = steps.join("\n");
+    assert.match(text, /Put the check command of this repo in \.stack\/check/);
+    assert.doesNotMatch(text, /no check command yet/);
+    assert.match(text, /Commit the new files and get them into origin\/main/);
+    assert.doesNotMatch(text, /no origin remote/);
+    assert.doesNotMatch(text, /AGENTS\.md/, "the template of makeSource has no placeholder line");
+  });
+});
+
+test("next steps: a repo that already has a tracker doc and a real check is not told to run /setup or to fill .stack/check", () => {
+  withGitTarget((source, target) => {
+    write(target, "docs/agents/tracker.md", "# Tracker\n");
+    write(target, ".stack/check", "#!/bin/sh\nexec npm test\n", 0o755);
+    const text = install({ source, target, log: quiet, claudeVersion: () => null }).nextSteps.join("\n");
+    assert.doesNotMatch(text, /\/setup/);
+    assert.doesNotMatch(text, /\.stack\/check/);
+    assert.match(text, /Then type \/start/);
+  });
+});
+
+test("next steps: a dry run prints the same steps and writes nothing", () => {
+  withGitTarget((source, target) => {
+    const steps = install({ source, target, dryRun: true, log: quiet, claudeVersion: () => null }).nextSteps.join("\n");
+    assert.match(steps, /no check command yet/);
+    assert.match(steps, /Type \/setup once/);
+    assert.equal(present(join(target, ".stack", "check")), false);
+  });
+});
