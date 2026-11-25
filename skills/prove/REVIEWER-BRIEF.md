@@ -23,7 +23,7 @@ Differs: <what differs from the check, or "nothing">
 Also: <anything else that looks wrong, or "nothing">
 
 Rules for the verdict:
-- Write "matches" only when you can see every part of the check in the images.
+- Write "matches" only when you can see every part of the check in the images. A part on the list "Covered by a text file" below is out of your scope. Do not judge it.
 - Write "does not match" when an image is blank, an error page, a login screen, cut off, or does not show what the check names.
 - Write "cannot tell" when the images do not hold enough detail. Say which image would help.
 - Under "Also" report overlap, cut-off text, unreadable contrast, broken images, error messages and personal data that you see.
@@ -32,9 +32,11 @@ Rules for the verdict:
 Checks:
 1. <check text>
 Images: <path>, <path>
+Covered by a text file: <the parts of the check that a text file proves, such as the URL, or "none">
 
 2. <check text>
 Images: <path>
+Covered by a text file: none
 ```
 
 For a before and after pair, write which image is `before` and which is `after`, and add the words "The check passes only if the after image shows it and the before image does not."

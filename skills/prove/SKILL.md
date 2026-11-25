@@ -43,6 +43,9 @@ Write one line for each check before you capture anything. Size the evidence to 
 A docs-only change has no runtime evidence. Do not run the app to make some. A check that needs a runtime you do not have is `untested`. Say why.
 No fence yet
 
+Some parts of a check do not show on the screen, such as the URL, a redirect or a history entry. Prove such a part with a text file, not with an image. The capture script writes the URL and `history.length` after each step to `output/<flow>-url.json`. Name that file in the entry of the check. Tell the image reviewer which parts the text file covers. Do not draw a caption into the page. A check with no visible part needs no image review.
+No fence yet
+
 ## 3. Gather the evidence
 
 1. Work in the checkout that holds the change. Make no new worktree or branch, except for the `before` capture in item 4.
