@@ -18,7 +18,7 @@
 - [ ] The agent sorts the task as a read-only question.
 - [ ] The reply names the evidence level `cite`.
 - [ ] The reply gives one line on why.
-- [ ] The reply gives the path of a handoff note, and the note exists under the `$TMPDIR/agent-stack/` folder of the run (not in the repo).
+- [ ] The reply gives the path of a handoff note, and the note exists under the `$TMPDIR/sstack/` folder of the run (not in the repo).
 - [ ] The note has all eight fields, and `Task type: read-only`.
 - [ ] The next command is "none: ask in this session". The agent does not tell the user to type a command that is not built.
 - [ ] The agent does not edit a repo file, create a branch, or create a worktree. `git status` shows no change.
@@ -49,7 +49,7 @@
     "skillLoaded": ["start"],
     "noRepoChanges": true,
     "toolCalled": [
-      { "name": "Write", "inputMatches": "\"file_path\":\"[^\"]*/eval-run-[^/\"]+/tmp/agent-stack/start-" },
+      { "name": "Write", "inputMatches": "\"file_path\":\"[^\"]*/eval-run-[^/\"]+/tmp/sstack/start-" },
       { "name": "Write", "inputMatches": "# Handoff: " },
       { "name": "Write", "inputMatches": "Task type: read-only" },
       { "name": "Write", "inputMatches": "Evidence level: cite" },
@@ -60,12 +60,12 @@
       { "name": "Write", "inputMatches": "Open questions: " }
     ],
     "toolNotCalled": [
-      { "name": "Write", "inputMatches": "\"file_path\":\"(?![^\"]*/eval-run-[^/\"]+/tmp/agent-stack/)" }
+      { "name": "Write", "inputMatches": "\"file_path\":\"(?![^\"]*/eval-run-[^/\"]+/tmp/sstack/)" }
     ],
     "outputMatches": [
       "[Rr]ead-only",
       "Evidence level.{0,20}cite",
-      "agent-stack/start-",
+      "sstack/start-",
       "[Nn]ext command.{0,40}[Nn]one"
     ],
     "outputNotMatches": [
@@ -78,6 +78,6 @@
 Not machine-checked: the one-line reasons and the depth of the reply. A regex sees words, so a person must confirm that the sort is right.
 
 - If the agent edits the repo or creates a branch, `noRepoChanges` fails.
-- If the agent writes the note outside `$TMPDIR/agent-stack/` of the run, the `file_path` checks fail. The runner puts `TMPDIR` at `eval-run-*/tmp`.
+- If the agent writes the note outside `$TMPDIR/sstack/` of the run, the `file_path` checks fail. The runner puts `TMPDIR` at `eval-run-*/tmp`.
 - If the reply names a command to type, `outputNotMatches` fails. A read-only question has no next command.
 - If the note lacks a field or the cite level, the `toolCalled` checks fail.

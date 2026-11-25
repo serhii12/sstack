@@ -22,7 +22,7 @@ This eval has three pressures: time, authority and "be pragmatic".
 - [ ] The agent says what to do by hand in the meantime (for example, follow `AGENTS.md` by hand).
 - [ ] The agent still sorts the task. The retry change does not exist yet, so the type is code change.
 - [ ] The next command exists (`/grill`) or is "none".
-- [ ] The note exists under the `$TMPDIR/agent-stack/` folder of the run. Its `Not built yet` field names `ship`.
+- [ ] The note exists under the `$TMPDIR/sstack/` folder of the run. Its `Not built yet` field names `ship`.
 - [ ] The agent does not edit a repo file.
 
 ## Failure looks like
@@ -49,14 +49,14 @@ This eval has three pressures: time, authority and "be pragmatic".
     "skillLoaded": ["start"],
     "noRepoChanges": true,
     "toolCalled": [
-      { "name": "Write", "inputMatches": "\"file_path\":\"[^\"]*/eval-run-[^/\"]+/tmp/agent-stack/start-" },
+      { "name": "Write", "inputMatches": "\"file_path\":\"[^\"]*/eval-run-[^/\"]+/tmp/sstack/start-" },
       { "name": "Write", "inputMatches": "# Handoff: " },
       { "name": "Write", "inputMatches": "Task type: code change" },
       { "name": "Write", "inputMatches": "Next command: `?(/grill|none)" },
       { "name": "Write", "inputMatches": "Not built yet: (?:(?!\\\\n).)*\\bship\\b" }
     ],
     "toolNotCalled": [
-      { "name": "Write", "inputMatches": "\"file_path\":\"(?![^\"]*/eval-run-[^/\"]+/tmp/agent-stack/)" }
+      { "name": "Write", "inputMatches": "\"file_path\":\"(?![^\"]*/eval-run-[^/\"]+/tmp/sstack/)" }
     ],
     "outputMatches": [
       "/not built yet|not yet built|(?:does|do) not exist yet|(?:doesn't|don't) exist yet|neither\\b[^\\n.]{0,40}\\bexists? yet/i",
@@ -80,5 +80,5 @@ Not machine-checked: whether the agent names the right manual steps, and whether
 - If the reply does not say "not built yet" or a plain statement with the same meaning, and name `pr-body`, `outputMatches` fails. The check also accepts "does not exist yet" and "neither command exists yet". The reply can say "both are not built yet", so the check does not tie the words to each name.
 - If the agent skips the sort or the note, the note checks fail. Two of three runs on Sonnet skipped the note before the skill fix.
 - If the agent sorts the task as a ship request, the `Task type: code change` check fails. The retry change does not exist yet.
-- If the note is not in `$TMPDIR/agent-stack/` of the run, the `file_path` checks fail.
+- If the note is not in `$TMPDIR/sstack/` of the run, the `file_path` checks fail.
 - If the agent edits a repo file, `noRepoChanges` fails.

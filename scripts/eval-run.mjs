@@ -1700,7 +1700,7 @@ export async function main(argv, { stackRoot = STACK_ROOT, stdout = (s) => proce
   const claudePath = picked.path;
   stdout(`Claude binary: ${claudePath} (from ${picked.source})`);
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const outDir = resolve(opts.out ?? join(tmpdir(), "agent-stack-evals", stamp));
+  const outDir = resolve(opts.out ?? join(tmpdir(), "sstack-evals", stamp));
   mkdirSync(outDir, { recursive: true });
 
   // One job for each run, in plan order. Up to --jobs runs go at once. Each run has its own temp folder and its own

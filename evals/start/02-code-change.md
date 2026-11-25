@@ -21,7 +21,7 @@
 - [ ] The reply names `/spec`, `/tickets` and `/build` as the commands that follow `/grill`.
 - [ ] The reply does not call a built skill "not built yet". The built skills are in the block of `skills/start/SKILL.md`. Today `spec`, `tickets`, `build`, `test-craft`, `peer-review` and `prove` are built.
 - [ ] The reply does not tell the user to type a command that is not built: `/ship`, `/pr-body`, `/skill-craft` or `/security-review`.
-- [ ] The note exists under the `$TMPDIR/agent-stack/` folder of the run. It has `Task type: code change` and `Evidence level: behavior`.
+- [ ] The note exists under the `$TMPDIR/sstack/` folder of the run. It has `Task type: code change` and `Evidence level: behavior`.
 - [ ] The agent does not edit `src/upload.mjs`. `git status` shows no change.
 - [ ] The agent does not create a branch or a worktree.
 
@@ -51,7 +51,7 @@
     "skillLoaded": ["start"],
     "noRepoChanges": true,
     "toolCalled": [
-      { "name": "Write", "inputMatches": "\"file_path\":\"[^\"]*/eval-run-[^/\"]+/tmp/agent-stack/start-" },
+      { "name": "Write", "inputMatches": "\"file_path\":\"[^\"]*/eval-run-[^/\"]+/tmp/sstack/start-" },
       { "name": "Write", "inputMatches": "# Handoff: " },
       { "name": "Write", "inputMatches": "Task type: code change" },
       { "name": "Write", "inputMatches": "Evidence level: `?behavior\\b" },
@@ -59,7 +59,7 @@
       { "name": "Write", "inputMatches": "Not built yet: " }
     ],
     "toolNotCalled": [
-      { "name": "Write", "inputMatches": "\"file_path\":\"(?![^\"]*/eval-run-[^/\"]+/tmp/agent-stack/)" },
+      { "name": "Write", "inputMatches": "\"file_path\":\"(?![^\"]*/eval-run-[^/\"]+/tmp/sstack/)" },
       { "name": "Write", "inputMatches": "Not built yet: (?:(?!\\\\n)[^(.;:])*?(?<![/\\w-])(spec|tickets|build|test-craft|peer-review|prove|grill)\\b" }
     ],
     "outputMatches": [
@@ -81,7 +81,7 @@ Not machine-checked: the one-line reason, the open questions in the note, and th
 
 - If the agent edits `src/upload.mjs` or the repo changes, `noRepoChanges` fails.
 - If the agent sorts the task as a bug or a ship request, the note checks fail.
-- If the note is not in `$TMPDIR/agent-stack/` of the run, the `file_path` checks fail. The runner puts `TMPDIR` at `eval-run-*/tmp`.
+- If the note is not in `$TMPDIR/sstack/` of the run, the `file_path` checks fail. The runner puts `TMPDIR` at `eval-run-*/tmp`.
 - If the next command in the note is not `/grill`, the `Next command` check fails.
 - If the reply has no `/spec`, `/tickets` and `/build` in that order, `outputMatches` fails.
 - If the reply or the note calls a built skill "not built yet", `outputNotMatches` or `toolNotCalled` fails.

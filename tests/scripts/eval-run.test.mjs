@@ -288,19 +288,19 @@ test("assert outputMatches / outputNotMatches", () => {
 test("assert fileExists / fileAbsent / fileMatches, in the repo and in $TMPDIR", () => {
   const r = check(
     {
-      fileExists: ["a.txt", "nope.txt", "$TMPDIR/agent-stack/note.md", "$TMPDIR/missing.md"],
-      fileAbsent: ["a.txt", "nope.txt", "$TMPDIR/agent-stack/note.md"],
+      fileExists: ["a.txt", "nope.txt", "$TMPDIR/sstack/note.md", "$TMPDIR/missing.md"],
+      fileAbsent: ["a.txt", "nope.txt", "$TMPDIR/sstack/note.md"],
       fileMatches: [{ path: "a.txt", pattern: "^hel+o" }, { path: "a.txt", pattern: "bye" }, { path: "nope.txt", pattern: "." }],
     },
-    { mutate: (l) => { mkdirSync(join(l.tmp, "agent-stack")); writeFileSync(join(l.tmp, "agent-stack", "note.md"), "n"); } },
+    { mutate: (l) => { mkdirSync(join(l.tmp, "sstack")); writeFileSync(join(l.tmp, "sstack", "note.md"), "n"); } },
   );
   assert.equal(r["fileExists:a.txt"], true);
   assert.equal(r["fileExists:nope.txt"], false);
-  assert.equal(r["fileExists:$TMPDIR/agent-stack/note.md"], true);
+  assert.equal(r["fileExists:$TMPDIR/sstack/note.md"], true);
   assert.equal(r["fileExists:$TMPDIR/missing.md"], false);
   assert.equal(r["fileAbsent:a.txt"], false);
   assert.equal(r["fileAbsent:nope.txt"], true);
-  assert.equal(r["fileAbsent:$TMPDIR/agent-stack/note.md"], false);
+  assert.equal(r["fileAbsent:$TMPDIR/sstack/note.md"], false);
   assert.equal(r["fileMatches:a.txt~^hel+o"], true);
   assert.equal(r["fileMatches:a.txt~bye"], false);
   assert.equal(r["fileMatches:nope.txt~."], false);

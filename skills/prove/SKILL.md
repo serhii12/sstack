@@ -25,7 +25,7 @@ description: Gathers proof that a change works and marks each acceptance check p
 
 1. Find the task name. It is the name in `.artifacts/<task>/`. If you have none, use the branch name with `/` changed to `-`.
 2. Read the `## Acceptance checks` list of the ticket. For a tracker issue, save its body to `.artifacts/<task>/ticket.md` first.
-3. Take the evidence level from the handoff note of `/start`, at `$TMPDIR/agent-stack/start-<short-task-name>.md`. If there is no note, pick it from the table in step 2 and say which you picked.
+3. Take the evidence level from the handoff note of `/start`, at `$TMPDIR/sstack/start-<short-task-name>.md`. If there is no note, pick it from the table in step 2 and say which you picked.
 4. If no ticket has Acceptance checks, take the checks from the request of the user. Write them as `## Acceptance checks` in `.artifacts/<task>/ticket.md`. Say in the report that the checks came from the request. No fence yet
 
 ## 2. Plan one piece of evidence for each check

@@ -1,4 +1,4 @@
-# agent-stack
+# sstack
 
 Our own set of skills, hooks and scripts for AI coding agents. It reuses the best parts of four public stacks and changes them to fit how we work. The skills are plain `SKILL.md` files and Node scripts, so any agent tool can use them. Claude Code is the first agent tool that we support.
 
@@ -121,9 +121,11 @@ Not built yet: the ship step (stage 5 of the loop). There is no command that ope
 
 ## Install into a project
 
-The installer needs Node 22 or later.
+The installer needs Node 22 or later. Run it from a clone of this repo.
 
 ```
+git clone https://github.com/serhii12/sstack.git
+cd sstack
 node scripts/install.mjs --dry-run /path/to/project
 node scripts/install.mjs /path/to/project
 ```

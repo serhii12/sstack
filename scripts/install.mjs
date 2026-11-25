@@ -268,7 +268,7 @@ function enableHooksPath(tgt, dryRun) {
 }
 
 export const EVIDENCE_MEDIA = ["png", "jpg", "jpeg", "webp", "gif", "mp4", "webm"];
-export const GITIGNORE_HEADER = "# agent-stack: evidence media from /prove stays out of commits. /land pushes it to the branch evidence/<task>.";
+export const GITIGNORE_HEADER = "# sstack: evidence media from /prove stays out of commits. /land pushes it to the branch evidence/<task>.";
 export const GITIGNORE_RULES = EVIDENCE_MEDIA.map((ext) => `.artifacts/*/evidence/**/*.${ext}`);
 const BROAD_ARTIFACTS = new Set([".artifacts", ".artifacts/", "/.artifacts", "/.artifacts/", ".artifacts/*", ".artifacts/**", "/.artifacts/*", "/.artifacts/**"]);
 

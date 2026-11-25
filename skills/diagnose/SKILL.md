@@ -38,7 +38,7 @@ No fence yet
 
 ## Keep a notebook
 
-The "notebook" is the running record of the diagnosis. Write each entry as soon as its step is complete. Save the notebook with the Write tool outside the repo, at `$TMPDIR/agent-stack/diagnose-<short-name>.md`. If `TMPDIR` is not set, use `/tmp`. Each entry holds the cause that you tested, the exact command, what happened, and what it rules in or out. For the format, read [REFERENCE.md](REFERENCE.md#notebook-format).
+The "notebook" is the running record of the diagnosis. Write each entry as soon as its step is complete. Save the notebook with the Write tool outside the repo, at `$TMPDIR/sstack/diagnose-<short-name>.md`. If `TMPDIR` is not set, use `/tmp`. Each entry holds the cause that you tested, the exact command, what happened, and what it rules in or out. For the format, read [REFERENCE.md](REFERENCE.md#notebook-format).
 
 A disproved cause is a result. Write it down with its evidence, then move on.
 No fence yet
@@ -128,7 +128,7 @@ No fence yet
 
 ## Troubleshooting
 
-- Problem: the shell does not show `TMPDIR`. Fix: write the notebook to `/tmp/agent-stack/diagnose-<short-name>.md`.
+- Problem: the shell does not show `TMPDIR`. Fix: write the notebook to `/tmp/sstack/diagnose-<short-name>.md`.
 - Problem: the Phase 1 command goes green on the first run. Cause: the command does not reach the real code path, or the failure is intermittent. Fix: rebuild the command, or raise the rate.
 
 ## Provenance

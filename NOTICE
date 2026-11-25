@@ -1,7 +1,7 @@
-agent-stack
+sstack
 Copyright (c) 2026 Serhii Panchyshyn. MIT License, see LICENSE.
 
-agent-stack reuses and adapts text and code from the projects below.
+sstack reuses and adapts text and code from the projects below.
 Each entry names one source file, the files of this repo that use it, and how.
 "Adapted" means that we copied text or code and changed it. "Idea only" means
 that we took an idea and wrote our own text. The "## Provenance" section of each

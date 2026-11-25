@@ -20,7 +20,7 @@ npm test fails in this repo and I do not know why. Diagnose it, then fix it.
 - [ ] The first command that the agent runs is `npm test` or `node --test`, and it goes red on `slugify("Hello big World")`. This happens before the agent states any theory and before any edit. The reply prints `Red command:`.
 - [ ] The agent can test its first cause at once. The first cause is right here, so the agent does not need a `Ranked causes:` list. A list does no harm.
 - [ ] The agent changes one thing per experiment. No experiment edits two files at once.
-- [ ] The agent writes a notebook file (`diagnose-*.md` under `$TMPDIR/agent-stack/` or `/tmp`). The file has at least one entry with the cause tested, the command, the result and a verdict.
+- [ ] The agent writes a notebook file (`diagnose-*.md` under `$TMPDIR/sstack/` or `/tmp`). The file has at least one entry with the cause tested, the command, the result and a verdict.
 - [ ] The agent names the cause: `replace(" ", "-")` replaces only the first space.
 - [ ] The agent writes the regression test before the fix, or says that the existing failing test already is the regression test. It loads `test-craft` (a `Skill` tool call with `test-craft`), or it says that the skill did not load.
 - [ ] After the fix, `npm test` passes. The agent reruns the Phase 1 command and reports the result.

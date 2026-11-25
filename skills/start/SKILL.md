@@ -94,7 +94,7 @@ At every level, `untested` is a valid result. Report it. Never report a pass tha
 
 ## Handoff note
 
-Save the note with the Write tool in the OS temp folder, outside the repo, at `$TMPDIR/agent-stack/start-<short-task-name>.md`. To find the folder, run `echo $TMPDIR` as a command of its own. If the output is empty, use `/tmp`. A note there travels to a new worktree or session. Nobody commits it by mistake.
+Save the note with the Write tool in the OS temp folder, outside the repo, at `$TMPDIR/sstack/start-<short-task-name>.md`. To find the folder, run `echo $TMPDIR` as a command of its own. If the output is empty, use `/tmp`. A note there travels to a new worktree or session. Nobody commits it by mistake.
 
 Use this template. It is strict: keep every field name.
 
@@ -128,7 +128,7 @@ Open questions: How many retries?
 ## Troubleshooting
 
 - Error: the user asks `start` to make the change. Cause: `start` only sorts. Fix: sort the task, name the next command, and tell the user to type it.
-- Error: the Write tool fails in `$TMPDIR`. Cause: the folder is not writable. Fix: save the note in `/tmp/agent-stack/` and give that path.
+- Error: the Write tool fails in `$TMPDIR`. Cause: the folder is not writable. Fix: save the note in `/tmp/sstack/` and give that path.
 
 ## Notes
 
