@@ -15,14 +15,24 @@
 // names a ticket in the same folder. A name with a folder part, such as `../other/01-a.md`,
 // names a ticket in another folder.
 //
+// A closed blocker is done only when its work is in `origin/main`. `/build` closes a local ticket when
+// the branch is built, before anybody merges it, and writes `Built on branch <b>, last commit <sha>.`
+// under `## Comments`. So when a closed blocker has that line, the check runs
+// `git merge-base --is-ancestor <sha> origin/main` in the folder of the blocker. A squash or rebase
+// merge leaves the commit out of `origin/main`. Then a line that starts with `Merged` marks the blocker
+// done. A closed blocker with no `Built on branch` line was closed by a person and counts as done.
+// Run `git fetch origin` first, or the check reads an old `origin/main`.
+//
 // Exit codes:
-//   0  ready: the ticket has no blocker, or every blocker has `Status: closed`
-//   1  a blocker is open (its `Status:` line is missing or is not `closed`)
+//   0  ready: the ticket has no blocker, or every blocker is closed and its work is in `origin/main`
+//   1  a blocker is open (its `Status:` line is missing or is not `closed`), or it is closed and its
+//      built commit is not in `origin/main`
 //   2  usage error
 //   3  a blocker file is missing or cannot be read
 //   4  the ticket file cannot be read, or its `Blocked by:` line is empty, mixed or repeated
 //   5  the ticket has no `Blocked by:` line, so no check ran
 
+import { spawnSync } from "node:child_process";
 import { readFileSync, realpathSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -33,6 +43,9 @@ const USAGE = "Usage: node .claude/skills/build/scripts/ticket-ready.mjs <ticket
 const BLOCKED_BY = /^\s*(?:[-*]\s+)?(?:\*\*)?Blocked by:(?:\*\*)?\s*(.*?)\s*$/i;
 const STATUS = /^\s*(?:[-*]\s+)?(?:\*\*)?Status:(?:\*\*)?\s*(.*?)\s*$/i;
 const NONE = /^none(?:\s*\([^)]*\))?\.?$/i;
+// The close line that skills/build/SKILL.md step 9 writes, and a line that records a merge by hand.
+const BUILT = /^\s*(?:[-*]\s+)?Built on branch\s+(\S+?),?\s+(?:last\s+)?commit\s+`?([0-9a-f]{7,40})`?/i;
+const MERGED = /^\s*(?:[-*]\s+)?Merged\b/i;
 
 export const EXIT = { READY: 0, OPEN: 1, USAGE: 2, BLOCKER_UNREADABLE: 3, TICKET_UNREADABLE: 4, NO_LINE: 5 };
 
@@ -87,6 +100,31 @@ export function parseStatus(text) {
   return l ? l.t.match(STATUS)[1].trim() : null;
 }
 
+/** The branch and commit of the last `Built on branch` line outside code blocks, or null. */
+export function parseBuilt(text) {
+  const lines = proseLines(text).filter((l) => BUILT.test(l.t));
+  if (lines.length === 0) return null;
+  const m = lines[lines.length - 1].t.match(BUILT);
+  return { branch: m[1], commit: m[2] };
+}
+
+/** True when a line outside code blocks starts with `Merged`. */
+export function saysMerged(text) {
+  return proseLines(text).some((l) => MERGED.test(l.t));
+}
+
+/**
+ * Is the commit in origin/main? Runs git in `dir`. Returns { merged: true } or { merged: false, why }.
+ */
+export function inOriginMain(dir, commit) {
+  const r = spawnSync("git", ["-C", dir, "merge-base", "--is-ancestor", commit, "origin/main"], { encoding: "utf8" });
+  if (r.error) return { merged: false, why: `git did not run (${r.error.message})` };
+  if (r.status === 0) return { merged: true };
+  if (r.status === 1) return { merged: false, why: "that commit is not in `origin/main`" };
+  const err = (r.stderr ?? "").trim().split(/\r?\n/)[0] || `git exit ${r.status}`;
+  return { merged: false, why: `git cannot tell if that commit is in \`origin/main\` (${err})` };
+}
+
 /**
  * Check one ticket file. Returns { code, messages, closed }.
  * `messages` are lines in the form "<what failed>. Fix: <what to do>."
@@ -133,7 +171,17 @@ export function checkTicket(ticketArg) {
     }
     const status = parseStatus(btext);
     if (status !== null && status.toLowerCase() === "closed") {
-      closed++;
+      const built = parseBuilt(btext);
+      if (built === null || saysMerged(btext)) {
+        closed++;
+        continue;
+      }
+      const m = inOriginMain(dirname(file), built.commit);
+      if (m.merged) {
+        closed++;
+        continue;
+      }
+      open.push(`Blocker ${name} is built on branch ${built.branch} at commit ${built.commit}, but ${m.why}. So its work is not in the base of a new worktree. Fix: merge ${built.branch} into main, run \`git fetch origin\`, then run this check again. After a squash merge, add a line \`Merged in <sha>.\` under \`## Comments\` of ${name}.`);
       continue;
     }
     const seen = status === null ? "it has no `Status:` line" : `its \`Status:\` line says \`${status}\``;
