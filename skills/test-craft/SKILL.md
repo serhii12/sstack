@@ -75,9 +75,9 @@ No fence yet
 Prove each new check once with a planted bug:
 
 1. Run the check on clean code. It must pass.
-2. Break the behavior that the check protects. Flip a condition, delete a line, or add the pattern that a lint rule bans.
+2. Break the behavior that the check protects. Flip a condition, delete a line, or add the pattern that a lint rule bans. Make the break with one edit of the file. Write no helper script and no copy of the file.
 3. Run the check. It must fail, with a message about that behavior.
-4. Restore the code. Make a diff against the clean version. The diff must show that no part of the break is left.
+4. Restore the code with the reverse edit. Make a diff against the clean version. The diff must show that no part of the break is left. If the clean code is committed, `git diff --exit-code -- <file>` must print nothing.
 5. Run the check again. It must pass.
 
 Report all three runs. If the check does not fail in step 3, the check does not work. Fix the check before you continue. Do not rewrite an expected result to match broken code.
