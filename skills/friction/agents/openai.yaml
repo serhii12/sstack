@@ -1,0 +1,4 @@
+# Generated from SKILL.md by scripts/openai-yaml.mjs. Do not edit. Run: bun run gen:codex
+interface:
+  display_name: "friction"
+  short_description: "Files a lasting, repeatable problem in the repo or its tools"

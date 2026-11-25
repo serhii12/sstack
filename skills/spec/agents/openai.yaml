@@ -1,0 +1,6 @@
+# Generated from SKILL.md by scripts/openai-yaml.mjs. Do not edit. Run: bun run gen:codex
+interface:
+  display_name: "spec"
+  short_description: "Turn this conversation into one draft spec in the tracker"
+policy:
+  allow_implicit_invocation: false

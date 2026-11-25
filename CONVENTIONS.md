@@ -7,6 +7,7 @@ These rules apply to every skill, hook and script in this repo. The rules for sk
 | Path | Holds |
 |---|---|
 | `skills/<name>/SKILL.md` | One skill per folder. Supporting files and scripts sit beside it. |
+| `skills/<name>/agents/openai.yaml` | The skill metadata for Codex. `bun run gen:codex` writes it from the frontmatter. Do not edit it by hand. |
 | `evals/<name>/NN-name.md` | At least 3 test cases for each skill. |
 | `hooks/` | Hook scripts that the agent tool runs. Node, ESM, no dependencies. |
 | `scripts/` | Command-line scripts. Node, ESM, no dependencies. |
@@ -29,12 +30,14 @@ The agent will not always be Claude. A skill is a plain `SKILL.md` plus scripts.
 
 Put enforcement first into scripts, git hooks and CI. A hook for one agent tool is an adapter.
 
+The frontmatter of a skill is the one source of truth for the facts about that skill. A frontmatter key is a fact. A tool feature is an instruction in the text, such as a tool name. Each agent tool must get every fact. If a tool cannot read a fact from the frontmatter, a script writes it into the file that the tool reads. `scripts/openai-yaml.mjs` writes `agents/openai.yaml` for Codex. `bun run lint:skills` fails when that file is missing or old.
+
 `CLAUDE.md` is a symlink to `AGENTS.md`. This is an owner decision. The installer creates the link in a project repo.
 
 ## Skills
 
 - Frontmatter has `name` and `description`. The `name` is the same as the folder name. It has 64 characters or fewer: lowercase letters, numbers and hyphens. The `description` has no angle brackets and 1,024 characters or fewer. Quote a description that contains a colon.
-- A typed skill runs only when the user types its command. It sets `disable-model-invocation: true`. A typed skill never calls another typed skill. It tells the user the next command to type.
+- A typed skill runs only when the user types its command. It sets `disable-model-invocation: true`. This key is the one source of truth for "typed". Claude Code reads it. Codex does not read it, so `bun run gen:codex` writes the same fact as `allow_implicit_invocation: false`. A typed skill never calls another typed skill. It tells the user the next command to type.
 - An agent skill is a skill that the agent can load on its own. If the agent or another skill must reach a skill alone, make it an agent skill. Do not make any other skill an agent skill. If the user starts the skill by hand, make it a typed skill.
 - The description of a typed skill is one short line for the user. It has no list of triggers.
 - The description of an agent skill is in the third person. It says the job in a few words, then when to use the skill. It uses the words that users type. It has a "Do NOT use for" line when a neighbor skill overlaps. It never lists the steps. Aim for fewer than 500 characters.

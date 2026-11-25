@@ -13,6 +13,7 @@
     "test:node": "node --test tests/*/*.test.mjs",
     "lint:skills": "node scripts/skill-lint.mjs",
     "lint:style": "node scripts/style-lint.mjs",
-    "eval": "node scripts/eval-run.mjs"
+    "eval": "node scripts/eval-run.mjs",
+    "gen:codex": "node scripts/openai-yaml.mjs"
   }
 }

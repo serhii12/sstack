@@ -19,6 +19,7 @@
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { join, relative, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { openaiYaml } from "./openai-yaml.mjs";
 
 const REPO_PREFIXES = ["skills", "hooks", "scripts", "templates", "tests"];
 const MAX_LINES = 150;
@@ -180,6 +181,24 @@ export function lint(rootArg) {
       }
       if (fm.data.name && fm.data.name !== folder) {
         add(file, 1, "name-folder", `frontmatter name \`${fm.data.name}\` does not match folder \`${folder}\``, `set \`name: ${folder}\` in skills/${folder}/SKILL.md, or rename the folder.`);
+      }
+      // Rule 7: agents/openai.yaml carries the frontmatter to Codex. scripts/openai-yaml.mjs writes it.
+      if (fm.data.name && fm.data.description) {
+        const yamlFile = join(skillDir, "agents", "openai.yaml");
+        const fix = "run `bun run gen:codex`. Do not edit the file by hand.";
+        if (!pathExists(yamlFile)) {
+          add(yamlFile, 1, "codex-meta", `skill \`${folder}\` has no agents/openai.yaml`, fix);
+        } else {
+          const have = readFileSync(yamlFile, "utf8");
+          const policy = /^\s*allow_implicit_invocation:\s*false\s*$/m.test(have);
+          if (s.typed && !policy) {
+            add(yamlFile, 1, "codex-meta", `typed skill \`${folder}\` has no \`allow_implicit_invocation: false\`, so Codex can load it without the user`, fix);
+          } else if (!s.typed && policy) {
+            add(yamlFile, 1, "codex-meta", `agent skill \`${folder}\` has \`allow_implicit_invocation: false\`, so Codex cannot load it by itself`, fix);
+          } else if (have !== openaiYaml(fm.data)) {
+            add(yamlFile, 1, "codex-meta", `agents/openai.yaml of \`${folder}\` differs from what its frontmatter gives`, fix);
+          }
+        }
       }
     }
 
