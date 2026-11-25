@@ -177,7 +177,9 @@ export function parseAcceptanceChecks(text) {
     if (/^##\s/.test(l)) break;
     const m = /^\s*[-*]\s+\[[ xX]\]\s+(.*\S)\s*$/.exec(l);
     if (m) items.push(m[1]);
-    else if (items.length > 0 && /^\s{2,}\S/.test(l) && !/^\s*[-*]\s/.test(l)) items[items.length - 1] += " " + l.trim();
+    // An indented line, a nested bullet too, belongs to the check above it. tickets-lint.mjs accepts
+    // nested bullets, so they are part of the check (e2e run 1 break 7: 8 nested parts were dropped).
+    else if (items.length > 0 && /^\s{2,}\S/.test(l)) items[items.length - 1] += " " + l.trim();
   }
   return items.map(norm);
 }
