@@ -1,8 +1,8 @@
 # Phase boundaries
 
-A **phase** is a chunk of work inside a session: the grilling, the implementation, the QA. The definition is fuzzy on purpose. A phase ends when you think "ok, we're done with that".
+A phase is a chunk of work inside a session, for example the grilling, the implementation or the QA. The definition is fuzzy on purpose. A phase ends when you think that the work on it is done.
 
-The **phase boundary** is the gap between two phases. It is the only place this decision belongs. Mid-phase there is no decision to make: continue, or split the work that is left into subagents. Compacting mid-phase makes the agent lose the thread.
+The phase boundary is the gap between two phases. It is the only place where this decision belongs. In the middle of a phase there is no decision to make. Continue, or split the work that is left into subagents. If you compact in the middle of a phase, the agent loses the thread.
 
 ## The five options
 
@@ -16,32 +16,34 @@ The **phase boundary** is the gap between two phases. It is the only place this 
 
 ## The tree
 
-Work top to bottom at the boundary. The first **yes** wins.
+Work from top to bottom at the boundary. The first yes wins.
 
-**1. Can you continue in this session?** The answer is yes in two cases. The next phase needs this phase as a **primary source** (the session as it happened). Or there is enough room left in the **smart zone** for the next phase to fit. The smart zone is the part of the context window in which the model still reasons sharply. Matt Pocock puts it at about 150k tokens on current models. Grilling into implementation is the standard yes: the implementation wants the reasoning word for word, and a summary loses it. Continue costs nothing and loses nothing, so rule it out before anything else.
+**1. Can you continue in this session?** The answer is yes in two cases. In the first case, the next phase needs this phase as a primary source (the session as it happened). In the second case, enough room is left in the smart zone for the next phase to fit. The smart zone is the part of the context window in which the model still reasons sharply. Matt Pocock puts it at about 150k tokens on current models.
 
-**2. Is the context irrelevant to what comes next?** Is everything in this session (the exploration, the decisions, the dead ends) disposable? If so, **clear**. It is the cheapest move: it takes no time and hands back the whole window. Clearing is not final. The old session stays resumable.
+Grilling into implementation is the standard yes. The implementation needs the reasoning word for word, and a summary loses it. Continue costs nothing and loses nothing, so rule it out before anything else.
 
-The cost of getting this wrong is one-way. Clear a *relevant* context and you lose the **why** behind what you built. Reading the diff back does not return it.
+**2. Is the context irrelevant to what comes next?** Ask if everything in this session (the exploration, the decisions, the dead ends) is disposable. If it is, clear the context. Clear is the cheapest move: it takes no time and gives back the whole window. Clearing is not final. The old session stays resumable.
 
-**3. Do you need to hand off?** A handoff note is narrow. You need one only when you are:
+The cost of a wrong answer goes one way. If you clear a relevant context, you lose the why behind what you built. Reading the diff back does not return it.
 
-- moving to a **new harness** (for example Claude Code to Codex),
-- moving to a **new directory**, worktree or repo,
-- sending the work to a **colleague**,
-- or forking a side task you found **mid-phase** without derailing the current one.
+**3. Do you need to hand off?** A handoff note is narrow. You need one only in these cases:
 
-That list is the whole rule. What a handoff note buys is **portability**: a file that travels. If nothing travels, you do not need one.
+- You move to a new agent tool (for example from Claude Code to Codex).
+- You move to a new directory, worktree or repo.
+- You send the work to a colleague.
+- You fork a side task that you found in the middle of a phase. The current phase must not derail.
 
-**4. Can the task run with nobody watching?** Is it scoped tightly enough to run with no steering? Then send it to a **subagent** and leave this session untouched. Automated review is the standard case: the agent reads the diff and reports, and you are not needed while it does.
+That list is the whole rule. A handoff note gives you portability: a file that travels. If nothing travels, you do not need a note.
 
-**5. Otherwise, compact.** Relevant context, same harness, same directory, and you need to stay in the loop. The tree lands here often. Give `/compact` an instruction (`/compact we're going to QA this area`) so the summary keeps what the next phase needs.
+**4. Can the task run with nobody watching?** Ask if the task is scoped tightly enough to run with no steering. If it is, send it to a subagent and leave this session untouched. Automated review is the standard case. The agent reads the diff and reports, and nobody needs to be there while it works.
 
-Compact is the **default**, and it is the last option to try. It sits at the bottom because the four questions above it are all cheaper or more precise. When people start here, the usual failure is a fresh session that is confidently wrong about a decision the summary flattened.
+**5. Otherwise, compact.** If three things are true, use this option. The context is relevant. The agent tool and the directory stay the same. You must stay in the loop. The tree lands here often. Give `/compact` an instruction (`/compact we're going to QA this area`) so that the summary keeps what the next phase needs.
+
+Compact is the default, and it is the last option to try. It is at the bottom because the four questions above it are all cheaper or more precise. When people start here, the usual failure is a fresh session. It is confidently wrong about a decision that the summary flattened.
 
 ## Primary and secondary sources
 
-Every move except **Continue** turns a **primary source** into a **secondary source**: the session as it happened is replaced by a summary of it. The trade always has the same shape:
+Every move except Continue turns a primary source into a secondary source. A summary of the session replaces the session as it happened. The trade always has the same shape:
 
 | Source | Information | Noise | Room to move |
 | --- | --- | --- | --- |
@@ -50,9 +52,9 @@ Every move except **Continue** turns a **primary source** into a **secondary sou
 
 This is why question 1 comes first. You pay for the loss only when staying costs more than it saves.
 
-## These are judgement calls
+## These are judgment calls
 
-The questions are not objective. Each has taste in it, and the same boundary can go two ways on two days. The value is in asking them **in order**, at the boundary, and never in the middle of the work.
+The questions are not objective. Each question has taste in it, and the same boundary can go two ways on two days. The value is in asking the questions in order, at the boundary, and never in the middle of the work.
 
 ## Provenance
 
