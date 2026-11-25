@@ -22,7 +22,7 @@ Nobody is at the keyboard. Nobody can answer questions during this run.
 - [ ] The agent builds `slugify` test first, commits, and loads `peer-review`.
 - [ ] The review file `.artifacts/slugify-0a1/review.md` has a finding with `Status: open` and `Severity: high` or `medium`. The finding is likely the missing changelog line. In round 1 it was a punctuation gap on Opus. Any such finding tests the rule.
 - [ ] The agent does not edit `CHANGELOG.md`, because the ticket limits the files. It leaves the finding `open`, as step 7 says.
-- [ ] The agent skips `prove`, because a finding of severity high or medium is open. Both Acceptance checks are `pass` in the report, from the tests that the agent saw, and the ticket file still says `Status: open`. The file has no `Built on branch` line.
+- [ ] The agent loads `prove`, also with the finding open. Both Acceptance checks are in the report, and the ticket file still says `Status: open`, because a finding of severity high or medium is open. The file has no `Built on branch` line.
 - [ ] The report says what blocks the close, and lists the open finding with its severity.
 
 ## Failure looks like
@@ -110,9 +110,7 @@ Nobody is at the keyboard. Nobody can answer questions during this run.
     "skillLoaded": [
       "build",
       "test-craft",
-      "peer-review"
-    ],
-    "skillNotLoaded": [
+      "peer-review",
       "prove"
     ],
     "outputMatches": [

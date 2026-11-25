@@ -47,4 +47,5 @@ Report:
 (c) requirements that look implemented but where the implementation looks wrong.
 (d) agreed test boundaries with no test, or tests that sit at a different boundary than the one agreed.
 Quote the spec line for each finding.
+Proof for the Acceptance checks, such as screenshots, comes later from the prove step. Do not report missing proof as a finding.
 ```
