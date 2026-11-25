@@ -104,6 +104,8 @@ If no finding of severity `high` or `medium` is `open`, load the agent skill `pr
 
 ## 9. Close a local ticket and report
 
+Before you close the ticket, check what changed after the review. Read the commit at the end of the `Range:` line of `.artifacts/<task-name>/review.md`. Run `node .claude/skills/peer-review/scripts/review-range.mjs --stat --base <that commit> <worktree>`. Exit 3 means that only `.artifacts/` changed. Exit 0 lists the changed files. Put them on the `Changed after the review:` line. If product files changed, load `peer-review` once more with that base, as a follow-up. Fix its findings as in step 7. Do this once. Held by: skills/peer-review/scripts/review-range.mjs (exit 3 when only `.artifacts/` changed)
+
 A local ticket has no pull request, so nothing else closes it. An open ticket blocks every ticket that names it. So close it here when the work is done:
 
 - `peer-review` writes `Severity: high | medium | low` on each finding. A finding is open when its `Status:` is `open`. Before you close the ticket, make sure of three things. Every Acceptance check is `pass`. The review ran. No `open` finding has severity `high` or `medium`. An `open` finding of severity `low` does not block the close. List every `open` finding in the report.
@@ -112,21 +114,8 @@ A local ticket has no pull request, so nothing else closes it. An open ticket bl
 - A tracker ticket stays open. The pull request closes it.
 No fence yet
 
-Write the report in this exact form:
-```markdown
-## Build report: <ticket title>
-Worktree: <path>   Branch: <branch>
-Commits: <short sha> <subject> (one per line)
-Failing test first: <test>. Failed with: <message>. Passes now: yes | no
-Boundary chosen by build: <interface> (or "none, the ticket named them")
-Acceptance checks: <check>: pass | fail | untested (one per line)
-Checks: <command>: pass | fail | untested (one per line)
-Review: <n> findings. Fixed: <ids>. Won't fix (user agreed): <id>: <why>. Open: <id> (<severity>). Or: not run
-Skipped at the user's request: <step>: <what is lost> (or "None")
-Not tested: <behavior or case>: <why> (or "None")
-Design notes: <a shallow module or a missing module boundary outside the ticket, not changed> (or "None")
-Ticket: closed in <path> | open, closes when the pull request merges | open, blocked by <what blocks the close>, edit for the user: <the exact edit>
-```
+
+Write the report in the exact form of [REPORT.md](REPORT.md). Read that file now.
 
 ## 10. Pull request and next command
 
