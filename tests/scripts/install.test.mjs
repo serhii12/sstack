@@ -411,6 +411,23 @@ test("hooksPath: --replace-git-hooks sets core.hooksPath and names the hooks tha
   });
 });
 
+test("hooksPath: a linked worktree target leaves the config of the main repo unchanged", () => {
+  withGitTarget((source, target) => {
+    const env = { ...process.env, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_NOSYSTEM: "1" };
+    for (const k of Object.keys(env)) if (k.startsWith("GIT_") && !k.startsWith("GIT_CONFIG")) delete env[k];
+    const c = spawnSync("git", ["-C", target, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "base"], { encoding: "utf8", env });
+    assert.equal(c.status, 0, c.stderr);
+    const linked = join(target, "linked");
+    const w = spawnSync("git", ["-C", target, "worktree", "add", "-q", "-b", "feat", linked], { encoding: "utf8", env });
+    assert.equal(w.status, 0, w.stderr);
+    const out = [];
+    const r = install({ source, target: linked, log: (l) => out.push(l) });
+    assert.equal(r.hooksPath, "worktree");
+    assert.equal(gitOut(target, "config", "--get", "core.hooksPath").status, 1, "the main repo is unchanged");
+    assert.match(out.join("\n"), /linked worktree, so core\.hooksPath was not set/);
+  });
+});
+
 test(".stack/check: a starter is created, executable, marked as a placeholder, and exits 0 with a warning", () => {
   withGitTarget((source, target) => {
     install({ source, target, log: quiet });

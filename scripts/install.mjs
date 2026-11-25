@@ -259,8 +259,9 @@ function projectHooks(tgt) {
 
 /**
  * Turn on the copied git hooks: git config core.hooksPath .githooks, in the target only.
- * Returns { state, lines }. state is one of: set, would-set, already, other, kept, no-git.
+ * Returns { state, lines }. state is one of: set, would-set, already, other, kept, worktree, no-git.
  * kept: .git/hooks has hooks of the project and replaceGitHooks is false, so nothing changed.
+ * worktree: the target is a linked worktree. Its config is the config of the main repo, so nothing changed.
  * A dry run changes nothing.
  */
 function enableHooksPath(tgt, dryRun, replaceGitHooks = false) {
@@ -280,6 +281,16 @@ function enableHooksPath(tgt, dryRun, replaceGitHooks = false) {
     return { state: "other", lines: [`core.hooksPath is already set to "${value}", so it was not changed.`, `The copied hooks will not run until you decide. To use them, run this in the target: ${cmd}`] };
   }
   if (cur.status !== 1) return { state: "no-git", lines: [`git could not read core.hooksPath: ${cur.stderr.trim()}`, `Run this in the target by hand: ${cmd}`] };
+  const dirs = git(tgt, ["rev-parse", "--git-dir", "--git-common-dir"]).stdout.trim().split("\n");
+  if (dirs.length === 2 && resolve(tgt, dirs[0]) !== resolve(tgt, dirs[1])) {
+    return {
+      state: "worktree",
+      lines: [
+        "The target is a linked worktree, so core.hooksPath was not set. In a worktree, git config changes the main repo and every other worktree.",
+        `Fix: run the install in the main checkout. Or, after the installed files reach the main checkout, run this there: ${cmd}`,
+      ],
+    };
+  }
   const own = projectHooks(tgt);
   if (own.length > 0 && !replaceGitHooks) {
     return {
