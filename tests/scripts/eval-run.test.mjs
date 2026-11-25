@@ -937,6 +937,8 @@ test("assert gitWorktreeExists", () => {
   const named = check({ gitWorktreeExists: ["side", "other"] }, { mutate: (l) => git(l.repo, ["worktree", "add", "-q", "-b", "side", join(l.root, "wt")]) });
   assert.equal(named["gitWorktreeExists:side"], true);
   assert.equal(named["gitWorktreeExists:other"], false);
+  const mainOnly = check({ gitWorktreeExists: ["side"] }, { mutate: (l) => git(l.repo, ["switch", "-q", "-c", "side"]) });
+  assert.equal(mainOnly["gitWorktreeExists:side"], false, "the main checkout on the branch is not a linked worktree");
 });
 
 test("assert scriptPasses: runs a script of the stack on a file and wants exit 0", () => {
@@ -1446,6 +1448,31 @@ function subagentStream() {
 test("parseTranscript keeps parent_tool_use_id: null for the main agent, the Agent call id in a subagent", () => {
   assert.deepEqual(parseTranscript(subagentStream()).toolCalls.map((c) => [c.name, c.parentId]), [["Agent", null], ["Skill", "toolu_agent"], ["Read", "toolu_agent"], ["Read", null], ["Write", null]]);
   assert.ok(parseTranscript(fx("read-only.jsonl")).toolCalls.every((c) => c.parentId === null));
+});
+
+test("output asserts read only the text of the main agent, not the text of a subagent", () => {
+  const lines = [
+    { type: "assistant", parent_tool_use_id: "toolu_agent", message: { content: [{ type: "text", text: "Verdict: approve" }] } },
+    { type: "assistant", parent_tool_use_id: null, message: { content: [{ type: "text", text: "I could not finish." }] } },
+    { type: "result", subtype: "success", is_error: false, total_cost_usd: 0.01, num_turns: 1 },
+  ].map((e) => JSON.stringify(e)).join("\n");
+  const t = parseTranscript(lines);
+  assert.equal(t.text, "I could not finish.");
+  assert.equal(t.firstText, "I could not finish.");
+  const r = check({ outputMatches: ["Verdict: approve"], firstTextMatches: ["Verdict"], outputNotMatches: ["approve"] }, { text: lines });
+  assert.equal(r["outputMatches:Verdict: approve"], false);
+  assert.equal(r["firstTextMatches:Verdict"], false);
+  assert.equal(r["outputNotMatches:approve"], true);
+});
+
+test("tool asserts refuse an unknown key, such as pattern for inputMatches", () => {
+  const bad = (a, re) => assert.throws(() => parseEvalFile(evalText({ ...GOOD, assert: a })), re);
+  bad({ toolCalled: [{ name: "Bash", pattern: "rm -rf" }] }, /toolCalled/);
+  bad({ toolNotCalled: [{ name: "Bash", inputmatches: "rm" }] }, /toolNotCalled/);
+  bad({ toolOrder: [{ before: { name: "Read", pattern: "x" }, after: "Write" }] }, /toolOrder/);
+  bad({ toolCount: [{ name: "Read", min: 1, pattern: "x" }] }, /toolCount/);
+  bad({ toolCalled: [{ name: "Read", min: 1 }] }, /toolCalled/);
+  parseEvalFile(evalText({ ...GOOD, assert: { toolCalled: [{ name: "Bash", inputMatches: "ls", agent: "main", turn: 1 }] } }));
 });
 
 test("assert toolCount: at least, at most and exactly N calls, with input match and agent scope", () => {

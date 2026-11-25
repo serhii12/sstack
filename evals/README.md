@@ -149,10 +149,10 @@ Each check is deterministic. The runner also adds one check to every run, `runCo
 |---|---|---|
 | `skillLoaded` | list of skill names | Each skill loaded. See "How a skill load is seen". |
 | `skillNotLoaded` | list of skill names | No listed skill loaded. |
-| `toolCalled` | list of tool names or `{ "name", "inputMatches", "agent" }` | Each entry matches at least one tool call. |
+| `toolCalled` | list of tool names or `{ "name", "inputMatches", "agent" }` | Each entry matches at least one tool call. An entry with another key is refused. |
 | `toolNotCalled` | same | No tool call matches any entry. |
 | `toolCount` | list of `{ "name", "inputMatches", "agent", "turn", "min", "max" }` | The number of matching tool calls is at least `min` and at most `max`. Give one of them or both. |
-| `outputMatches` | list of regex | Each pattern matches the text of the agent. |
+| `outputMatches` | list of regex | Each pattern matches the text of the main agent. The text of a subagent does not count. |
 | `outputNotMatches` | list of regex | No pattern matches the text of the agent. |
 | `fileExists` | list of paths or globs | Each file exists after the run. A glob must match at least one file or folder. |
 | `fileAbsent` | list of paths or globs | No listed file exists after the run. A glob must match nothing. |
@@ -164,10 +164,10 @@ Each check is deterministic. The runner also adds one check to every run, `runCo
 | `hookNotBlocked` | `true` | No `PreToolUse` hook exited with code 2. |
 | `noRepoChanges` | `true` | `git status` is as it was after the setup, and no file of `setup.uncommitted` changed. `HEAD` and the local branches are as they were after the setup. |
 | `toolOrder` | list of `{ "before", "after", "turn" }` | The first call that matches `before` comes before the first call that matches `after`. Both must happen. Each side is a tool name or `{ "name", "inputMatches", "agent" }`. Use it for "A before B", for example a test file before the code, or an `Agent` call before the report file. |
-| `firstTextMatches` | list of regex or `{ "pattern", "turn" }` | The regex matches the first assistant text block. With no `turn`, this is the first text of turn 1. |
+| `firstTextMatches` | list of regex or `{ "pattern", "turn" }` | The regex matches the first text block of the main agent. With no `turn`, this is the first text of turn 1. |
 | `fileMatchesGlob` | list of globs | Each glob matches at least one file in the repo. `.git` and `node_modules` are not searched. `fileExists` with a glob also matches folders and `$TMPDIR/`. |
 | `onlyFilesChanged` | list of globs | Every file that changed since the setup commit matches one glob. A committed change, an edit and a new file count. No change also passes. Needs `gitInit`. |
-| `gitWorktreeExists` | `true` or list of branch names | The repo has a second worktree, or a worktree for each listed branch. |
+| `gitWorktreeExists` | `true` or list of branch names | The repo has a second worktree, or a linked worktree for each listed branch. The main checkout does not count. |
 | `scriptPasses` | list of `{ "skill", "script", "file", "args" }` | `node <script> <file> <args>`, run in the repo, exits with 0. Without `skill`, the script is `scripts/<script>.mjs` of the stack. With `skill`, it is `.claude/skills/<skill>/scripts/<script>.mjs` in the temp repo, which the installer copied. That copy must be equal to the copy in the stack and stay inside its skill folder. `skill` and `script` are names with no `/` and no `..`. `skill` and `file` are optional. `eval-run` is not allowed. |
 
 Globs: `*` and `?` stay in one path part, `**` crosses folders, `{a,b}` is a choice. A path with `*`, `?` or `{` is a glob. If a name is not known before the run, use a glob. Examples are the name of a notebook and of a worktree folder.
