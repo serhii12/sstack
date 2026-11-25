@@ -1,19 +1,34 @@
 ---
 name: decide
-description: Review the facts, then list numbered options with effort and whether each is easy or hard to undo. Recommend one and name the ideal fix when it differs. Then stop and wait for the user to choose. Use before you build when a decision has real trade-offs, or when the user asks "what are my options?"
+description: Compares the options for a decision that has real trade-offs. Use before you build, or when the user asks "what are my options?", "which approach?" or "A or B?". Do NOT use for a choice with one clearly right option, or a choice that the user already made.
 ---
 
 # Decide
 
-1. Review the relevant data, issues, code, and git history. Cite each fact
-   with a path, line, issue, or commit.
-2. Present the real options, numbered. Give each one an effort
-   (`Easy` · `Medium` · `Hard`). Label each one **easy to undo** (a two-way
-   door) or **hard to undo** (a one-way door).
+## Important
+
+Do not build anything until the user chooses an option. No fence yet
+
+## Steps
+
+1. Review the relevant data, issues, code, and git history. Cite each fact with a path, line, issue, or commit.
+2. List the real options, numbered. Give each option an effort (`Easy` · `Medium` · `Hard`). Label each option **easy to undo** (a two-way door) or **hard to undo** (a one-way door). If only one real option exists, write "One real option:" and name it. Give the reason. Do not invent options to fill the list.
 3. Make one **recommendation**.
 4. Name the **ideal fix**. If it differs from the recommendation, say why.
-5. Stop and wait for the user to choose. Do not build anything yet.
-   No fence yet
+5. Stop. Wait for the user to choose.
+
+## Example
+
+User: "Should the session store live in Redis or in the app memory?"
+
+```markdown
+Facts: the app runs on 3 servers (deploy/config.yaml:12). Sessions are lost on each restart (issue #88).
+1. Redis. Medium effort. Hard to undo: the data format moves to Redis.
+2. App memory. Easy effort. Easy to undo: delete the store.
+Recommendation: option 1, because 3 servers cannot share memory.
+Ideal fix: option 1, the same as the recommendation.
+Which option do you choose?
+```
 
 ## Provenance
 
@@ -24,3 +39,6 @@ description: Review the facts, then list numbered options with effort and whethe
   Explained the door terms as "easy to undo" and "hard to undo". Said "ideal
   fix" in place of "right fix". Split step 5 into two sentences (no semicolon).
   Added the `No fence yet` line.
+- Later changes: rewrote the description to name the job and its triggers, with a
+  negative trigger. Moved the stop rule to an `## Important` section. Added the
+  one-option rule and the example.
