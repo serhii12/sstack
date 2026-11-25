@@ -129,14 +129,15 @@ The runner does the steps in this order.
 |---|---|
 | `gitInit` | Run `git init` on branch `main`. |
 | `installStack` | Run `node scripts/install.mjs` on the temp repo. Needs `gitInit`. |
-| `files` | List of `{ "path", "content" }`. The path is relative and stays inside the repo. |
+| `files` | List of `{ "path", "content" }`. The path is relative and stays inside the repo. A path under `.claude/` or `.git/` is refused, so an eval cannot turn off hooks or permission checks. Only `.git/refs/` is allowed. |
 | `commit` | Commit all files after the setup. Default true. Set false to leave them uncommitted. |
 | `origin` | `true` makes a local bare repo in the temp folder of the run and adds it as the remote `origin`. The runner pushes the setup commit to it, so `origin/main` exists and `main` tracks it. With `"commit": false` the bare repo stays empty. Nothing leaves the machine. |
+| `remote` | An https URL. The runner adds it as the remote `origin`. Nothing is fetched or pushed. You cannot use it with `origin`. |
 | `branch` | Create this branch from the setup commit and switch to it. |
 | `githooks` | Run `git config core.hooksPath .githooks`, after the setup commit. |
 | `uncommitted` | List of `{ "path", "content" }`. The runner writes these files after the setup commit and does not commit them. A path can name a committed file, so `git diff` shows a change. Needs the setup commit. |
 
-All of `commit`, `origin`, `branch`, `githooks` and `uncommitted` need `gitInit`. The state after `uncommitted` is the baseline. `noRepoChanges` and `onlyFilesChanged` do not count these files until the agent changes them.
+All of `commit`, `origin`, `remote`, `branch`, `githooks` and `uncommitted` need `gitInit`. The state after `uncommitted` is the baseline. `noRepoChanges` and `onlyFilesChanged` do not count these files until the agent changes them.
 
 An eval with `origin` can test `git push` and `origin/main`. A `Bash(git push:*)` rule in `allowedTools` still needs `--allow-network`.
 

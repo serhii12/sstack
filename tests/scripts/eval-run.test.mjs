@@ -374,6 +374,32 @@ test("prepareSetup: git, files, branch, origin, githooks", () => {
   done();
 });
 
+test("setup: a file under .claude/ or .git/ is refused, a ref under .git/refs/ is allowed", () => {
+  const withFile = (path, key = "files") => ({ ...GOOD, setup: { gitInit: true, [key]: [{ path, content: "{}" }] } });
+  for (const path of [".claude/settings.json", ".claude/settings.local.json", "./.Claude/hooks/x.mjs", "sub/.claude/settings.json", ".git/config", ".git/hooks/pre-commit", ".GIT/config", "sub/.git/config", ".git/refs/x/.git/config"]) {
+    assert.throws(() => parseEvalFile(evalText(withFile(path))), /under \.claude\/ or \.git\/.*Fix: /, path);
+    assert.throws(() => parseEvalFile(evalText(withFile(path, "uncommitted"))), /under \.claude\/ or \.git\//, path);
+  }
+  parseEvalFile(evalText(withFile(".git/refs/remotes/origin/main")));
+  parseEvalFile(evalText(withFile(".claudeignore")));
+  const layout = makeLayout({ base: TEST_BASE });
+  try {
+    assert.throws(() => prepareSetup({ gitInit: true, files: [{ path: ".git/config", content: "[core]\n" }] }, layout), /not safe/);
+  } finally {
+    rmSync(layout.root, { recursive: true, force: true });
+  }
+});
+
+test("setup remote: adds an https remote origin, and refuses other values", () => {
+  const { layout, done } = repoWithSetup({ gitInit: true, remote: "https://github.com/acme/widgets.git" });
+  assert.equal(git(layout.repo, ["remote", "get-url", "origin"]).out, "https://github.com/acme/widgets.git");
+  done();
+  const bad = (setup, re) => assert.throws(() => parseEvalFile(evalText({ ...GOOD, setup })), re);
+  bad({ gitInit: true, remote: "ext::sh -c x" }, /setup\.remote must be an https URL/);
+  bad({ gitInit: true, remote: "https://github.com/acme/w.git", origin: true }, /"remote" and "origin"/);
+  bad({ remote: "https://github.com/acme/w.git" }, /need "gitInit"/);
+});
+
 test("prepareSetup: commit false leaves files uncommitted", () => {
   const { layout, done } = repoWithSetup({ gitInit: true, commit: false, files: [{ path: "a", content: "1" }] });
   assert.match(git(layout.repo, ["status", "--porcelain"]).out, /\?\? a/);
@@ -910,12 +936,19 @@ function lintStack() {
   return stack;
 }
 
+/** Write a file into the repo of a run, as the installer does. A setup file cannot go under .claude/. */
+function plant(layout, f) {
+  mkdirSync(dirname(join(layout.repo, f.path)), { recursive: true });
+  writeFileSync(join(layout.repo, f.path), f.content);
+}
+
 test("assert scriptPasses with skill: runs the installed copy in .claude/skills/<skill>/scripts/ of the run", () => {
   const stack = lintStack();
   const installed = { path: ".claude/skills/demo/scripts/lint-y.mjs", content: LINT_Y };
   const run1 = (content, entries, extra = []) => {
-    const r = repoWithSetup({ gitInit: true, files: [{ path: "a.txt", content }, ...extra] });
+    const r = repoWithSetup({ gitInit: true, files: [{ path: "a.txt", content }] });
     try {
+      for (const f of extra) plant(r.layout, f);
       return evaluateAsserts({ scriptPasses: entries }, { transcript: parseTranscript(fx("read-only.jsonl")), prompt: "x", layout: r.layout, baseline: r.baseline, stackRoot: stack });
     } finally {
       r.done();
@@ -942,8 +975,9 @@ test("assert scriptPasses with skill: runs the installed copy in .claude/skills/
 
 test("scriptPath: the path of the installed script, and refusals for .., an absolute path, a slash and a symlink out", () => {
   const stack = lintStack();
-  const r = repoWithSetup({ gitInit: true, files: [{ path: ".claude/skills/demo/scripts/lint-y.mjs", content: LINT_Y }] });
+  const r = repoWithSetup({ gitInit: true });
   try {
+    plant(r.layout, { path: ".claude/skills/demo/scripts/lint-y.mjs", content: LINT_Y });
     const p = scriptPath({ skill: "demo", script: "lint-y" }, r.layout, stack);
     assert.equal(p.path, join(r.layout.repo, ".claude", "skills", "demo", "scripts", "lint-y.mjs"));
     assert.equal(scriptPath({ script: "lint-y" }, r.layout, stack).path, join(stack, "scripts", "lint-y.mjs"));

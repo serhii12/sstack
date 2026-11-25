@@ -11,7 +11,7 @@ Kind: task sort (GitHub). The skill must look first, recommend GitHub, ask one q
 ## Setup
 
 - A fresh temp git repo with the stack installed (`node scripts/install.mjs <dir>`) and one setup commit. No `docs/agents/tracker.md`, no `.scratch/`.
-- The setup writes `.git/config` with a fake remote `origin` at `https://github.com/acme/widgets.git`. Nothing reaches the network.
+- The setup adds a fake remote `origin` at `https://github.com/acme/widgets.git`. Nothing reaches the network.
 - Tools allowed: `Skill`, `Read`, `Glob` and `Grep`. The agent tool also runs some read-only shell commands with no rule. Earlier runs show that `git remote -v` runs.
 - The runner always denies `gh`, `curl`, `wget` and `ssh`. So `gh --version` is denied. The skill must say so in one line and not ask about it.
 
@@ -50,9 +50,7 @@ The runner refuses `Bash(git remote -v)` and `Bash(gh --version)` in `allowedToo
   "setup": {
     "gitInit": true,
     "installStack": true,
-    "files": [
-      { "path": ".git/config", "content": "[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = false\n\tlogallrefupdates = true\n[remote \"origin\"]\n\turl = https://github.com/acme/widgets.git\n\tfetch = +refs/heads/*:refs/remotes/origin/*\n" }
-    ]
+    "remote": "https://github.com/acme/widgets.git"
   },
   "prompt": "/setup",
   "allowedTools": ["Skill", "Read", "Glob", "Grep"],
