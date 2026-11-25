@@ -385,6 +385,31 @@ test("hooksPath: works through a symlinked target path", () => {
   });
 });
 
+test("hooksPath: a hook in .git/hooks keeps core.hooksPath unset, and the output names the hook", () => {
+  withGitTarget((source, target) => {
+    write(target, ".git/hooks/pre-commit", "#!/bin/sh\nexit 0\n", 0o755);
+    const out = [];
+    const r = install({ source, target, log: (l) => out.push(l) });
+    assert.equal(r.hooksPath, "kept");
+    assert.equal(gitOut(target, "config", "--get", "core.hooksPath").status, 1, "still unset");
+    const text = out.join("\n");
+    assert.match(text, /\.git\/hooks has hooks of the project: pre-commit\./);
+    assert.match(text, /--replace-git-hooks/);
+    assert.doesNotMatch(text, /\.sample/);
+  });
+});
+
+test("hooksPath: --replace-git-hooks sets core.hooksPath and names the hooks that stop running", () => {
+  withGitTarget((source, target) => {
+    write(target, ".git/hooks/pre-commit", "#!/bin/sh\nexit 0\n", 0o755);
+    write(target, ".git/hooks/pre-push", "#!/bin/sh\nexit 0\n", 0o755);
+    const r = spawnSync(process.execPath, [SCRIPT, "--source", source, "--replace-git-hooks", target], { encoding: "utf8" });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(gitOut(target, "config", "--get", "core.hooksPath").out, ".githooks");
+    assert.match(r.stdout, /These hooks in \.git\/hooks stop running now: pre-commit, pre-push\./);
+  });
+});
+
 test(".stack/check: a starter is created, executable, marked as a placeholder, and exits 0 with a warning", () => {
   withGitTarget((source, target) => {
     install({ source, target, log: quiet });
