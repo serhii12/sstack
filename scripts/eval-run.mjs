@@ -324,6 +324,9 @@ function turnHint(nTurns) {
 function validToolSpec(t, k, errs, nTurns, allowTurn) {
   if (typeof t === "string") return t !== "";
   if (!t || typeof t !== "object" || Array.isArray(t) || typeof t.name !== "string" || t.name === "") return false;
+  // An unknown key, such as `pattern` for `inputMatches`, would be ignored and match every call.
+  const keys = k === "toolCount" ? ["name", "inputMatches", "agent", "turn", "min", "max"] : ["name", "inputMatches", "agent", "turn"];
+  if (Object.keys(t).some((x) => !keys.includes(x))) return false;
   if (t.inputMatches !== undefined && typeof t.inputMatches !== "string") return false;
   if (t.agent !== undefined && !AGENT_SCOPES.includes(t.agent)) return false;
   if (!allowTurn && t.turn !== undefined) return false;
@@ -594,8 +597,8 @@ export function agentEnv(base, layout) {
  *                  The tool result says so: `<event>:<tool> hook error: [cmd]: failed; blocking because onFailure is "block"`.
  *                  The hook_response event of such a hook can show exit code 1 (a failure) or 1 with outcome
  *                  "cancelled" (a timeout), so the exit code alone does not show the block.
- *  text            all assistant text, joined with a blank line
- *  firstText       the first assistant text block, or ""
+ *  text            all assistant text of the main agent, joined with a blank line
+ *  firstText       the first assistant text block of the main agent, or ""
  *  result          { subtype, isError, costUsd, turns, text } or null
  *  denials         permission denials from the result event
  *  badLines        count of lines that are not JSON
@@ -622,7 +625,8 @@ export function parseTranscript(text) {
       for (const b of ev.message.content) {
         // `parent_tool_use_id` is null for the main agent. Inside a subagent it is the id of the Agent tool call.
         if (b.type === "tool_use") t.toolCalls.push({ id: b.id, name: b.name, input: b.input ?? {}, parentId: typeof ev.parent_tool_use_id === "string" ? ev.parent_tool_use_id : null });
-        else if (b.type === "text" && typeof b.text === "string") texts.push(b.text);
+        // Only the main agent talks to the user. A subagent text is not output.
+        else if (b.type === "text" && typeof b.text === "string" && typeof ev.parent_tool_use_id !== "string") texts.push(b.text);
       }
     } else if (ev.type === "user" && Array.isArray(ev.message?.content)) {
       for (const b of ev.message.content) {
@@ -885,7 +889,8 @@ function worktreeBranches(repo) {
   const r = git(repo, ["worktree", "list", "--porcelain"]);
   if (!r.ok) return { ok: false, count: 0, branches: [] };
   const blocks = r.out.split(/\n\s*\n/).filter(Boolean);
-  const branches = blocks.map((b) => (/^branch refs\/heads\/(.+)$/m.exec(b) || [])[1]).filter(Boolean);
+  // The first block is the main checkout. Only a linked worktree counts for a listed branch.
+  const branches = blocks.slice(1).map((b) => (/^branch refs\/heads\/(.+)$/m.exec(b) || [])[1]).filter(Boolean);
   return { ok: true, count: blocks.length, branches };
 }
 
