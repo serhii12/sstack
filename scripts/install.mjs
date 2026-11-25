@@ -14,6 +14,9 @@
 //
 // After the copy, the installer runs `git config core.hooksPath .githooks` in the target.
 // It does this only when the target is a git repo and core.hooksPath is not set.
+// With core.hooksPath set, git no longer runs the hooks in .git/hooks. So when .git/hooks holds a
+// hook that is not a .sample file, the installer names it and does not set core.hooksPath,
+// unless the user passes --replace-git-hooks.
 
 // Existing files are never overwritten. They are reported as skipped.
 //
@@ -45,7 +48,7 @@
 // skills live in `.claude/skills/<name>/SKILL.md`, and a hook command refers to a
 // project script as `${CLAUDE_PROJECT_DIR}/.claude/hooks/<script>`.
 //
-// Usage: node scripts/install.mjs [--dry-run] <target-repo>
+// Usage: node scripts/install.mjs [--dry-run] [--replace-git-hooks] <target-repo>
 // Exit 0 done, 1 refused (not a git repo, or the target is this repo), 2 usage or read error.
 
 import { spawnSync } from "node:child_process";
@@ -242,12 +245,25 @@ function git(tgt, args) {
   return spawnSync("git", ["-C", tgt, ...args], { encoding: "utf8", env });
 }
 
+/** Names of the hooks in .git/hooks that git runs today. A .sample file is not a hook. */
+function projectHooks(tgt) {
+  const r = git(tgt, ["rev-parse", "--git-path", "hooks"]);
+  if (r.status !== 0) return [];
+  const dir = resolve(tgt, r.stdout.trim());
+  try {
+    return readdirSync(dir).filter((name) => !name.endsWith(".sample") && statSync(join(dir, name)).isFile()).sort();
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Turn on the copied git hooks: git config core.hooksPath .githooks, in the target only.
- * Returns { state, lines }. state is one of: set, would-set, already, other, no-git.
+ * Returns { state, lines }. state is one of: set, would-set, already, other, kept, no-git.
+ * kept: .git/hooks has hooks of the project and replaceGitHooks is false, so nothing changed.
  * A dry run changes nothing.
  */
-function enableHooksPath(tgt, dryRun) {
+function enableHooksPath(tgt, dryRun, replaceGitHooks = false) {
   const cmd = "git config core.hooksPath .githooks";
   const top = git(tgt, ["rev-parse", "--show-toplevel"]);
   let isRepo = false;
@@ -264,10 +280,22 @@ function enableHooksPath(tgt, dryRun) {
     return { state: "other", lines: [`core.hooksPath is already set to "${value}", so it was not changed.`, `The copied hooks will not run until you decide. To use them, run this in the target: ${cmd}`] };
   }
   if (cur.status !== 1) return { state: "no-git", lines: [`git could not read core.hooksPath: ${cur.stderr.trim()}`, `Run this in the target by hand: ${cmd}`] };
-  if (dryRun) return { state: "would-set", lines: [`would run  ${cmd}`] };
+  const own = projectHooks(tgt);
+  if (own.length > 0 && !replaceGitHooks) {
+    return {
+      state: "kept",
+      lines: [
+        `.git/hooks has hooks of the project: ${own.join(", ")}. core.hooksPath was not set, so these hooks still run.`,
+        `The copied hooks in .githooks/ do not run yet. With core.hooksPath set, git stops running ${own.join(", ")}.`,
+        "To keep them, copy them into .githooks/ first. Then run the install again with --replace-git-hooks.",
+      ],
+    };
+  }
+  const lost = own.length > 0 ? [`These hooks in .git/hooks stop running now: ${own.join(", ")}.`] : [];
+  if (dryRun) return { state: "would-set", lines: [`would run  ${cmd}`, ...lost] };
   const set = git(tgt, ["config", "core.hooksPath", ".githooks"]);
   if (set.status !== 0) return { state: "no-git", lines: [`git config failed: ${set.stderr.trim()}`, `Run this in the target by hand: ${cmd}`] };
-  return { state: "set", lines: [`ran  ${cmd}`] };
+  return { state: "set", lines: [`ran  ${cmd}`, ...lost] };
 }
 
 export const EVIDENCE_MEDIA = ["png", "jpg", "jpeg", "webp", "gif", "mp4", "webm"];
@@ -472,7 +500,7 @@ export function isOlderVersion(text, min = MIN_CLAUDE_VERSION) {
  * OS that refuses symlinks. claudeVersion returns the output of `claude --version` or null.
  * Tests pass a fake, so no real binary runs.
  */
-export function install({ source = DEFAULT_SOURCE, target, dryRun = false, log = console.log, symlink = symlinkSync, claudeVersion = lookupClaudeVersion }) {
+export function install({ source = DEFAULT_SOURCE, target, dryRun = false, replaceGitHooks = false, log = console.log, symlink = symlinkSync, claudeVersion = lookupClaudeVersion }) {
   if (!target) throw new InstallUsageError("missing target directory");
   const src = resolve(source);
   const tgt = resolve(target);
@@ -539,7 +567,7 @@ export function install({ source = DEFAULT_SOURCE, target, dryRun = false, log =
   }
   if (items.some((i) => i.dest.startsWith(join(tgt, ".githooks")))) {
     log("");
-    const hp = enableHooksPath(tgt, dryRun);
+    const hp = enableHooksPath(tgt, dryRun, replaceGitHooks);
     for (const l of hp.lines) log(l);
     hooksPath = hp.state;
   }
@@ -571,11 +599,13 @@ export function install({ source = DEFAULT_SOURCE, target, dryRun = false, log =
 
 function main(argv) {
   let dryRun = false;
+  let replaceGitHooks = false;
   let target;
   let source;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--dry-run") dryRun = true;
+    else if (a === "--replace-git-hooks") replaceGitHooks = true;
     else if (a === "--source") source = argv[++i];
     else if (a.startsWith("-")) {
       console.error(`install: unknown option ${a}\nUsage: node scripts/install.mjs [--dry-run] <target-repo>`);
@@ -587,7 +617,7 @@ function main(argv) {
     }
   }
   try {
-    install({ source: source ?? DEFAULT_SOURCE, target, dryRun });
+    install({ source: source ?? DEFAULT_SOURCE, target, dryRun, replaceGitHooks });
     return 0;
   } catch (e) {
     if (e instanceof InstallRefusal) {
