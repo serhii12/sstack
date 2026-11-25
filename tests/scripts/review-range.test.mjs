@@ -435,3 +435,27 @@ test("installed layout: runs as .claude/skills/peer-review/scripts/review-range.
     assert.match(j.diff, /\+installed run/);
   });
 });
+
+// ---- --base <reviewed commit>: what changed after the review (e2e run 2 break 2) ----
+
+test("--base <reviewed commit>: only .artifacts/ changed after the review gives exit 3, a product change gives exit 0 with its file", () => {
+  withRepo({}, (repo) => {
+    git(repo, "checkout", "-q", "-b", "agent/t-1a");
+    write(repo, "src/list.tsx", "v1\n");
+    git(repo, "add", "-A");
+    git(repo, "commit", "-q", "-m", "ticket");
+    const reviewed = git(repo, "rev-parse", "--short", "HEAD");
+    write(repo, ".artifacts/t-1a/review.md", "Range: main (merge base x) to " + reviewed + "\nStatus: fixed\n");
+    git(repo, "add", "-A");
+    git(repo, "commit", "-q", "-m", "review statuses");
+    const same = run(["--stat", "--base", reviewed, repo], repo);
+    assert.equal(same.code, 3, same.out + same.err);
+    write(repo, "src/list.tsx", "v2, a phone layout made during prove\n");
+    git(repo, "add", "-A");
+    git(repo, "commit", "-q", "-m", "layout");
+    const changed = run(["--stat", "--base", reviewed, repo], repo);
+    assert.equal(changed.code, 0, changed.err);
+    assert.match(changed.out, /src\/list\.tsx/);
+    assert.doesNotMatch(changed.out, /review\.md/);
+  });
+});

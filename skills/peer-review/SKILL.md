@@ -91,6 +91,9 @@ Number the findings `S1`, `S2` for Standards and `P1`, `P2` for Spec (P for sPec
 Give every finding one `Severity:` value, `high`, `medium` or `low`. Write every finding, and do not filter by severity.
 No fence yet
 
+If the caller asks for a follow-up review of the commits after an earlier review, keep the earlier blocks of `.artifacts/<task>/review.md`. Append a `## Follow-up` block with its own `Range:` line and its findings. Number them on from the last `S` and `P` numbers.
+No fence yet
+
 Do not run the review again and again until it is clean. The review does not converge. After the fixes, run the review once more only if the user asks.
 No fence yet
 
