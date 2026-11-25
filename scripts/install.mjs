@@ -272,6 +272,48 @@ export const GITIGNORE_HEADER = "# sstack: evidence media from /prove stays out 
 export const GITIGNORE_RULES = EVIDENCE_MEDIA.map((ext) => `.artifacts/*/evidence/**/*.${ext}`);
 const BROAD_ARTIFACTS = new Set([".artifacts", ".artifacts/", "/.artifacts", "/.artifacts/", ".artifacts/*", ".artifacts/**", "/.artifacts/*", "/.artifacts/**"]);
 
+// The text that marks the starter .stack/check and the line to replace in the AGENTS.md template.
+export const CHECK_PLACEHOLDER_MARK = "# PLACEHOLDER.";
+export const AGENTS_PLACEHOLDER_MARK = "Replace this line.";
+// A file at the target root that shows that the repo has code with a check command to run.
+const MANIFESTS = ["package.json", "pyproject.toml", "setup.py", "Cargo.toml", "go.mod", "Gemfile", "composer.json", "pom.xml", "build.gradle", "build.gradle.kts", "deno.json", "Makefile"];
+
+function fileHas(p, text) {
+  try {
+    return readFileSync(p, "utf8").includes(text);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The steps that a person must do after the install, before the first /build. Returns the lines to print.
+ * /build makes every worktree from origin/main, so the stack must be in origin/main first (run 1: the first
+ * build ran with no AGENTS.md, no hook and no .stack/check). /setup comes before the commit, so its file
+ * goes into the same commit.
+ */
+export function nextSteps(tgt, { checkIsPlaceholder = false, agentsHasPlaceholder = false } = {}) {
+  const lines = ["Next steps, before the first /build:"];
+  let n = 0;
+  const step = (text) => lines.push(`${++n}. ${text}`);
+  if (agentsHasPlaceholder) step("Fill in the Project line and the check commands in AGENTS.md.");
+  if (checkIsPlaceholder) {
+    if (MANIFESTS.some((m) => existsSync(join(tgt, m)))) {
+      step("Put the check command of this repo in .stack/check, for example npm test. The agent cannot edit that file. Until you do, no commit runs a check.");
+    } else {
+      step("This repo has no check command yet, so no commit runs a check. That includes the commits of the first ticket. When a ticket adds a check command, put it in .stack/check. The agent cannot edit that file.");
+    }
+  }
+  if (!existsSync(join(tgt, "docs", "agents", "tracker.md"))) step("Type /setup once to choose the issue tracker. It writes docs/agents/tracker.md, which goes into the commit of the next step.");
+  if (git(tgt, ["remote", "get-url", "origin"]).status === 0) {
+    step("Commit the new files and get them into origin/main, with a pull request or a push by a person. /build makes every worktree from origin/main, so the stack must be there first.");
+  } else {
+    step("This repo has no origin remote. /build makes every worktree from origin/main. Add a remote, then commit the new files and push them to origin/main.");
+  }
+  step("Then type /start and say what you want done.");
+  return lines;
+}
+
 /**
  * Append the evidence media rules to <target>/.gitignore. Returns { state, lines }.
  * state is one of: added, would-add, already, manual. A dry run changes nothing.
@@ -407,11 +449,6 @@ export function install({ source = DEFAULT_SOURCE, target, dryRun = false, log =
   log("");
   const gi = ensureGitignore(tgt, dryRun);
   for (const l of gi.lines) log(l);
-  if (items.some((i) => i.kind !== "skip" && i.dest === join(tgt, ".stack", "check"))) {
-    log("");
-    log(".stack/check is a placeholder. It allows every commit and prints a warning.");
-    log("Edit .stack/check and put the check command of your project in it.");
-  }
   // A note for the Claude Code adapter only. It never changes the result of the install.
   let version = null;
   try {
@@ -423,7 +460,14 @@ export function install({ source = DEFAULT_SOURCE, target, dryRun = false, log =
   }
   log("");
   log(`${dryRun ? "Dry run, nothing written. " : ""}${counts.copy + counts.generate + counts.link} to create, ${counts.skip} skipped, ${counts.manual} need a manual step.`);
-  return { items, notes, counts, hooksPath, gitignore: gi.state };
+  const planned = (rel) => dryRun && items.some((i) => i.dest === join(tgt, rel) && (i.kind === "copy" || i.kind === "generate"));
+  const steps = nextSteps(tgt, {
+    checkIsPlaceholder: planned(join(".stack", "check")) || fileHas(join(tgt, ".stack", "check"), CHECK_PLACEHOLDER_MARK),
+    agentsHasPlaceholder: (planned("AGENTS.md") && fileHas(join(src, "templates", "AGENTS.md"), AGENTS_PLACEHOLDER_MARK)) || fileHas(join(tgt, "AGENTS.md"), AGENTS_PLACEHOLDER_MARK),
+  });
+  log("");
+  for (const l of steps) log(l);
+  return { items, notes, counts, hooksPath, gitignore: gi.state, nextSteps: steps };
 }
 
 function main(argv) {

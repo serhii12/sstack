@@ -6,7 +6,7 @@ These rules apply to every coding agent in this repo, in any agent tool. `CLAUDE
 
 ## Flow
 
-For a code change, the flow is `/grill`, then `/spec`, then `/tickets`, then `/build` for each ticket.
+Once for each repo, type `/setup` to choose the issue tracker. For a code change, the flow is `/grill`, then `/spec`, then `/tickets`, then `/build` for each ticket.
 
 A report that another person files on the tracker starts with `/triage`. A `ready-for-agent` issue then goes to `/build`.
 A design question that talk cannot settle can go to `/prototype`. Its code stays on a `prototype/<name>` branch and is never merged into `main`. Its verdict goes to `/grill`. Tested logic from it can go into real work through `/build`.
