@@ -2,12 +2,17 @@
   "name": "agent-stack",
   "version": "0.0.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=22",
+    "bun": ">=1.4.5"
   },
   "scripts": {
-    "test": "node --test tests/*/*.test.mjs",
-    "lint:skills": "node scripts/skill-lint.mjs"
+    "test": "bun test tests/",
+    "test:node": "node --test tests/*/*.test.mjs",
+    "lint:skills": "node scripts/skill-lint.mjs",
+    "lint:style": "node scripts/style-lint.mjs",
+    "eval": "node scripts/eval-run.mjs"
   }
 }

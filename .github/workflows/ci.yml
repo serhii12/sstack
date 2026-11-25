@@ -5,16 +5,37 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
-  test:
+  # CI pins a stable Bun release. Development can use Bun canary.
+  bun:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.5
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: bun run test
+      - run: bun run lint:skills
+      - run: bun run lint:style
+
+  # The hooks and the installed scripts run on Node in a project repo.
+  # This job proves that they work there. Node 20 reached end of life in April 2026.
+  node:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20, 22]
+        node-version: [22, 24]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm test
+      - run: npm run test:node
       - run: npm run lint:skills
+      - run: npm run lint:style
