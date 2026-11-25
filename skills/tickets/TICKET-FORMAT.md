@@ -12,6 +12,7 @@ One file per ticket at `.scratch/<feature>/tickets/NN-title.md`, in the same fea
 Blocked by: None (can start immediately)
 Status: open
 Spec: ../spec.md
+Evidence level: <the level from the handoff note of /start, or behavior>
 
 ## What to build
 
@@ -38,6 +39,7 @@ Title: the ticket title. Body:
 ```markdown
 Part of #<spec>
 Blocked by: #<n>, #<n>
+Evidence level: <the level from the handoff note of /start, or behavior>
 
 ## What to build
 
