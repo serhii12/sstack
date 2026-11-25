@@ -40,6 +40,7 @@ retro | typed | Turn the mistakes of a session into checks or reviewer standards
 prove | agent | Gather proof that a change works and mark each acceptance check pass, fail or untested
 code-craft | agent | Give the shared terms and rules for modules, interfaces and module boundaries
 improve-codebase | typed | Scan the code for shallow modules and rule breaks, and write a ranked report
+triage | typed | Sort issues that other people filed into a state, with a brief, questions or a close reason
 <!-- skills:end -->
 
 **Not built yet:** `ship`, `pr-body`, `skill-craft`, `security-review`. Mention each one only as "not built yet". Say what to do by hand in the meantime. Never tell the user to type one. No fence yet
@@ -48,7 +49,7 @@ improve-codebase | typed | Scan the code for shallow modules and rule breaks, an
 
 1. Read the text that the user typed after `/start`. If there is no text, ask one question: "What do you want done?"
 2. If the project has an `AGENTS.md`, read it. Its rules apply to every type below.
-3. Sort the task into one type from the table. If two types fit, pick the type that needs more proof (bug, then code change, then docs-only, then read-only). If you cannot tell which type fits, ask the user one question. If the user wants a pull request for a change that is not made yet, sort by the change itself. List `ship` under "Not built yet" in the note.
+3. Sort the task into one type from the table. If two types fit, pick the type that needs more proof (bug, then code change, then docs-only, then read-only). If another person filed the bug or the request on the tracker, sort it as a report from someone else. If you cannot tell which type fits, ask the user one question. If the user wants a pull request for a change that is not made yet, sort by the change itself. List `ship` under "Not built yet" in the note.
 4. Take the evidence level from the same row.
 5. Write the handoff note (format below). Fill every field. Write `none` in a field that has no value.
 6. Reply to the user with five items. These are the type, the evidence level, one line on why, the note path, and the next command. Write the command in a code span. Then list the steps that follow as "not built yet" where they are not built.
@@ -62,6 +63,7 @@ improve-codebase | typed | Scan the code for shallow modules and rule breaks, an
 | Docs-only change | Edits only to docs, comments or text files. | `content` | If the change is unclear, `/grill`. Otherwise none: edit by hand on a new branch. | `ship` |
 | Code change | Changes behavior, config or dependencies. | `behavior` | `/grill`. After it, the user types `/spec`, then `/tickets`, then `/build` for each ticket. | |
 | Bug | Something works wrong today. | `red-then-green` | If the right behavior is unclear, `/grill`. Otherwise `/diagnose`. | |
+| Report from someone else | A bug report or a request that another person filed on the tracker. | `cite` | The user types `/triage`. After it, `/build <issue>` for a `ready-for-agent` issue, or `/grill` for a design question. | |
 | Ship request | The change is made. The user wants it delivered, as a pull request or a finished change in the repo. | `checks` | None. Follow `AGENTS.md` by hand. | `pr-body`, `ship` |
 
 What each type needs:
@@ -70,6 +72,7 @@ What each type needs:
 - Docs-only: use its own worktree and branch, like any change. Run content and link checks. Do not make up runtime proof. The diff must touch only doc files. No fence yet
 - Code change: use its own worktree and branch. Run the repo's checks. Show proof that the changed behavior works.
 - Bug: do everything that a code change needs. Before you fix anything, get a command that fails on this bug.
+- Report from someone else: use no worktree and no branch. A triage change is a tracker write. The maintainer approves each change.
 - Ship request: sort a task as this type only when the user asks for one. A plan, a review or a throwaway experiment is not a ship request.
 
 If the user wants to weigh trade-offs, the user can type `/decide`.
@@ -94,7 +97,7 @@ Use this template. It is strict: keep every field name.
 
 ```markdown
 # Handoff: <one-line task>
-Task type: <read-only | docs-only | code change | bug | ship request>
+Task type: <read-only | docs-only | code change | bug | report from someone else | ship request>
 Evidence level: <cite | content | behavior | red-then-green | checks>
 Why this type: <one line>
 Next command: <command, or "none: ask in this session">
