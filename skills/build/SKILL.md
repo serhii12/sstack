@@ -100,7 +100,7 @@ If a problem outside the ticket will hit the next agent too, load the agent skil
 
 ## 8. Prove the checks
 
-If no finding of severity `high` or `medium` is `open`, load the agent skill `prove`. Give it the task name from step 2, the full text of the ticket, and the head commit. Put its result for each Acceptance check in the report: `pass`, `fail` or `untested`. If it will not load, tell the user. Mark every check `untested`. If a `high` or `medium` finding is `open`, skip this step. Then report a check as `pass` only if you saw it pass. `prove` keeps its evidence under `.artifacts/<task-name>/evidence/`. Never commit that folder to the task branch. The installed `.gitignore` keeps its media out of `git status`. `/land` pushes the media to `evidence/<task-name>`. No fence yet
+Load the agent skill `prove`, also when a finding is still `open`. An open `high` or `medium` finding keeps the ticket open in step 9, but the proof is done in this run. Give `prove` the task name from step 2, the full text of the ticket, and the head commit. Put its result for each Acceptance check in the report: `pass`, `fail` or `untested`. If it will not load, tell the user. Mark every check `untested`. `prove` keeps its evidence under `.artifacts/<task-name>/evidence/`. Never commit that folder to the task branch. The installed `.gitignore` keeps its media out of `git status`. `/land` pushes the media to `evidence/<task-name>`. No fence yet
 
 ## 9. Close a local ticket and report
 
