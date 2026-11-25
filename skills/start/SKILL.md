@@ -39,6 +39,7 @@ friction | agent | File a repeated problem as an issue with a priority
 retro | typed | Turn the mistakes of a session into checks or reviewer standards
 prove | agent | Gather proof that a change works and mark each acceptance check pass, fail or untested
 code-craft | agent | Give the shared terms and rules for modules, interfaces and module boundaries
+improve-codebase | typed | Scan the code for shallow modules and rule breaks, and write a ranked report
 <!-- skills:end -->
 
 **Not built yet:** `ship`, `pr-body`, `skill-craft`, `security-review`. Mention each one only as "not built yet". Say what to do by hand in the meantime. Never tell the user to type one. No fence yet
@@ -57,7 +58,7 @@ code-craft | agent | Give the shared terms and rules for modules, interfaces and
 
 | Type | How to tell | Evidence level | Next command today | Not built yet |
 | --- | --- | --- | --- | --- |
-| Read-only question | Explain, review, or investigate. Nothing changes in the repo. | `cite` | None. Ask the question in this session. | |
+| Read-only question | Explain, review, or investigate. Nothing changes in the repo. | `cite` | None. Ask the question in this session. For a survey of the shape of the code, the user can type `/improve-codebase`. | |
 | Docs-only change | Edits only to docs, comments or text files. | `content` | If the change is unclear, `/grill`. Otherwise none: edit by hand on a new branch. | `ship` |
 | Code change | Changes behavior, config or dependencies. | `behavior` | `/grill`. After it, the user types `/spec`, then `/tickets`, then `/build` for each ticket. | |
 | Bug | Something works wrong today. | `red-then-green` | If the right behavior is unclear, `/grill`. Otherwise `/diagnose`. | |
