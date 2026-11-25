@@ -758,6 +758,27 @@ test("gitignore: a second install adds nothing", () => {
   });
 });
 
+test("gitignore: an empty .gitignore gets the rules, and a second install adds nothing", () => {
+  withDirs((source, target) => {
+    write(target, ".gitignore", "");
+    assert.equal(install({ source, target, log: quiet }).gitignore, "added");
+    const text = readFileSync(join(target, ".gitignore"), "utf8");
+    assert.equal(text, [GITIGNORE_HEADER, ...GITIGNORE_RULES].join("\n") + "\n");
+    assert.equal(install({ source, target, log: quiet }).gitignore, "already");
+    assert.equal(readFileSync(join(target, ".gitignore"), "utf8"), text);
+  });
+});
+
+test("gitignore: a .gitignore with no newline at the end gets the rules on new lines", () => {
+  withDirs((source, target) => {
+    write(target, ".gitignore", "node_modules/");
+    assert.equal(install({ source, target, log: quiet }).gitignore, "added");
+    const text = readFileSync(join(target, ".gitignore"), "utf8");
+    assert.equal(text, ["node_modules/", "", GITIGNORE_HEADER, ...GITIGNORE_RULES].join("\n") + "\n");
+    assert.equal(install({ source, target, log: quiet }).gitignore, "already");
+  });
+});
+
 test("gitignore: only the missing rules are appended, and the header is not repeated", () => {
   withDirs((source, target) => {
     write(target, ".gitignore", `${GITIGNORE_HEADER}\n${GITIGNORE_RULES[0]}\n`);
