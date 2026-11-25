@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdtempSync, rmSync, symlinkSync, writeFileSync, mkdirSync } from "node:fs";
+import { cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { checkTicket, parseBlockedBy, parseStatus, EXIT } from "../../skills/build/scripts/ticket-ready.mjs";
+import { checkTicket, parseBlockedBy, parseBuilt, parseStatus, saysMerged, EXIT } from "../../skills/build/scripts/ticket-ready.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "..", "skills", "build", "scripts", "ticket-ready.mjs");
@@ -206,4 +206,98 @@ test("exports: the parsers and the exit table", () => {
   assert.equal(parseStatus("Status:   closed  \n"), "closed");
   assert.equal(parseStatus("```\nStatus: closed\n```\n"), null);
   assert.equal(checkTicket(join(T, "14-none.md")).code, 0);
+});
+
+// ---- a closed blocker counts only when its built commit is in origin/main (e2e run 1 break 3, run 2 break 17) ----
+
+function git(cwd, ...args) {
+  const env = { ...process.env };
+  for (const k of Object.keys(env)) if (k.startsWith("GIT_")) delete env[k];
+  const r = spawnSync("git", ["-C", cwd, "-c", "user.name=t", "-c", "user.email=t@example.invalid", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=/dev/null", ...args], { encoding: "utf8", env });
+  assert.equal(r.status, 0, `git ${args.join(" ")}: ${r.stderr}`);
+  return r.stdout.trim();
+}
+
+/** A repo with a bare origin, `main` pushed, a built branch `agent/one-1a` that is not merged, and two local tickets. */
+function withBuiltBlocker(fn, { closeLine } = {}) {
+  const root = mkdtempSync(join(tmpdir(), "ticket-ready-git-"));
+  try {
+    const origin = join(root, "origin.git");
+    const repo = join(root, "repo");
+    spawnSync("git", ["init", "-q", "--bare", "-b", "main", origin]);
+    spawnSync("git", ["init", "-q", "-b", "main", repo]);
+    writeFileSync(join(repo, "a.txt"), "a\n");
+    git(repo, "add", "a.txt");
+    git(repo, "commit", "-q", "-m", "base");
+    git(repo, "remote", "add", "origin", origin);
+    git(repo, "push", "-q", "origin", "main");
+    git(repo, "switch", "-q", "-c", "agent/one-1a");
+    writeFileSync(join(repo, "b.txt"), "b\n");
+    git(repo, "add", "b.txt");
+    git(repo, "commit", "-q", "-m", "ticket one");
+    const sha = git(repo, "rev-parse", "--short", "HEAD");
+    git(repo, "switch", "-q", "main");
+    const tickets = join(repo, ".scratch", "f", "tickets");
+    mkdirSync(tickets, { recursive: true });
+    const line = (closeLine ?? "Built on branch agent/one-1a, last commit <sha>. Merge the branch before you build a ticket that this one blocks.").replace("<sha>", sha);
+    writeFileSync(join(tickets, "01-one.md"), `# 01: One\n\nBlocked by: none\nStatus: closed\nSpec: ../spec.md\n\n## Comments\n\n${line}\n`);
+    writeFileSync(join(tickets, "02-two.md"), "# 02: Two\n\nBlocked by: 01-one.md\nStatus: open\nSpec: ../spec.md\n");
+    return fn({ repo, tickets, sha, ticket: join(tickets, "02-two.md") });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+test("exit 1: a closed blocker whose built commit is not in origin/main is not done, and the message says why", () => {
+  withBuiltBlocker(({ ticket, sha }) => {
+    const r = run([ticket]);
+    assert.equal(r.code, 1);
+    assert.match(r.err, new RegExp(`Blocker 01-one\\.md is built on branch agent/one-1a at commit ${sha}, but that commit is not in \`origin/main\``));
+    assert.match(r.err, /Fix: merge agent\/one-1a into main, run `git fetch origin`/);
+    assertMessageForm(r.err);
+  });
+});
+
+test("exit 0: the same blocker after its branch is merged into main and fetched", () => {
+  withBuiltBlocker(({ repo, ticket }) => {
+    git(repo, "merge", "-q", "--no-ff", "-m", "merge one", "agent/one-1a");
+    git(repo, "push", "-q", "origin", "main");
+    git(repo, "fetch", "-q", "origin");
+    const r = run([ticket]);
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /1 blocker\(s\) closed/);
+  });
+});
+
+test("exit 1: a merge into local main that is not pushed does not count", () => {
+  withBuiltBlocker(({ repo, ticket }) => {
+    git(repo, "merge", "-q", "--no-ff", "-m", "merge one", "agent/one-1a");
+    assert.equal(run([ticket]).code, 1);
+  });
+});
+
+test("exit 0: after a squash merge, a line that starts with Merged marks the blocker done", () => {
+  withBuiltBlocker(({ tickets, ticket }) => {
+    const p = join(tickets, "01-one.md");
+    writeFileSync(p, readFileSync(p, "utf8") + "Merged in 0123abc by squash.\n");
+    assert.equal(run([ticket]).code, 0);
+  });
+});
+
+test("exit 1: the built commit is unknown to git, and the message says that git cannot tell", () => {
+  withBuiltBlocker(({ ticket }) => {
+    const r = run([ticket]);
+    assert.equal(r.code, 1);
+    assert.match(r.err, /git cannot tell if that commit is in `origin\/main`/);
+    assertMessageForm(r.err);
+  }, { closeLine: "Built on branch agent/gone-9z, last commit 0000000. Merge the branch first." });
+});
+
+test("parseBuilt reads the close line of build step 9, the newer form without `last`, and takes the last line", () => {
+  assert.deepEqual(parseBuilt("## Comments\n\nBuilt on branch agent/a-1b, last commit 7f991bc. Merge the branch first.\n"), { branch: "agent/a-1b", commit: "7f991bc" });
+  assert.deepEqual(parseBuilt("Built on branch agent/a-1b, commit `abc1234`.\nBuilt on branch agent/a-2c, last commit def5678.\n"), { branch: "agent/a-2c", commit: "def5678" });
+  assert.equal(parseBuilt("Status: closed\n"), null);
+  assert.equal(parseBuilt("```\nBuilt on branch agent/a-1b, last commit 7f991bc.\n```\n"), null);
+  assert.equal(saysMerged("## Comments\nMerged in 1234567.\n"), true);
+  assert.equal(saysMerged("## Comments\nNot merged yet.\n"), false);
 });
