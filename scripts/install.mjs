@@ -8,7 +8,8 @@
 //   templates/adr/*            -> <target>/docs/adr/
 //   templates/claude-settings.json -> <target>/.claude/settings.json (never merged)
 //   templates/githooks/*       -> <target>/.githooks/
-//   (built in)                 -> <target>/.stack/check, docs/agents/enforcement.md (starter files)
+//   (built in)                 -> <target>/.stack/check, docs/agents/enforcement.md, docs/agents/permissions.md (starter files)
+//   (printed, never written)   -> the allow and deny rules for Claude Code, to paste into .claude/settings.local.json
 //   (built in)                 -> <target>/.gitignore: rules that keep evidence media out of commits
 //
 // After the copy, the installer runs `git config core.hooksPath .githooks` in the target.
@@ -49,7 +50,8 @@
 
 import { spawnSync } from "node:child_process";
 import { appendFileSync, chmodSync, copyFileSync, existsSync, writeFileSync, lstatSync, mkdirSync, readFileSync, readdirSync, readlinkSync, realpathSync, statSync, symlinkSync } from "node:fs";
-import { dirname, join, relative, resolve, sep } from "node:path";
+import { tmpdir } from "node:os";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const DEFAULT_SOURCE = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -221,6 +223,7 @@ export function plan(source, target) {
 
   items.push({ kind: "generate", content: STARTER_CHECK, mode: 0o755, dest: join(target, ".stack", "check") });
   items.push({ kind: "generate", content: STARTER_ENFORCEMENT, mode: 0o644, dest: join(target, "docs", "agents", "enforcement.md") });
+  items.push({ kind: "generate", content: STARTER_PERMISSIONS, mode: 0o644, dest: join(target, "docs", "agents", "permissions.md") });
 
   const settingsSrc = join(source, "templates", "claude-settings.json");
   if (existsSync(settingsSrc)) items.push({ kind: "settings", src: settingsSrc, dest: join(target, ".claude", "settings.json") });
@@ -312,6 +315,100 @@ export function nextSteps(tgt, { checkIsPlaceholder = false, agentsHasPlaceholde
   }
   step("Then type /start and say what you want done.");
   return lines;
+}
+
+// Permissions. Owner ruling: the installer PRINTS the allow list and writes it to
+// docs/agents/permissions.md. It never writes a rule into a settings file. A later
+// --write-permissions option is possible. In e2e runs 1 and 2 an unattended /build stopped at
+// each command that needed approval, and no file named the commands that the stack runs.
+// Each entry: [Claude Code rule, the same thing in plain words for other agent tools].
+export const ALLOW_RULES = [
+  ["Bash(git:*)", "`git`. In Claude Code the git guard hook still checks each git command."],
+  ["Bash(node .claude/skills/*)", "`node .claude/skills/<skill>/scripts/<script>.mjs`: the lints and checks of the stack."],
+  ["Bash(./.stack/check)", "`./.stack/check`: the project check, the same file that the commit hook runs."],
+  ["Bash(gh --version)", "`gh --version`, `gh auth status`, `gh repo view`, `gh issue view|list|create`, `gh pr list|view|diff|create`: read or create only, for /setup, /tickets, /build and /land."],
+  ["Bash(gh auth status)", null],
+  ["Bash(gh repo view:*)", null],
+  ["Bash(gh issue view:*)", null],
+  ["Bash(gh issue list:*)", null],
+  ["Bash(gh issue create:*)", null],
+  ["Bash(gh pr list:*)", null],
+  ["Bash(gh pr view:*)", null],
+  ["Bash(gh pr diff:*)", null],
+  ["Bash(gh pr create:*)", null],
+  ["Bash(glab --version)", "`glab --version`: /setup looks for the GitLab tool."],
+  ["Edit(/.scratch/**)", "Write `.scratch/`: local specs, tickets and their status."],
+  ["Edit(/docs/agents/**)", "Write `docs/agents/`: the tracker doc and the enforcement list."],
+  ["Edit(/GLOSSARY.md)", "Write `GLOSSARY.md`."],
+  ["Edit(/docs/adr/**)", "Write `docs/adr/`: decision records."],
+];
+// Rules that the list must never hold. Each one lets the agent run a command that the git guard
+// cannot read (`node -e`, `npm exec`, `gh pr merge --admin`, `gh api`), or write any file.
+export const NEVER_ALLOW = ["Bash(node:*)", "Bash(npm:*)", "Bash(npx:*)", "Bash(gh:*)", "Bash(cd:*)", "Bash(cp:*)", "Bash(mv:*)", "Bash(rm:*)", "Bash(sh:*)", "Bash(bash:*)", "Bash(python3:*)"];
+// Guard files that the agent must not edit, also in a worktree of the repo.
+const GUARD_PATHS = [".stack/**", ".githooks/**", ".claude/hooks/**", ".claude/settings.json", ".claude/settings.local.json"];
+export const TEMP_FOLDER = "sstack";
+
+function realOrSame(p) {
+  try {
+    return realpathSync(p);
+  } catch {
+    return p;
+  }
+}
+
+/**
+ * The rules for this machine: the static list, plus the worktrees folder that /build uses
+ * (../<repo>-worktrees) and the temp folder of the /start note and the diagnose notebook.
+ * The deny rules close the hole that the worktree allow opens (e2e run 1 break 8: an edit to
+ * <worktree>/.stack/check was applied, while the same edit in the project was denied).
+ * Returns { allow, deny, worktrees }.
+ */
+export function permissionRules(tgt, tmp = tmpdir()) {
+  const real = realOrSame(tgt);
+  const worktrees = join(dirname(real), `${basename(real)}-worktrees`);
+  const allow = ALLOW_RULES.map(([rule]) => rule);
+  allow.push(`Read(/${worktrees}/**)`, `Edit(/${worktrees}/**)`, "Bash(echo $TMPDIR)");
+  for (const t of new Set([tmp, realOrSame(tmp)])) allow.push(`Edit(/${join(t, TEMP_FOLDER)}/**)`);
+  const deny = GUARD_PATHS.map((g) => `Edit(/${worktrees}/*/${g})`);
+  return { allow, deny, worktrees };
+}
+
+export const STARTER_PERMISSIONS = `# Permissions
+
+The stack runs the commands below and writes the files below. If your agent tool asks before each command, allow these. If not, an unattended run stops at each one, and the first /build stops many times.
+
+The installer printed the same list in the syntax of Claude Code. It wrote no settings file. You decide what to allow.
+
+## Commands
+
+${ALLOW_RULES.filter(([r, plain]) => plain && r.startsWith("Bash(")).map(([, plain]) => `- ${plain}`).join("\n")}
+- The test command of this project, for example \`npm test\`.
+- \`echo $TMPDIR\`, to find the temp folder.
+
+## Files and folders
+
+${ALLOW_RULES.filter(([r, plain]) => plain && r.startsWith("Edit(")).map(([, plain]) => `- ${plain}`).join("\n")}
+- Read and write the worktrees folder \`../<repo>-worktrees/\`, where /build makes one worktree for each ticket.
+- Write \`$TMPDIR/${TEMP_FOLDER}/\`: the /start note and the diagnose notebook.
+
+## Never allow
+
+- \`node\`, \`npm\`, \`npx\`, \`sh\`, \`bash\` or \`python3\` with any argument. They run code that the git guard cannot read.
+- \`gh\` with any argument. \`gh pr merge --admin\` and \`gh api\` skip the merge gate.
+- \`cd\`, \`cp\`, \`mv\` or \`rm\` with any argument.
+- Edits to \`.stack/\`, \`.githooks/\`, \`.claude/hooks/\` and \`.claude/settings*.json\`, in the repo and in each worktree.
+`;
+
+/** The lines to print: where to paste the rules, why, and the rules as JSON. */
+export function permissionLines(tgt, tmp = tmpdir()) {
+  const { allow, deny } = permissionRules(tgt, tmp);
+  return [
+    "Permissions for Claude Code. The installer wrote no settings file. You decide.",
+    "Paste these rules into the \"permissions\" of .claude/settings.local.json. Without them, the first /build stops for permission many times.",
+    "Add one rule for the test command of the project, for example Bash(npm test:*). docs/agents/permissions.md has the same list for other agent tools.",
+    ...JSON.stringify({ allow, deny }, null, 2).split("\n").map((l) => `    ${l}`),
+  ];
 }
 
 /**
@@ -458,6 +555,8 @@ export function install({ source = DEFAULT_SOURCE, target, dryRun = false, log =
     log("");
     log(`note    The Claude Code adapter uses onFailure: block in the hook settings. This setting needs Claude Code ${MIN_CLAUDE_VERSION} or later. Your version is older, so please update Claude Code.`);
   }
+  log("");
+  for (const l of permissionLines(tgt)) log(l);
   log("");
   log(`${dryRun ? "Dry run, nothing written. " : ""}${counts.copy + counts.generate + counts.link} to create, ${counts.skip} skipped, ${counts.manual} need a manual step.`);
   const planned = (rel) => dryRun && items.some((i) => i.dest === join(tgt, rel) && (i.kind === "copy" || i.kind === "generate"));

@@ -135,7 +135,8 @@ The installer does these steps:
 
 - It copies the skills to `.claude/skills/`, the git guard to `.claude/hooks/`, and the templates to the project.
 - It creates `CLAUDE.md` as a symlink to `AGENTS.md`.
-- It creates a starter `.stack/check` and a starter `docs/agents/enforcement.md`.
+- It creates a starter `.stack/check`, a starter `docs/agents/enforcement.md` and `docs/agents/permissions.md`. The last file lists the commands that the stack runs and the files that it writes, for any agent tool.
+- It prints the allow and deny rules for Claude Code. It writes them into no settings file. To run `/build` with no prompt for each command, paste them into `.claude/settings.local.json`.
 - It appends rules to `.gitignore` that keep evidence media out of commits, such as `.artifacts/*/evidence/**/*.png`. It adds only the rules that are missing.
 - It switches on the git hook with `git config core.hooksPath .githooks`. If `core.hooksPath` already has a value, the installer keeps it and prints the command to run by hand.
 

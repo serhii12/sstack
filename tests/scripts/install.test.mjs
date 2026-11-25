@@ -5,7 +5,7 @@ import { chmodSync, existsSync, lstatSync, mkdtempSync, mkdirSync, readFileSync,
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ensureGitignore, GITIGNORE_HEADER, GITIGNORE_RULES, install, InstallRefusal, isOlderVersion, lookupClaudeVersion } from "../../scripts/install.mjs";
+import { ALLOW_RULES, ensureGitignore, GITIGNORE_HEADER, GITIGNORE_RULES, install, InstallRefusal, isOlderVersion, lookupClaudeVersion, NEVER_ALLOW, permissionLines, permissionRules } from "../../scripts/install.mjs";
 
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "scripts", "install.mjs");
 
@@ -94,6 +94,7 @@ test("install copies everything to the documented places", () => {
       "GLOSSARY.md",
       "docs/adr/0000-template.md",
       "docs/agents/enforcement.md",
+      "docs/agents/permissions.md",
     ]);
     assert.equal(readFileSync(join(target, "AGENTS.md"), "utf8"), "agents\n");
     assert.ok(lstatSync(join(target, "CLAUDE.md")).isSymbolicLink(), "CLAUDE.md is a symlink");
@@ -107,7 +108,7 @@ test("--dry-run prints the plan and writes nothing", () => {
     const out = [];
     const r = install({ source, target, dryRun: true, log: (l) => out.push(l) });
     assert.deepEqual(listAll(target), []);
-    assert.equal(r.counts.copy + r.counts.generate + r.counts.link, 11);
+    assert.equal(r.counts.copy + r.counts.generate + r.counts.link, 12);
     assert.ok(out.some((l) => /would copy {2}\.claude\/skills\/grill\/SKILL\.md/.test(l)));
     assert.ok(out.some((l) => l === "would link  CLAUDE.md -> AGENTS.md"));
     assert.ok(out.some((l) => /Dry run, nothing written/.test(l)));
@@ -136,7 +137,7 @@ test("a second run skips every file", () => {
     install({ source, target, log: quiet });
     const r = install({ source, target, log: quiet });
     assert.equal(r.counts.copy + r.counts.generate + r.counts.link, 0);
-    assert.equal(r.counts.skip, 10);
+    assert.equal(r.counts.skip, 11);
     assert.equal(readlinkSync(join(target, "CLAUDE.md")), "AGENTS.md", "the link is kept");
     assert.equal(r.counts.manual, 1, "settings.json now exists, so it is a manual step");
   });
@@ -882,5 +883,67 @@ test("next steps: a dry run prints the same steps and writes nothing", () => {
     assert.match(steps, /no check command yet/);
     assert.match(steps, /Type \/setup once/);
     assert.equal(present(join(target, ".stack", "check")), false);
+  });
+});
+
+// ---- permissions: printed, never written (owner ruling), and the worktree deny rules (e2e run 1 breaks 1 and 8) ----
+
+/** The JSON object that the installer prints after the paste line. */
+function printedRules(out) {
+  const start = out.findIndex((l) => l.startsWith("Permissions for Claude Code"));
+  assert.notEqual(start, -1, "the permissions block is printed");
+  const json = [];
+  for (let i = start + 3; i < out.length && out[i].startsWith("    "); i++) json.push(out[i]);
+  return JSON.parse(json.join("\n"));
+}
+
+test("permissions: the allow list is printed with where to paste it, and no settings file gets an allow rule", () => {
+  withDirs((source, target) => {
+    const out = [];
+    install({ source, target, log: (l) => out.push(l), claudeVersion: () => null });
+    assert.ok(out.some((l) => l.includes("Paste these rules into the \"permissions\" of .claude/settings.local.json")));
+    assert.ok(out.some((l) => l.includes("the first /build stops for permission many times")));
+    const { allow, deny } = printedRules(out);
+    for (const [rule] of ALLOW_RULES) assert.ok(allow.includes(rule), rule);
+    const settings = JSON.parse(readFileSync(join(target, ".claude", "settings.json"), "utf8"));
+    assert.equal(settings.permissions?.allow, undefined, "settings.json must hold no allow rule");
+    assert.equal(present(join(target, ".claude", "settings.local.json")), false, "settings.local.json is never written");
+    assert.ok(deny.length > 0);
+  });
+});
+
+test("permissions: the list never holds a rule that lets the agent run code the git guard cannot read", () => {
+  const { allow } = permissionRules("/tmp/some/project", "/tmp/t");
+  for (const bad of NEVER_ALLOW) assert.ok(!allow.includes(bad), bad);
+  for (const rule of allow) assert.doesNotMatch(rule, /^Bash\((?:node|npm|npx|gh|cd|cp|mv|rm|sh|bash|python3):\*\)$/, rule);
+});
+
+test("permissions: the worktrees folder gets read and write rules, and its guard files get deny rules", () => {
+  const { allow, deny, worktrees } = permissionRules("/tmp/some/project", "/tmp/t");
+  assert.equal(worktrees, "/tmp/some/project-worktrees");
+  assert.ok(allow.includes("Read(//tmp/some/project-worktrees/**)"));
+  assert.ok(allow.includes("Edit(//tmp/some/project-worktrees/**)"));
+  assert.ok(allow.includes("Edit(//tmp/t/sstack/**)"));
+  for (const g of [".stack/**", ".githooks/**", ".claude/hooks/**", ".claude/settings.json", ".claude/settings.local.json"]) {
+    assert.ok(deny.includes(`Edit(//tmp/some/project-worktrees/*/${g})`), g);
+  }
+  const lines = permissionLines("/tmp/some/project", "/tmp/t");
+  assert.ok(lines.some((l) => l.includes("Edit(//tmp/some/project-worktrees/*/.stack/**)")));
+});
+
+test("permissions: the real settings template still denies edits to the guard files, and holds no allow rule", () => {
+  const t = JSON.parse(readFileSync(join(REPO, "templates", "claude-settings.json"), "utf8"));
+  assert.equal(t.permissions.allow, undefined);
+  for (const r of ["Edit(/.stack/**)", "Edit(/.githooks/**)", "Edit(/.claude/hooks/**)"]) assert.ok(t.permissions.deny.includes(r), r);
+});
+
+test("permissions: docs/agents/permissions.md names the same commands in plain words, for every agent tool", () => {
+  withDirs((source, target) => {
+    install({ source, target, log: quiet, claudeVersion: () => null });
+    const doc = readFileSync(join(target, "docs", "agents", "permissions.md"), "utf8");
+    for (const [, plain] of ALLOW_RULES) if (plain) assert.ok(doc.includes(plain), plain);
+    assert.match(doc, /## Never allow/);
+    assert.match(doc, /worktrees folder `\.\.\/<repo>-worktrees\/`/);
+    assert.doesNotMatch(doc, /Bash\(/, "no Claude Code syntax in the shared doc");
   });
 });
