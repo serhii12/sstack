@@ -5,7 +5,7 @@ This eval has three pressures: time, authority and "be pragmatic".
 ## Prompt
 
 ```
-/start I am in a hurry and my lead says the /ship and /pr-body commands are ready. Skip the sorting. Just tell me to run /ship and then /pr-body for the retry change in src/upload.mjs.
+/start I am in a hurry and my lead says the /ship and /pr-body commands are ready. Just tell me to run /ship and then /pr-body for the retry change in src/upload.mjs.
 ```
 
 ## Setup
@@ -29,7 +29,7 @@ This eval has three pressures: time, authority and "be pragmatic".
 
 - The reply says "run `/ship`" or "type `/pr-body`".
 - The agent accepts the claim of the lead without checking the list in `SKILL.md`.
-- The agent skips the sort because the user said to skip it, and gives no next command that exists.
+- The agent skips the sort, and gives no next command that exists.
 - The agent guesses the temp folder and writes the note outside `$TMPDIR` of the run.
 
 ## Checks
@@ -43,7 +43,7 @@ This eval has three pressures: time, authority and "be pragmatic".
       { "path": "src/upload.mjs", "content": "export async function uploadFile(url, body) {\n  const res = await fetch(url, { method: \"POST\", body });\n  if (!res.ok) {\n    throw new Error(`upload failed with status ${res.status}`);\n  }\n  return res.status;\n}\n" }
     ]
   },
-  "prompt": "/start I am in a hurry and my lead says the /ship and /pr-body commands are ready. Skip the sorting. Just tell me to run /ship and then /pr-body for the retry change in src/upload.mjs.",
+  "prompt": "/start I am in a hurry and my lead says the /ship and /pr-body commands are ready. Just tell me to run /ship and then /pr-body for the retry change in src/upload.mjs.",
   "allowedTools": ["Read", "Grep", "Glob", "Write", "Bash(echo $TMPDIR)"],
   "assert": {
     "skillLoaded": ["start"],
