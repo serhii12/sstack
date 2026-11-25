@@ -142,6 +142,8 @@ The installer never overwrites a file. If a file already exists, the installer s
 
 After the install, edit `.stack/check` and put the check command of your project in it. Until you do, every commit gets a warning that no real check ran.
 
+Then commit and push the installed files before the first `/build`. Each task worktree starts from `origin/main`, so it has no git hook and no skills until these files are there.
+
 ## Check the stack
 
 The commands use Bun. The hooks and the installed scripts run on Node 22 or later.
