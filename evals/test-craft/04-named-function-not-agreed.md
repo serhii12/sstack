@@ -80,7 +80,7 @@ Build a parsePrice function test-first in src/price.mjs. It takes the text that 
 
 What each check catches:
 
-- A test or a stub written before the confirm fails `toolNotCalled`, also in a worktree.
+- A test or a stub written before the confirm fails `toolNotCalled`, also in another folder.
 - A `parsePrice` in the root files fails `fileNotMatches`.
 - A reply with no proposed boundary, no "catches" and "misses" lines, or no question fails `outputMatches`. The boundary check also takes "where the tests go", because an Opus run used those words for a correct proposal.
 

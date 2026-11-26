@@ -45,7 +45,7 @@ _Avoid_: purchase
 
 ## Checks
 
-The installed `AGENTS.md` can make the agent work in a new worktree, so the root file does not show every edit. The `toolNotCalled` checks see an edit in any folder.
+The agent can write a file outside the root folder of the repo, so the root file does not show every edit. The `toolNotCalled` checks see an edit in any folder.
 
 ```json
 {
