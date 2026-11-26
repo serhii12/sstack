@@ -98,8 +98,3 @@ The cache step of `ci.yml`.
 ## Relevant files
 - .github/workflows/ci.yml
 ```
-
-## Provenance
-
-- `skills/friction-log/SKILL.md` from kcd-skills (github.com/kentcdodds/kcd-skills), MIT, Copyright (c) 2026 Kent C. Dodds. The base of this skill. Kept nearly word for word: the opening paragraph, "fix obvious, low-risk friction", search first and comment on a match, the six fields, secrets out, a priority and `needs-decision`. Changed: renamed to `friction`, "a lying type" explained, the four-part bar made into a numbered list, the tracker read from `docs/agents/tracker.md` with a local `.scratch/friction/` fallback, a priority table, an issue format, a title prefix for a tracker without the label, and a ban on secrets and private data added. The description is split into short sentences and adds the phrase "log this friction". The first paragraph no longer repeats the four-part bar. A troubleshooting table and a filled example issue are new. Removed: the Kody command and package, the `prefer-local-kody-execute` link, the `ship-pr` leftover pass, "autopilot rung 11", and the `friction-skipped` label used by the autopilot sweep.
-- New here: the priority meanings, the issue format, the local-file naming, the offer to create a missing label, and the push back once on a request to file below the bar. An earlier version refused such a request and never created a label. The owner did not ask for either, and both are gone.

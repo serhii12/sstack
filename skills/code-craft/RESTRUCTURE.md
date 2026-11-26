@@ -56,10 +56,3 @@ No fence yet
 - Do not restructure code that the task does not name.
 
 No fence yet
-
-## Provenance
-
-- `skills/engineering/codebase-design/DEEPENING.md` from [mattpocock/skills](https://github.com/mattpocock/skills), commit 6f7f783, MIT, Copyright (c) 2026 Matt Pocock. Adapted: the four dependency categories with the test plan for each, the one and two adapter rule, inner and outer module boundaries, and "replace, do not layer". Changes: the steps and the commit order are new. Old tests go only when the ticket says so and each behavior has a new test. The rule on a test that fails in the middle of a restructure is new. The examples PGLite, Stripe and Twilio are removed.
-- `engineering-protocol/rules/abstraction.md`, the owner's own skill (Serhii Panchyshyn, no license file). Idea only: a test fake is a second adapter only at a system boundary.
-- `typescript-engineering/rules/ts-simplicity.md`, the owner's own skill (Serhii Panchyshyn, no license file). Idea only: do not refactor inside a bug fix or outside the task.
-- New here: the three kinds of check for a restructure ticket.

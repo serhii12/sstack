@@ -43,4 +43,3 @@ Create one issue for each ticket, blockers first, so each ticket can name real i
 Run `glab issue view <n> --comments`.
 
 <!-- Not checked: no glab command in this file was run or compared with `glab` help text. The setup skill checks the flags at setup time. -->
-<!-- Provenance: adapted from skills/engineering/setup-matt-pocock-skills/issue-tracker-gitlab.md in mattpocock/skills (MIT, Copyright (c) 2026 Matt Pocock). See NOTICE and skills/setup/SKILL.md. -->

@@ -42,7 +42,3 @@ The pure module states the decision. A short part of it can go into the spec as 
 - Mix the logic and the page. If the module touches `document` or a button handler, a reader cannot lift it out.
 - Use a framework, a bundler or a dev server. The file must open with a double-click.
 - Put the page or the module into product code.
-
-## Provenance
-
-Adapted from `skills/engineering/prototype/LOGIC.md` of [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock). Kept: one shareable HTML file for people who do not read code, the question shown in the page, a pure module in one script block with the four forms, the page layout (state panel, free buttons, tabbed walkthroughs from a known state), the hard-case scenarios, the plain look, and the list of things not to do. Changed: the file goes in `prototypes/<name>/index.html`. As in Matt's, the pure module can move into the real code. Here `/build` moves it and writes its tests. It can also become a snippet in the spec.

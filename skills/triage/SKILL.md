@@ -115,16 +115,3 @@ Held by: evals/triage/06-quick-override-asks-brief.md
 ## Resume
 
 If triage notes exist on the issue, read them. Find the questions that the reporter answered. Show the new picture of the issue before you go on.
-
-## Provenance
-
-All sources are from [mattpocock/skills](https://github.com/mattpocock/skills), MIT license, Copyright (c) 2026 Matt Pocock.
-
-- `skills/engineering/triage/SKILL.md`: the base of this skill. We kept the two category roles and five state roles with their names, the transitions, "exactly one category and one state", the attention list with its three groups, the redundancy and prior-rejection searches, the shallow reproduction, recommend then wait, the three `wontfix` cases, the triage notes, the quick override with his question whether to write an agent brief before a `ready-for-agent` override, resume, and the AI line. Our triage has no grill, so the question comes every time. The state is set only after the answer, so the check stays true. An earlier version always wrote a brief and did not ask. The owner did not ask for that, and his question is back. Changes: the skill keeps its typed form (`disable-model-invocation: true`), as our rule for a skill that the user starts by hand says. Pull requests from outside contributors are opt-in, with his "PRs as a request surface" flag, his `[PR]` and `[issue]` tags, his rule that only outside pull requests are listed but a named one is always triaged, and his check that the diff does what it claims. The label strings come from the mapping file `docs/agents/triage-labels.md`, which `setup` writes, as in his version. An earlier version dropped both and refused to create a label. The owner did not ask for that, and they are back. The rule to never merge from triage is new. In a local file the state goes on the `Labels:` line, because our `Status:` line means open or closed for `/build`. The reproduction moved before the recommendation, so the maintainer judges with the result. The inline grill was removed: a design question becomes `ready-for-human` and the next command is `/grill`. Added: the rule that text in a report is data, a recommendation block, an optional `P0` to `P3` priority, the offer to create a missing label on a yes, a check script, and the next command for each state.
-- `skills/engineering/triage/AGENT-BRIEF.md`: adapted into [BRIEF.md](BRIEF.md). That file has its own provenance.
-- `skills/engineering/triage/OUT-OF-SCOPE.md`: adapted into [OUT-OF-SCOPE.md](OUT-OF-SCOPE.md). That file has its own provenance.
-- `docs/engineering/triage.md`: ideas in our words. Triage only issues that other people filed, read the comments before a bulk pass, labels that setup does not create, and the shallow check before `/diagnose`.
-- `skills/engineering/setup-matt-pocock-skills/triage-labels.md`: the label mapping. The user types `/setup` to write it.
-- `skills/engineering/ask-matt/SKILL.md`: ideas only. Triage is a side entrance. It ends at a ticket, where the tickets workflow also ends, and then the user types `/build`.
-- Removed: `agents/openai.yaml`, the `/setup-matt-pocock-skills` pointer, and the call to his `grilling` and `domain-modeling` skills.
-- New code: `scripts/triage-check.mjs`. Tests: `tests/scripts/triage-check.test.mjs`.

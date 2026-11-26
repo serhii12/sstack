@@ -129,11 +129,3 @@ No fence yet
 
 - Problem: the shell does not show `TMPDIR`. Fix: write the notebook to `/tmp/sstack/diagnose-<short-name>.md`.
 - Problem: the Phase 1 command goes green on the first run. Cause: the command does not reach the real code path, or the failure is intermittent. Fix: rebuild the command, or raise the rate.
-
-## Provenance
-
-Both sources are MIT. See NOTICE.
-
-- `skills/engineering/diagnosing-bugs/SKILL.md` from [mattpocock/skills](https://github.com/mattpocock/skills), MIT, Copyright (c) 2026 Matt Pocock. The base of this skill. Kept: the six phases, the redact section, the Phase 1 gate and its four checks, "no theories until the command exists", shrinking, 3 to 5 ranked causes with predictions before the first test with no wait for an answer, one change per experiment, tagged logs, the performance branch, the shallow-boundary finding, the diff against a clean copy after a forced red, and the cleanup list with the proven cause in the commit or pull request message. Rewritten in plain English, with his word for a test join point replaced by "boundary". Changes: his "show the ranked list to the user" became a notebook entry that the user can read. In live runs no model printed the list in its reply, but most runs wrote it to the notebook before the first edit. Also a new ranked list when a fix leaves a new symptom, a tighter description, a "When this skill fits" section, an Important section with exact lines to print, a `test-craft` load with a fallback, shorter phases, and pointers to the rebuild and probe notes. Removed the path to his `hitl-loop` script. Did not take the script or `agents/openai.yaml`.
-- `docs/engineering/diagnosing-bugs.md` from the same repo: the over-loading report and the "slow on purpose, wrong tool for a quick question" wording. Ideas only.
-- `skills/investigate-a-failure/SKILL.md` from [joelhooks/rat-stack](https://github.com/joelhooks/rat-stack), MIT, Copyright (c) 2026 Joel Hooks. Kept: the notebook and its entry fields, the rate as counts, the disproved cause as a result, asynchronous errors, the workaround label, the rate before and after, and sending upstream as an outward action. Removed: frontmatter `plain` and `diagram`, links to rat-stack principle files and its durability page, and the file path in its example.

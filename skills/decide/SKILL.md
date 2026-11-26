@@ -29,16 +29,3 @@ Recommendation: option 1, because 3 servers cannot share memory.
 Ideal fix: option 1, the same as the recommendation.
 Which option do you choose?
 ```
-
-## Provenance
-
-- `skills/review-and-recommend/SKILL.md` from kcd-skills
-  (github.com/kentcdodds/kcd-skills), MIT, Copyright (c) 2026 Kent C. Dodds.
-  The five steps are copied and adapted. Changes: renamed to `decide`.
-  Rewrote the description in our plain style. Added "cite each fact" to step 1.
-  Explained the door terms as "easy to undo" and "hard to undo". Said "ideal
-  fix" in place of "right fix". Split step 5 into two sentences (no semicolon).
-  Added the `No fence yet` line.
-- Later changes: rewrote the description to name the job and its triggers, with a
-  negative trigger. Moved the stop rule to an `## Important` section. Added the
-  one-option rule and the example.

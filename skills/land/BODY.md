@@ -66,5 +66,3 @@ Made with <agent tool> and <model>.
 - Lead with the conclusion. Cite the code, the check or the command output.
 - After you post, make sure that GitHub returned a comment URL.
 - Never resolve a review thread of a person. A person resolves it.
-
-<!-- Provenance: adapted from tstack skills/file-pr/SKILL.md and skills/leaving-pr-comments/SKILL.md (MIT, Copyright (c) 2026 Theo Browne), and the PR body rule of rstack AGENTS.md lines 83-86 (Michael Shimeles, no license file). See skills/land/SKILL.md. -->

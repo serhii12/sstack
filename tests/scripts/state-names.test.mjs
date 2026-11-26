@@ -169,7 +169,8 @@ test("T1: each name in backticks that the map lists with no export is a name tha
     if (row.some((cell) => /`[A-Z][A-Z_]+` in `[^`]+\.mjs`/.test(cell))) continue;
     for (const name of ticks(col(row, "States", MAP))) {
       // The name must stand alone: a longer word or a longer value that starts with it does not count.
-      const alone = new RegExp(`(?:^|[\\s\`(|*])${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=$|[\`|,.)])`, "m");
+      // A space and a `|` after it also end the name, as in the template line `Mode: a | b`.
+      const alone = new RegExp(`(?:^|[\\s\`(|*])${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=$|[\`|,.)]| \\|)`, "m");
       assert.ok(alone.test(text), `${MAP} (row "${row[0]}") names \`${name}\`, and no file under skills/ writes that name. Fix: use the name of the skill, or change both in the same commit.`);
       checked++;
     }

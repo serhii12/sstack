@@ -72,7 +72,3 @@ The `Status:` line says only `open` or `closed`. Never write a triage state on i
 - 1: a rule is broken. Each line says what failed and how to fix it.
 - 2: a usage error. Fix the command.
 - 3: the script cannot read the issue. Say in the report that the check did not run.
-
-## Provenance
-
-New in this stack. The GitHub and GitLab commands follow the seed docs of our `setup` skill, which come from `skills/engineering/setup-matt-pocock-skills/issue-tracker-*.md` of [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock). The `gh label create` advice comes from `docs/engineering/triage.md` of the same repo. The pull request commands follow "Pull requests as a triage surface" in his `issue-tracker-github.md`. The temporary checkout, the `.scratch/reports/` folder and the `Labels:` line for the state are new.

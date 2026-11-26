@@ -70,5 +70,3 @@ The opposite error is a grill so long that work never starts. The user prevents 
 - Later rounds ask things that the first round cannot ask.
 - The agent finds facts and does not ask the user for them. Lookups do not delay the round.
 - The grill ends with the summary and waits for "confirm".
-
-The Provenance section in [SKILL.md](SKILL.md) lists the sources for this file.

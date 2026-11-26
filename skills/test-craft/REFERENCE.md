@@ -165,7 +165,3 @@ A new lint rule bans `console.log` in `src/`.
 5. Run the linter. It passes.
 
 Report all three runs with their output.
-
-## Provenance
-
-The good and bad test examples and the mocking section are copied from `skills/engineering/tdd/tests.md` and `skills/engineering/tdd/mocking.md` in mattpocock/skills (MIT, Copyright (c) 2026 Matt Pocock). The code is unchanged except the `api` example, where string joins replace template strings and one line uses double quotes. The prose is lightly reworded into plain English. The property test sketch and the worked planted-bug example are ours. The property test takes its idea from `skills/test-behaviour/SKILL.md` in rat-stack (MIT, Copyright (c) 2026 Joel Hooks), with no Effect or `it.prop` code.

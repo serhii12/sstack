@@ -55,7 +55,3 @@ This is why question 1 comes first. You pay for the loss only when staying costs
 ## These are judgment calls
 
 The questions are not objective. Each question has taste in it, and the same boundary can go two ways on two days. The value is in asking the questions in order, at the boundary, and never in the middle of the work.
-
-## Provenance
-
-`skills/engineering/ask-matt/PHASE-BOUNDARIES.md` from mattpocock-skills (github.com/mattpocock/skills), MIT, Copyright (c) 2026 Matt Pocock. Copied and adapted. Most sentences are kept. Changes: `/handoff` became "Hand off" with a pointer to our handoff note format, since our stack has no handoff command. Removed the aihero.dev link and explained "smart zone" and "primary source" in place. Split long sentences and removed "not X but Y" framing to fit our writing rules. Changed "AFK" to plain words.

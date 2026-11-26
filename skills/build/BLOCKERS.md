@@ -10,7 +10,3 @@ Read this file from step 1, item 5 of [SKILL.md](SKILL.md).
 - If the exit code is 5, the ticket has no `Blocked by:` line. Say in the report that no blocker check ran. A plan in this conversation has no such line.
 - If the exit code is 2, fix the command and run it again. If the script is missing, open each blocker file. Its `Status:` line must say `closed`. Say in the report that the script did not run.
 - A tracker ticket names issues or has native blocking links. Fetch each blocker, as `docs/agents/tracker.md` says. It must be closed. If a blocker is open or cannot be read, follow the two items above for exit code 1. This is a text rule.
-
-## Provenance
-
-New in this stack. The text moved here from `SKILL.md` to keep that file under 150 lines. The "build anyway" path is new: the user decides if an open blocker matters yet. The `Blocked by:` parser of `ticket-ready.mjs` follows `skills/tickets/scripts/tickets-lint.mjs` in this repo.

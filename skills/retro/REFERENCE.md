@@ -45,10 +45,3 @@ Every rule in this project and what holds it. `No fence yet` means nothing enfor
 | The log of the session is not under `~/.claude/projects/` | The session ran on another machine, or the user cleared the logs | Ask the user for the log file. If none exists, list only the mistakes that you can trace in this conversation. |
 | A new check passes on the planted mistake | The check does not match the pattern | Do not wire it in. Fix the check until it fails on the mistake. |
 | An edit under `.githooks/` or `.stack/` is denied | The settings template protects those paths | Follow the rule under "Updating the enforcement list" in SKILL.md. |
-
-## Provenance
-
-- `skills/engineering/retro/SKILL.md` from mattpocock-skills (github.com/mattpocock/skills), MIT, Copyright (c) 2026 Matt Pocock. "Implementation vs Review" and "Files" are copied and adapted: reworded in plain English, the closing "not the implementation agent" sentence rewritten, the files turned into a table, the `writing-for-agents` and skills rows dropped, the enforcement list row added.
-- `skills/uncomplect/SKILL.md` line 63 from ratstack (github.com/joelhooks/rat-stack), MIT, Copyright (c) 2026 Joel Hooks. Idea only: the `No fence yet` label.
-- New here: the enforcement list format and its rules, and its project path `docs/agents/enforcement.md`.
-- New here: the troubleshooting table.

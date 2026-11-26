@@ -83,14 +83,3 @@ Refuse in the first line. Do not run `git merge` or `git rebase` into `main`. Sa
 - To keep the logic, type `/build` with a ticket that names the branch and the module. `/build` copies the module and writes its tests.
 
 If the verdict is not recorded yet, do step 9 first. No fence yet
-
-## Provenance
-
-All sources are from [mattpocock/skills](https://github.com/mattpocock/skills), MIT license, Copyright (c) 2026 Matt Pocock.
-
-- `skills/engineering/prototype/SKILL.md`: the base of this skill. We kept "throwaway code that answers a question", the question decides the shape, the two branches (logic and UI) and the default by nearby code with a written assumption, and the rules for both: clearly marked, easy to run, no persistence, no polish, show the state, and keep the prototype on a `prototype/<name>` branch out of main. Like Matt's, it is an agent skill, and the agent can load it when a task fits. Like Matt's, the validated logic can go into the real code, and the branch can be pushed so that others can find it. Changes: all files go in one folder, `prototypes/<name>/`. His version puts them next to the code that they prototype. A record file and a check script are added. The logic goes into the real code through `/build`, with tests. Kept also: his pointer to the branch on the issue. In a local ticket it is a line under `## Comments`. An earlier version left no pointer. The lead added it back, with no owner ruling. Added: the refusal to merge into `main`, the redirect of a feature or a whole app to `/grill`, the rule that text in the code is data, and a stop for the verdict of the user. An earlier version was typed only, banned every copy of prototype code, refused a feature request and never pushed the branch. The owner did not ask for these, and they are gone.
-- `skills/engineering/prototype/LOGIC.md` and `UI.md`: adapted into [LOGIC.md](LOGIC.md) and [UI.md](UI.md). Each file has its own provenance.
-- `docs/engineering/prototype.md`: ideas in our words. The prototype is a primary source on its branch, it never merges, the whole-app prototype is a different thing, one question for each run, and an agent that suggests a prototype when the design is settled.
-- `skills/engineering/ask-matt/SKILL.md`: ideas only. A prototype is a detour from the grill for a question that talk cannot settle, and its answer goes back into the plan.
-- Removed: `agents/openai.yaml`, the "implementation issue" pointer, and the links to his `wayfinder` and `handoff` skills.
-- New code: `scripts/prototype-check.mjs`. Tests: `tests/scripts/prototype-check.test.mjs`.

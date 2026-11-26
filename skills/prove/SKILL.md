@@ -122,14 +122,3 @@ Write the absolute path, so that a runner can find the evidence. A sandbox or a 
 
 The pull request shows the screenshots and the video. `/land` pushes the media that the index names to the branch `evidence/<task>` in the same repo, and links them in the pull request body. Print the table with `node .claude/skills/prove/scripts/evidence-check.mjs report <task>`. It prints no table while the evidence has a problem.
 No fence yet
-
-## Provenance
-
-- `evidence-driven-testing/SKILL.md` and `scripts/evidence.py` from rstack (github.com/michaelshimeles/rstack), Michael Shimeles, no license file. Adapted: evidence in proportion to the change, the three results with `untested` never silent, the commit and environment stamp, capture the failure before the fix, the server port and process check, `untested` for a check that needs real client data on the screen, one capture file per assertion, and the result counts of the report. The Playwright recipe in CAPTURE.md is adapted from the `record.mjs` example of the headless path. Left out: the screen recorder, its supervisor, the burned-in labels and the upload step. See CAPTURE.md. The headless helper `scripts/run-playwright.sh` became `scripts/run-playwright.mjs` in Node. Its pinned manifest and lockfile are copied to `scripts/playwright/`. As in rstack, Playwright is installed outside the project with no ask. An earlier version stopped and waited for a yes. The owner did not ask for that stop, and it is gone.
-- `AGENTS.md` lines 3-13, same repo and author. Idea only: docs-only changes get no invented runtime evidence.
-- `before-and-after/SKILL.md`, same repo, PolyForm Shield 1.0.0, Copyright (c) 2026 James Clements. Adapted: the phone size 375x812, reuse a capture that already exists, and the before and after table of the report. Its license notice is in `NOTICE`. Left out: the Vercel tool and the upload to a public host.
-- `skills/autopilot/scripts/audit-report.mjs` lines 200-310 from kcd-skills (github.com/kentcdodds/kcd-skills), MIT, Copyright (c) 2026 Kent C. Dodds. Idea: a score needs evidence, and an unknown needs a reason. The validator there never opens the files. Ours does.
-- `skills/visual-recap/SKILL.md`, same repo, license and holder. Idea only: the proof depends on the risk of the change. Our levels come from `/start`.
-- `skills/ship/SKILL.md` line 92 and `skills/model-a-protocol/SKILL.md` line 62 from ratstack (github.com/joelhooks/rat-stack), MIT, Copyright (c) 2026 Joel Hooks. Ideas: report the states apart, and "not checked is never a pass".
-- `skills/engineering/code-review/SKILL.md` from mattpocock/skills, MIT, Copyright (c) 2026 Matt Pocock, through our `peer-review`. Idea: a fresh reviewer that gets no reasoning from the author.
-- New here: the index format, the fence script, the fresh image reviewer with its saved reply, the width rule, the exit codes, and checks taken from the request of the user when no ticket has them.

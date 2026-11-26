@@ -65,7 +65,3 @@ A scan needs a fresh context. With no subagent, only a new session gives one.
 ## What the scan cannot do
 
 The subagent can be wrong. It can miss a shallow module, and it can rank a weak candidate too high. `survey-lint` checks only the shape of the report and the cited paths. A human judges each candidate.
-
-## Provenance
-
-- `skills/engineering/improve-codebase-architecture/SKILL.md` from [mattpocock/skills](https://github.com/mattpocock/skills), commit 6f7f783, MIT, Copyright (c) 2026 Matt Pocock. Adapted from its "Explore" step: one subagent with a fresh context walks the code, the five friction questions, the advice to follow no fixed list, the deletion test, and the three ranks. Changes: the questions became signs in plain words, a sign for rule breaks is new, and the reply has a fixed shape. The guard lines at the top are new. They follow the reviewer briefs of `peer-review` in this repo.

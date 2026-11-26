@@ -74,5 +74,3 @@ For a TypeScript project, `TYPESCRIPT.md` in the `code-craft` skill lists compil
 - `.claude/hooks/guard-git.mjs` checks the git commands that the agent runs through Claude Code. It does not check other agent tools. It does not check a person in a terminal.
 - `.claude/settings.json` stops the agent from editing the hooks, `.githooks/` and `.stack/`.
 - `docs/agents/permissions.md` lists the commands that the stack runs. The installer printed them as Claude Code rules. Paste them into `.claude/settings.local.json` to stop a prompt for each command.
-
-<!-- Provenance: task-type idea from rstack AGENTS.md (no license, idea only, our own words). Error grammar adapted from ratstack AGENTS.md (MIT, Copyright (c) 2026 Joel Hooks). Held by / No fence yet labels from ratstack. See NOTICE. -->

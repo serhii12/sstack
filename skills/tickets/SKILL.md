@@ -88,13 +88,3 @@ Are the blocking edges right? Does each ticket depend only on tickets that must 
 Should any ticket be merged or split?
 Reply "approve" to publish, or tell me what to change.
 ```
-
-## Provenance
-
-All sources are from [mattpocock/skills](https://github.com/mattpocock/skills), MIT license, Copyright (c) 2026 Matt Pocock.
-
-- `skills/engineering/to-tickets/SKILL.md`: the base of this skill. We kept the tracer-bullet rules (complete path through every layer, checkable alone, one fresh context window, prefactoring first), blocking edges, "make the change easy" (verbatim), the quiz step with its questions on size and blockers, publishing blockers first, sub-issues of the source, the frontier, "do not close or modify any parent issue", no file paths with the prototype exception, and the wide-refactor section (in REFERENCE.md, close to verbatim). Kept also: the `ready-for-agent` state on each new ticket, blocked or not. On GitHub or GitLab it is a label. In a local file it is the `Labels:` line, because our `Status:` line means open or closed, and `build` reads it. An earlier version added no label. The owner did not ask for that, and the state is back. Changes: renamed to `tickets`, input is one spec, or a plan from the conversation when no spec exists, as his skill allows, the merge rule is new, each check must fail before the work, local tickets go to `tickets/` with blockers named by file name, a lint step, a gap line in the breakdown when the code clashes with the spec or the spec has no test boundary, and a breakdown format with a status line. An earlier version had a default cap of 6 tickets. The owner did not ask for it, and it is gone. The lint keeps `--max <n>` as an option for a project. The lint script lives in this skill folder, so the installer ships it to projects. The templates moved to [TICKET-FORMAT.md](TICKET-FORMAT.md), which has its own provenance.
-- `docs/engineering/to-tickets.md`: ideas in our words, with a few sentences quoted in REFERENCE.md. Over-decomposition as the top complaint, the demo question, the 26-ticket layer example, sub-issues missed on GitHub, body-text blockers on GitHub, the truncated spec fix, and criteria that grade nothing.
-- `skills/engineering/triage/AGENT-BRIEF.md`: ideas only. Describe behavior instead of steps, and each acceptance check is concrete and checkable alone.
-- `skills/engineering/triage/SKILL.md`: not used. Triage handles reports from other people, and this skill handles work the user planned.
-- Removed: `agents/openai.yaml`, the `/setup-matt-pocock-skills` pointer, the Linear mention, and links to his other skills.

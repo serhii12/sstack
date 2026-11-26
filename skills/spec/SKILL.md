@@ -74,13 +74,3 @@ No fence yet
 ## When to skip the spec
 
 A spec is worth its cost when the work spans several sessions. If the agreed change fits in one session, say so in the report. The user can then skip the spec and the tickets. This is advice only. If the user typed `/spec`, still write the spec.
-
-## Provenance
-
-All sources are from [mattpocock/skills](https://github.com/mattpocock/skills), MIT license, Copyright (c) 2026 Matt Pocock.
-
-- `skills/engineering/to-spec/SKILL.md`: the base of this skill. We kept "do not interview the user, just synthesize what you know", the glossary vocabulary, respect for decision records, the user stories (now short), his rules for test boundaries, his step that sketches the test boundaries and checks them with the user before the spec is written, and the section names and order of his template. His "Do not interview the user" line is kept word for word. The test boundary sentences in the template stay close to his wording. The rest is reworded. Changes: renamed to `spec`, the essentials check and the "Missing from the spec" line are new, a missing essential becomes an open question instead of a stop, a gap that the agent finds goes into the open questions marked `(found by the agent)` and into the reply, the `ready-for-agent` label is dropped, the user stories must stay short, a local file is used when no tracker is set up, and glossary terms and decision records are linked. The template moved to [SPEC-FORMAT.md](SPEC-FORMAT.md), which has its own provenance.
-- `docs/engineering/to-spec.md`: ideas in our words. The spec is a decision record and invents nothing. The `ready-for-agent` label on the spec makes polling agents build it whole (his most-reported problem, fixed here by never marking it ready). Run `to-tickets` in the same session so a long spec is not fetched back. A spec is worth it only for multi-session work. The spec did not link the decision records it followed (fixed here).
-- Removed: `agents/openai.yaml`, the `/setup-matt-pocock-skills` pointer, and the aihero.dev links.
-- An earlier version refused to write a spec when nothing was agreed, and it kept gaps that the agent found out of the spec and the reply. The owner did not ask for either, and both are gone. Like Matt's skill, `spec` now writes from what the conversation holds.
-- A later version dropped his check of the test boundaries and used its own section names. The owner did not ask for either. Both are back. The check is skipped only when the plan has no user-visible behavior, because then nothing is there to sketch.

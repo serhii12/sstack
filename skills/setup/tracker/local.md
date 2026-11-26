@@ -34,5 +34,3 @@ Write one file for each ticket under `.scratch/<feature>/tickets/`, blockers fir
 ## Fetch a spec or ticket
 
 Read the file at the path the user gives. A bare number such as `03` means the file in `tickets/` that starts with `03-`.
-
-<!-- Provenance: adapted from skills/engineering/setup-matt-pocock-skills/issue-tracker-local.md in mattpocock/skills (MIT, Copyright (c) 2026 Matt Pocock). See NOTICE and skills/setup/SKILL.md. -->

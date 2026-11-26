@@ -72,7 +72,3 @@ Rebuild recipe: <pinned sources and commands, so someone else can reproduce the 
 ## Worked example
 
 From rat-stack: two web tests read the same build output while the build rewrote it. Two repro runs found 17 and 28 torn reads. The fix wrote each file to a temporary path and renamed it into place. After the fix, 8.5 million reads showed no torn read.
-
-## Provenance
-
-Adapted from `skills/engineering/diagnosing-bugs/SKILL.md` in mattpocock/skills (MIT, Copyright (c) 2026 Matt Pocock): the list of ways, the "make it faster and sharper" section and the flaky section, close to his wording. Item 10 no longer names his script. The rate as counts, rebuild what runs, probes, the notebook fields and the worked example come from `skills/investigate-a-failure/SKILL.md` in rat-stack (MIT, Copyright (c) 2026 Joel Hooks), close to his wording, with the file path removed from the example. The notebook layout is ours.

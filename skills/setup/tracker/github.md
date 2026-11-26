@@ -45,5 +45,3 @@ Create one issue for each ticket, blockers first, so each ticket can name real i
 ## Fetch a spec or ticket
 
 Read the issue as in "Read an issue", with its comments.
-
-<!-- Provenance: adapted from skills/engineering/setup-matt-pocock-skills/issue-tracker-github.md in mattpocock/skills (MIT, Copyright (c) 2026 Matt Pocock). See NOTICE and skills/setup/SKILL.md. -->

@@ -36,7 +36,3 @@ The installer sets `core.hooksPath` to `.githooks` when it is not set. The guard
 ## The risk settings
 
 The `land` skill reads `.stack/risk.json`. The guard blocks every agent write under `.stack/`. Read the format in `.claude/skills/land/REFERENCE.md`, section "The risk config". Draft the file with the user. Show the whole text. Then ask the user to write it on the default branch by hand. Held by: hooks/guard-git.mjs, templates/claude-settings.json
-
-## Provenance
-
-New in this stack. The branch protection body uses the fields of the GitHub REST endpoint "Update branch protection". The guard rules come from `hooks/git-policy.mjs` in this repo.

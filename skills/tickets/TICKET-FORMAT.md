@@ -57,7 +57,3 @@ The end-to-end behavior that this ticket makes work, from the user's side.
 - Add the label of the `ready-for-agent` role to the issue. The body holds no label.
 - If the ticket is a sub-issue of the spec, leave out the `Part of` line.
 - If the blockers are native links, leave out the `Blocked by` line. If there are no blockers and no native links, write `Blocked by: None (can start immediately)`.
-
-## Provenance
-
-Adapted from the `<local-ticket-template>` and `<issue-template>` in `skills/engineering/to-tickets/SKILL.md` of [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock). Kept: the `# NN: title` heading, "What to build" and its wording about end-to-end behavior, the checkbox list, the blockers line, one file per ticket, and "omit the blocked-by section when the edges are native". Changed: "Acceptance criteria" became "Acceptance checks", each check must fail before the work, his `Status: ready-for-agent` became two lines, `Status: open` for `/build` and `Labels: ready-for-agent` for `triage`, blockers are named by file name so a script can check them, the folder is `tickets/` in place of `issues/`, the `## Parent` section became a `Part of` line, and a `Spec:` line was added.

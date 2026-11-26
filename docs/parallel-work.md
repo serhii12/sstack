@@ -74,10 +74,3 @@ Type `/land` on the host, in a checkout of the task branch, after the session en
 Run in fake repos for this doc: `ticket-in-work.mjs`, `ticket-ready.mjs`, `evidence-check.mjs` and the `git archive` step of `prove`. The cases were a checkout on `main`, a detached HEAD, a fresh branch from the agent tool, and a branch of another task. More cases were a branch behind `origin/main`, a merged task branch, two checkouts on two tickets, and a second clone. One more case moved a checkout. A moved checkout gives the same path mismatch as a container mount.
 
 Not run: `claude --worktree`, Codex, Sandcastle, Docker and any other container. The `--help` output of Claude Code 2.1.332 and Codex CLI 0.172.0 lists the flag `--worktree`. The other Claude Code, Codex and Sandcastle facts come from their docs, read on 25 Nov 2026. That `merge-to-head` skips the hooks is from the Sandcastle docs. That a sandbox loses ignored evidence is an inference from the Sandcastle code.
-
-## Provenance
-
-- `new-feature/SKILL.md` from rstack (github.com/michaelshimeles/rstack), Michael Shimeles, no license file. The cleanup commands and the `-D` reason are copied nearly word for word. They came here from the old `skills/build/WORKTREES.md`.
-- `docs/engineering/implement.md` from mattpocock-skills (github.com/mattpocock/skills), MIT, Copyright (c) 2026 Matt Pocock. Idea: the shared stash and the ignored files that a new checkout does not have.
-- Sandcastle (github.com/mattpocock/sandcastle) docs at commit `1b380ca`. Facts only: the branch strategies, the `.sandcastle/.env` file, and the `--no-stash` fix of 31 Oct 2026.
-- Claude Code docs (code.claude.com/docs/en/worktrees) and Codex docs (developers.openai.com/codex). Facts only.

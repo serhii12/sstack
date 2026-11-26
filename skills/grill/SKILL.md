@@ -135,13 +135,3 @@ After the user confirms, do these steps:
 2. Change each `proposed` decision record from this grill to `accepted`, as domain-memory says.
 3. Say what you propose to do next. Then wait. If a workflow started this grill, return to that workflow. Keep this conversation. The next step needs what you both said here.
 No fence yet
-
-## Provenance
-
-All sources are from [mattpocock/skills](https://github.com/mattpocock/skills), MIT license, Copyright (c) 2026 Matt Pocock.
-
-- `skills/productivity/grilling/SKILL.md`: the base of this skill. We kept the design tree, the frontier, the whole frontier in each round with no limit on questions or rounds, recommended answers, "yes" accepts, facts by a fresh subagent, decisions to the user, "done when the frontier is empty", and no action before confirmation. We rewrote it in plain English. We used plain question markers in place of emoji. We added a self-check on the "yes" wording and on questions that depend on each other, a round status line, and the words that let the user end the questions. We added a fixed summary and confirm step, the essentials for a spec, a fallback when no subagent exists, and Held by / No fence yet lines. We added three triggers to the description that his has not: answers given up front, a request to skip the questions, and a request to implement now.
-- `skills/productivity/grill-me/SKILL.md`: a one-line wrapper. We kept its idea that a grill needs no repo and writes no files. We dropped the wrapper, because `/grill` can be typed directly.
-- `skills/engineering/grill-with-docs/SKILL.md`: a one-line wrapper that loads grilling and domain-modeling. We kept its pairing. In a project repo we load `domain-memory` at the start, before round 1, every time, and we say "Loaded domain-memory." We skip the load outside a project repo, where no glossary exists. We added the test for a project repo and a fallback if the skill does not load.
-- `docs/productivity/grilling.md`, `docs/productivity/grill-me.md`, `docs/engineering/grill-with-docs.md`, `.out-of-scope/question-limits.md`: mostly ideas in our words, with a few sentences in REFERENCE.md close to his wording. These are the "I don't know" answer, prototypes for questions talk cannot settle, the reasons for no limit, and the known failures.
-- Removed: `agents/openai.yaml`, the wrapper skills, links to Matt's other skills, and his `CLAUDE.md` opt-out text.

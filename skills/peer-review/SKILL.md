@@ -100,11 +100,3 @@ No fence yet
 ## Troubleshooting
 
 - Problem: the script exits 3 but you know that files changed. Cause: the script leaves out `.artifacts/`, or the changes sit outside the range of the base. Fix: pass an older `--base <ref>`.
-
-## Provenance
-
-- `skills/engineering/code-review/SKILL.md` from [mattpocock/skills](https://github.com/mattpocock/skills), MIT, Copyright (c) 2026 Matt Pocock. The base of this skill. We kept two axes, parallel fresh subagents, no merging or re-ranking, the worst finding per axis, the smell baseline, the repo-overrides rule and the early check that fails before any subagent starts. Changes: the diff comes from `skills/peer-review/scripts/review-range.mjs`, which includes uncommitted work. Reviewer briefs forbid loading the skill, starting reviews and starting subagents. Added the nesting-depth setting note, the findings file with a status per finding, a same-context fallback marked weaker, and a citation check. Removed the tracker setup lookup. The Spec brief also checks agreed test boundaries (our addition, the docs say the review does this but the skill does not). Rewrote the text in plain English.
-- `skills/engineering/code-review/SKILL.md` smell list: moved to `SMELLS.md`. The twelve smell lines are close to verbatim. We reworded the lines to remove semicolons and contractions. The Fix parts of Duplicated Code, Repeated Switches, Data Clumps and Middle Man now follow `code-craft/RULES.md`, and `code-craft` wins on terms.
-- `docs/engineering/code-review.md`, same repo: the known problems (uncommitted work invisible, the 50+ agent report, the same-session reviewer, no convergence) shaped our changes. Ideas only, in our words.
-- `skills/rat-stack-mode/principles/separate-writers-verify-readers.md` from [joelhooks/rat-stack](https://github.com/joelhooks/rat-stack), MIT, Copyright (c) Joel Hooks (adapted there from pstack by Lauren Tan, MIT). We took the idea: readers review independently and read-only, and you inspect their cited artifacts instead of accepting their summaries. Written in our words.
-- Removed: `agents/openai.yaml` and the tracker setup step.

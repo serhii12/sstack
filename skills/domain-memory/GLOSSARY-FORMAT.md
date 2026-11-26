@@ -67,7 +67,3 @@ Find which structure applies:
 When there are several contexts, find the context that the current topic belongs to. If that is unclear, ask.
 
 If the file is already lean and still covers two areas that a reader does not want to hold at once, split it. If you split a bloated file, you get several bloated files.
-
-## Provenance
-
-Adapted from `skills/engineering/domain-modeling/GLOSSARY-FORMAT.md` in [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock). The structure, the example and most rules are Matt's text with small edits (semicolons removed, wording simplified). Our own parts are the "No code detail" and "Keep it short" rules and the starter file section. The sentence on when to split is close to Matt's wording in `docs/engineering/domain-modeling.md` (same repo, license and holder).

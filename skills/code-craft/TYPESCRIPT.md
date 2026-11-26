@@ -125,11 +125,3 @@ A tool can hold only part of some rules. `no-empty` finds an empty `catch`, and 
 Three rules have no tool, so a human judges them. They are the branded type for IDs that can swap, the limit on advanced types, and work that blocks the event loop.
 
 Do not use `max-lines`, `max-lines-per-function` or `max-params` as a gate. A size number is a sign to look at, and `SKILL.md` says why.
-
-## Provenance
-
-- `typescript-engineering/rules/ts-patterns.md`, `rules/ts-integrity.md`, `rules/ts-performance.md`, `rules/ts-modules.md` and `rules/ts-resilience.md`, the owner's own skill (Serhii Panchyshyn, no license file). Adapted: `unknown` over `any`, no unchecked `as`, predicate filters, tagged unions with a `never` check, branded IDs, inferred locals and annotated exports, `satisfies`, the limit on advanced types, parsing at the system boundary, the `cause` on a wrap, handled promises, timeouts, the event loop and the barrel rules. Changes: `Promise.all` waits for a measurement, because `engineering-protocol/rules/concurrency.md` wins where the two skills disagree. Dropped: the tutorial on mapped, conditional and template literal types, overloads, utility types, the type naming rules, the Jest items, the quotes, the error statistics and the size numbers.
-- `skills/in-progress/setup-ts-deep-modules/SKILL.md` from [mattpocock/skills](https://github.com/mattpocock/skills), commit 6f7f783, MIT, Copyright (c) 2026 Matt Pocock. Idea only: entry files in place of one barrel, and dependency-cruiser rules that hold them.
-- The tool table is new. The rule names come from the public docs of TypeScript, ESLint, typescript-eslint, dependency-cruiser and `@eslint-community/eslint-plugin-eslint-comments`.
-- New here, from those tool rules and not from the owner's skill: throw only `Error` objects, the `unknown` variable of a `catch` clause, a reason on a comment that turns off a check, no async function where the caller expects no result, and no `export *` for a folder.
-- New here: a repeated `switch` is fine when the compiler proves each one complete. This rule settles a clash with the `Repeated Switches` smell of `peer-review`.

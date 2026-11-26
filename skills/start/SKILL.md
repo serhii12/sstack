@@ -134,13 +134,3 @@ Open questions: How many retries?
 ## Notes
 
 Platform facts that this skill relies on, and open questions, are in [NOTES.md](NOTES.md). When you change this skill or add a skill, read that file. To find where a task stands, where its state is stored and who moves it, read [STATES.md](STATES.md).
-
-## Provenance
-
-- `skills/engineering/ask-matt/SKILL.md` from mattpocock-skills (github.com/mattpocock/skills), MIT, Copyright (c) 2026 Matt Pocock. Took the idea of a typed router and the rule "read a skill's `SKILL.md` before you describe it", reworded. No flow map copied.
-- `skills/engineering/ask-matt/PHASE-BOUNDARIES.md`, same repo, license and holder. Copied and adapted into [PHASE-BOUNDARIES.md](PHASE-BOUNDARIES.md). That file has its own provenance.
-- `skills/productivity/handoff/SKILL.md`, same repo, license and holder. Took the note rules, reworded: save in the OS temp folder, point to artifacts and do not copy them, redact secrets, name the next skill. Added our fixed fields (task type, evidence level, next command, not built yet).
-- `.agents/invocation.md`, same repo, license and holder. Took the typed and agent-loaded split and the rule that a typed skill never reaches another typed skill, reworded. Added the static list so hidden typed skills are not reported missing.
-- `skills/rat-stack-mode/SKILL.md` from ratstack (github.com/joelhooks/rat-stack), MIT, Copyright (c) 2026 Joel Hooks. Ideas only, no text: list planned skills apart from built ones, and end each rule with what holds it. That router credits pstack by Lauren Tan (MIT). We copied nothing from it.
-- `AGENTS.md` lines 3-13 from rstack (github.com/michaelshimeles/rstack), Michael Shimeles, no license file. Idea only: sort the task by type, and let the type set the proof and the isolation it needs. The table, types and evidence levels are written in our own words. No sentences copied.
-- New in this skill: the task types as named here, the evidence levels, the skills block format, and the "not built yet" column.

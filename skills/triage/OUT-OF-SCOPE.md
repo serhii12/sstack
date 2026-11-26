@@ -51,7 +51,3 @@ The steps:
 5. Close the issue with the `wontfix` label.
 
 If the maintainer changes a decision later, delete the file. Do not open the old issues again. They are history.
-
-## Provenance
-
-Adapted from `skills/engineering/triage/OUT-OF-SCOPE.md` of [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock). Kept: the two purposes, one file for each idea, the dash names, the short design note with a reason that lasts, matching by idea, the three choices of the maintainer, no record for a bug or for a feature that exists, the write steps and the delete rule. Kept also: a rejected enhancement pull request gets a record too. Changed: the example is shorter, and the decision goes in a Triage Decision comment.

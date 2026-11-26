@@ -66,5 +66,3 @@ A restructure changes no behavior, so a plain behavior test passes before and af
 - A count of the old form that reaches zero, such as the number of callers that import the old module.
 
 `code-craft/RESTRUCTURE.md` has the same list and the order of the work.
-
-The sources for this file are in the Provenance section of [SKILL.md](SKILL.md).

@@ -45,7 +45,3 @@ Write which version won and why on the `Verdict:` line. All versions stay on the
 - Share a layout between versions. A shared header is fine. A shared layout defeats the purpose.
 - Connect a version to real writes. Point it at a stub.
 - Move version code into production. It has no tests and little error handling.
-
-## Provenance
-
-Adapted from `skills/engineering/prototype/UI.md` of [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock). Kept: very different versions on one route with `?variant=`, the preference for an existing page and its reason, a new page as the last choice with `prototype` in the path, 3 versions by default and 5 at most, versions that differ in structure, the switcher bar with arrows, label, URL update, arrow keys, focus rule and production hiding, the "header from B" feedback, and the list of things not to do. Changed: version files and the bar go in `prototypes/<name>/`, and each edited product file is named on the `Host files:` line. The winner goes into the real page through `/build`, from the plan. The framework code sample is removed.

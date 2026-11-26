@@ -139,11 +139,3 @@ Not done: <what> (or "None")
 ```
 
 Then tell the user the next command: type `/retro` to turn the mistakes of this session into checks. `land` never runs another typed skill. No fence yet
-
-## Provenance
-
-- `skills/autopilot/scripts/ship-pr.mjs` from kcd-skills (github.com/kentcdodds/kcd-skills), MIT, Copyright (c) 2026 Kent C. Dodds. Adapted into `scripts/land-check.mjs`: a pure decide step, a fixed gate order, one exit code per stop, input from `gh` or a JSON file, a person only for high risk, and the merge on the word of the owner after a stop. Fixed: zero checks passed as green, the agent picked the risk, a COMMENTED review was enough, no paging, a check matched by name only, the merge call did not pin the head. `skills/ship-pr/SKILL.md`, same repo: the risk tiers.
-- `skills/babysit-pr/scripts/pr-wait` from tstack (github.com/t3dotgg/tstack), MIT, Copyright (c) 2026 Theo Browne. Design only, rewritten in Node as `scripts/land-wait.mjs`: one line per event, a state file, exit codes, two equal polls before green. Fixed: no deadline, no paging, substring matching of bots, lost events, a state expiry, raw comment text. `skills/babysit-pr/SKILL.md`: act only on what is newer than the last push. We added the cap of 2 fix rounds.
-- `skills/full-stop/SKILL.md` and `skills/full-send/SKILL.md`, same repo: the hand-off, the live recheck, auto-merge off, never `--admin`. `skills/file-pr/SKILL.md` and `skills/leaving-pr-comments/SKILL.md`: the body rules in BODY.md.
-- `skills/ship/SKILL.md` lines 64, 70 and 92 from ratstack (github.com/joelhooks/rat-stack), MIT, Copyright (c) 2026 Joel Hooks. Ideas: no bypass of hooks, a proof covers one commit, and merged, deployed and verified are separate. `AGENTS.md` lines 27-33 and 83-86 from rstack (github.com/michaelshimeles/rstack), Michael Shimeles, no license file. Ideas: report the real state at a cap, and a body where every claim has evidence.
-- New here: `scripts/land-risk.mjs`, the fences that the config cannot lower, the default config, the config read from the default branch, the review freshness rule, the untrusted text block, the preflight check, `scripts/land-evidence.mjs` and the evidence branch, the state tables, the fake `gh` of the evals, and the Held by and No fence yet lines.
