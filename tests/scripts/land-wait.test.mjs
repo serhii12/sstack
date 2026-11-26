@@ -266,11 +266,23 @@ test("a failed head that a CI rerun turns green is not a fix round", { timeout: 
   const at = (sha, conclusion, id) => snap({ pr: pr({ head: { sha, ref: "agent/t" } }), checkRuns: [runOf(conclusion, { head_sha: sha, id })] });
   const codes = [];
   let now = 0;
-  for (const [sha, conclusion, id] of [["a", "failure", 1], ["a", "success", 2], ["b", "failure", 3], ["b", "success", 4], ["d", "failure", 5]]) {
+  // Green needs two equal polls, so each rerun that passes is polled twice.
+  for (const [sha, conclusion, id] of [["a", "failure", 1], ["a", "success", 2], ["a", "success", 2], ["b", "failure", 3], ["b", "success", 4], ["b", "success", 4], ["d", "failure", 5]]) {
     codes.push(poll(state, at(sha.repeat(40), conclusion, id), ctx({ now: (now += 60000) })).map((e) => e.code));
   }
-  assert.deepEqual(codes, [[EXIT.checkFailed], [], [EXIT.checkFailed], [], [EXIT.checkFailed]]);
+  assert.deepEqual(codes, [[EXIT.checkFailed], [], [EXIT.passed], [EXIT.checkFailed], [], [EXIT.passed], [EXIT.checkFailed]]);
   assert.deepEqual(state.failedHeads, ["d".repeat(40)]);
+});
+
+test("with no required checks, one poll that does not show the failed run does not clear the head. Only green clears it", { timeout: 120000 }, () => {
+  const state = newState(0, { repo: "acme/cart", number: 7 });
+  const at = (sha, runs) => snap({ pr: pr({ head: { sha, ref: "agent/t" } }), checkRuns: runs.map(([name, conclusion, id]) => runOf(conclusion, { head_sha: sha, name, id })) });
+  let now = 0;
+  const codes = [];
+  for (const [h, runs] of [["a", [["test", "failure", 1]]], ["b", [["test", "failure", 2]]], ["b", [["lint", "success", 9]]], ["c", [["test", "failure", 3]]]]) {
+    codes.push(poll(state, at(h.repeat(40), runs), ctx({ now: (now += 60000), required: [] })).map((e) => e.code));
+  }
+  assert.deepEqual(codes, [[EXIT.checkFailed], [EXIT.checkFailed], [], [EXIT.fixCap]]);
 });
 
 test("exit 3: gh fails for good; a transient failure is tried again", { timeout: 120000 }, async () => {

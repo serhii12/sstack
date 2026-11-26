@@ -282,12 +282,13 @@ export function poll(state, snap, ctx) {
       head,
     });
   }
-  // A head whose checks all pass is not a fix round, also when a run on it failed before (a CI rerun).
-  if (checks.passed) state.failedHeads = state.failedHeads.filter((h) => h !== head);
   // Green needs two polls in a row with the same runs. With no check at all, it also needs the grace time.
   const green = checks.passed && (!checks.none || waited >= grace);
   if (green) {
     if (state.passing?.head === head && state.passing.key === checks.key) {
+      // A green head is not a fix round, also when a run on it failed before (a CI rerun). Green needs
+      // two equal polls, so one poll that does not show the failed run does not clear the head.
+      state.failedHeads = state.failedHeads.filter((h) => h !== head);
       live(EXIT.passed, checks.none ? `no check exists on ${short}, and the config allows a merge with no check` : `${checks.mode === "named" ? "every required check" : "every check"} passed on ${short} (${checks.names.slice(0, 20).map((x) => quoteName(x)).join(", ")})`);
     }
     state.passing = { head, key: checks.key };
