@@ -49,8 +49,8 @@ flowchart TD
 
   PV --> SH
 
-  subgraph P5["5. Ship (planned)"]
-    SH["Open the pull request<br/>with the evidence"] --> MG{"Checks pass and<br/>the review is done?"}
+  subgraph P5["5. Ship"]
+    SH["land<br/>opens the pull request<br/>with the evidence"] --> MG{"Checks pass and<br/>the review is done?"}
     MG -->|"no"| FX["Fix and push"]
     FX --> MG
     MG -->|"yes"| M(["Merge"])
@@ -66,7 +66,7 @@ flowchart TD
 | 2. Plan | `/spec`, then `/tickets` | A draft spec and a list of small tickets |
 | 3. Build | `/build` for each ticket | Tested code on its own branch, with a review |
 | 4. Prove | "prove it" | Evidence for each acceptance check. For work you can see: screenshots or video. |
-| 5. Ship | Planned | A pull request that merges when the checks pass |
+| 5. Ship | `/land` | A pull request with the evidence. It merges when the checks pass. Only a high risk waits for a person. |
 
 Two side entrances join the loop. `/triage` takes a report that another person filed and ends at a ticket for `/build`. `/prototype` answers a design question during a grill. Its code stays on a `prototype/<name>` branch and never merges into `main`. `/build` can take its tested logic into the real code, with tests.
 
@@ -98,6 +98,7 @@ You type a typed skill as a command. The agent loads an agent skill when it need
 | `skills/prototype` | agent | Builds throwaway code on its own `prototype/<name>` branch to answer one design question. The branch never merges into `main`. |
 | `skills/friction` | agent | Files a lasting problem in the repo or its tools as an issue with a priority. |
 | `skills/retro` | typed | Lists the mistakes of the agent in a session, proposes one fix for each, and waits for approval. |
+| `skills/land` | typed | Pushes a finished ticket branch and its evidence, opens the pull request, waits for the checks, and merges through the merge gate. Only a high risk needs a person. |
 | `hooks/guard-git.mjs`, `hooks/git-policy.mjs` | hook | The git guard. It blocks git commands that skip checks, commits on `main` or `master`, plain force pushes, direct pushes to `main`, and writes to guard files. It is the hook adapter for Claude Code. |
 | `templates/githooks/prepare-commit-msg` | git hook | Runs `.stack/check` before every commit, also when `git commit -n` skips the other hooks. |
 | `scripts/install.mjs` | script | Copies the stack into a project repo. |
@@ -107,6 +108,7 @@ You type a typed skill as a command. The agent loads an agent skill when it need
 | `skills/spec/scripts/spec-lint.mjs` | lint | Checks that a spec has every required section and no ready marker. |
 | `skills/tickets/scripts/tickets-lint.mjs` | lint | Checks local ticket files: names, blockers and no cycles. A project can set a cap with `--max <n>`. There is no default cap. |
 | `skills/build/scripts/ticket-ready.mjs` | script | Checks that every blocker of a local ticket is closed. |
+| `skills/land/scripts/land-check.mjs`, `land-risk.mjs`, `land-wait.mjs`, `land-evidence.mjs` | script | The merge gate, the risk level from the changed files, the watcher of the checks, and the push of evidence media to the branch `evidence/<task>`. |
 | `skills/build/scripts/ticket-in-work.mjs` | script | Checks that no other worktree, local branch or pushed branch already builds the ticket. |
 | `skills/peer-review/scripts/review-range.mjs` | script | Prints the diff for a review, with commits, staged and unstaged changes, and new files. |
 | `skills/prove/scripts/evidence-check.mjs` | script | Checks the evidence index of a task against its acceptance checks and the evidence files. |
@@ -118,7 +120,7 @@ You type a typed skill as a command. The agent loads an agent skill when it need
 | `scripts/eval-run.mjs` | eval runner | Runs the evals that have a `## Checks` block against a real agent and gives a pass rate for each model. |
 | `evals/` | evals | Test cases for each skill. Each case has a prompt, a setup, a checklist of expected behaviors, and a description of a failure. |
 
-Not built yet: the ship step (stage 5 of the loop). There is no command that opens the pull request, waits for the checks and merges. Also not built: `pr-body`, `skill-craft` and `security-review`. Until the ship step exists, open and merge the pull request by hand, as `AGENTS.md` says.
+Not built yet: `pr-body`, `skill-craft` and `security-review`.
 
 ## Install into a project
 
