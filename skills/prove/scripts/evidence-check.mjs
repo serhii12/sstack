@@ -51,7 +51,7 @@
 // Kent C. Dodds): a score needs evidence, and a "not known" needs a reason. Unlike both
 // sources, this script opens the files. The before and after table of `report` takes its idea
 // from rstack before-and-after/SKILL.md (PolyForm Shield 1.0.0, James Clements). The code is new.
-// See NOTICE.
+// See NOTICE in the sstack repo.
 // Runs `git` with argument arrays only. No shell string is ever built.
 
 import { spawnSync } from "node:child_process";

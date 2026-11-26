@@ -7,7 +7,7 @@
 //
 // Idea taken from mattpocock/skills skills/engineering/code-review/SKILL.md (MIT,
 // Matt Pocock): pin the base once, check it resolves, and fail early on an empty
-// diff. The script itself is new code. See NOTICE.
+// diff. The script itself is new code. See NOTICE in the sstack repo.
 //
 // Base: `--base <ref>`, else the first of `origin/main`, `main`, `master` that
 // exists and shares history with HEAD. The diff starts at the merge base of that

@@ -2,7 +2,7 @@
 // triage-check: checks the triage labels and the triage comments of issues after triage.
 //
 // The roles come from mattpocock/skills skills/engineering/triage/SKILL.md (MIT,
-// Copyright (c) 2026 Matt Pocock, see NOTICE): two category roles, five state roles,
+// Copyright (c) 2026 Matt Pocock, see NOTICE in the sstack repo): two category roles, five state roles,
 // "exactly one category role and one state role", the AI line at the top of every
 // triage comment, and the agent brief, triage notes and out-of-scope rules.
 // The checks and the P0 to P3 priority rule are new code.

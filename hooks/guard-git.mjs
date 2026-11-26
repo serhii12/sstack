@@ -14,7 +14,7 @@
 // with `|| exit 2` after the node command.
 //
 // Adapted with hooks/git-policy.mjs from scripts/vcs-command-policy.js in joelhooks/rat-stack
-// (MIT, Copyright (c) 2026 Joel Hooks). See NOTICE.
+// (MIT, Copyright (c) 2026 Joel Hooks). See NOTICE in the sstack repo.
 //
 // Confirm in Claude Code: stdin shape, exit code 2 semantics and the settings wiring
 // (docs: https://code.claude.com/docs/en/hooks). See templates/claude-settings.json.

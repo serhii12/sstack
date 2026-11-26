@@ -2,7 +2,7 @@
 // churn: ranks the files of a git repo by the number of commits that changed them.
 //
 // The idea comes from mattpocock/skills skills/engineering/improve-codebase-architecture/SKILL.md
-// (MIT, Copyright (c) 2026 Matt Pocock, see NOTICE): scope a survey to the files that keep
+// (MIT, Copyright (c) 2026 Matt Pocock, see NOTICE in the sstack repo): scope a survey to the files that keep
 // changing, found from `git log`. The code is new.
 //
 // The window is the last N commits (default 200) that are not merges, or the commits since a

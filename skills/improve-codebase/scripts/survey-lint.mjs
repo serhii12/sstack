@@ -4,7 +4,7 @@
 // The report shape is in skills/improve-codebase/OUTPUT-FORMAT.md. The candidate fields and the
 // three ranks follow the candidate cards of mattpocock/skills
 // skills/engineering/improve-codebase-architecture/SKILL.md (MIT, Copyright (c) 2026 Matt Pocock,
-// see NOTICE). The checks are new code. The fence scan and the main check copy the style of
+// see NOTICE in the sstack repo). The checks are new code. The fence scan and the main check copy the style of
 // skills/tickets/scripts/tickets-lint.mjs in this repo.
 //
 // Rules:

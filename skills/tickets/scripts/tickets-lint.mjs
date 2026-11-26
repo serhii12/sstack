@@ -3,7 +3,7 @@
 //
 // The ticket shape comes from the local ticket template in mattpocock/skills
 // skills/engineering/to-tickets/SKILL.md (MIT, Copyright (c) 2026 Matt Pocock,
-// see NOTICE): one file per ticket, numbered, a title, a "Blocked by" line and
+// see NOTICE in the sstack repo): one file per ticket, numbered, a title, a "Blocked by" line and
 // a checkbox list of acceptance criteria. The checks are new code.
 //
 // Rules, per ticket file:

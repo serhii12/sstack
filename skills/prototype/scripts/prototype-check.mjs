@@ -2,7 +2,7 @@
 // prototype-check: checks that a prototype lives in its throwaway place and was never merged.
 //
 // The rules come from mattpocock/skills skills/engineering/prototype/SKILL.md and
-// docs/engineering/prototype.md (MIT, Copyright (c) 2026 Matt Pocock, see NOTICE):
+// docs/engineering/prototype.md (MIT, Copyright (c) 2026 Matt Pocock, see NOTICE in the sstack repo):
 // a prototype goes on a `prototype/<name>` branch out of main, the branch is never merged, and the
 // question and the verdict are written down. The folder `prototypes/<name>/`, the record
 // file and the checks are new code.

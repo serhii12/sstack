@@ -2,7 +2,7 @@
 //
 // Adapted from scripts/vcs-command-policy.js in joelhooks/rat-stack (MIT, Copyright (c) 2026 Joel Hooks).
 // The tokenizer, the prefix and wrapper skipping, the commit flag scan, the hooksPath check,
-// the .git/hooks check and the nested shell check come from that file. See NOTICE.
+// the .git/hooks check and the nested shell check come from that file. See NOTICE in the sstack repo.
 // New here: the decision shape, branch and push rules, alias, eval and heredoc handling,
 // prefix-only env checks, comment and line continuation handling, $'..' quoting, protected paths.
 //

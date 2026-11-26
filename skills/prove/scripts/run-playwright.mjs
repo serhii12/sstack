@@ -16,7 +16,7 @@
 // Before step 2 it prints what it will install and where. The skill copies that line into its report.
 //
 // Adapted from rstack evidence-driven-testing/scripts/run-playwright.sh (Michael Shimeles, no
-// license file, see NOTICE). The manifest and the lockfile in scripts/playwright/ are copied from
+// license file, see NOTICE in the sstack repo). The manifest and the lockfile in scripts/playwright/ are copied from
 // the same folder. This file is new code in Node, so the stack needs no Bash.
 //
 // The skill folder ships to projects, so this file runs from the project root as
