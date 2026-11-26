@@ -91,7 +91,12 @@ function blockerTarget(entry) {
   return e.replace(/^\.\//, "");
 }
 
-export class InputError extends Error {}
+export class InputError extends Error {
+  constructor(message, fix = "pass a readable report file, or the output of `gh issue view <n> --json number,labels,state,comments`") {
+    super(message);
+    this.fix = fix;
+  }
+}
 
 /** Lines with a flag for "inside a fenced code block". Fence lines count as inside. */
 function scan(text) {
@@ -427,7 +432,7 @@ export function run(argv, { root = process.cwd() } = {}) {
       try {
         text = readFileSync(mapPath, "utf8");
       } catch (e) {
-        throw new InputError(`Cannot read the label mapping ${mapPath} (${e.code ?? e.message})`);
+        throw new InputError(`Cannot read the label mapping ${mapPath} (${e.code ?? e.message})`, `pass a readable label mapping with \`--labels <file>\`, or fix ${LABEL_MAP_FILE}`);
       }
       labelMap = parseLabelMap(text);
     }
@@ -447,7 +452,7 @@ export function run(argv, { root = process.cwd() } = {}) {
     }
   } catch (e) {
     if (!(e instanceof InputError)) throw e;
-    err.push(`${e.message}. Fix: pass a readable report file, or the output of \`gh issue view <n> --json number,labels,state,comments\`.`);
+    err.push(`${e.message}. Fix: ${e.fix}.`);
     return { code: EXIT.INPUT, out, err };
   }
   let count = 0;
