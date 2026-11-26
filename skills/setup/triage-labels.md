@@ -10,7 +10,7 @@ The `triage` and `friction` skills use roles. This file maps each role to the la
 | `enhancement` | `enhancement` | A new feature or an improvement. |
 | `needs-triage` | `needs-triage` | The maintainer must evaluate the issue. |
 | `needs-info` | `needs-info` | The issue waits for the reporter to answer the triage notes. |
-| `ready-for-agent` | `ready-for-agent` | The issue holds an agent brief. The user can type `/build` for it. |
+| `ready-for-agent` | `ready-for-agent` | The issue holds an agent brief, or it is a ticket from `/tickets`. The user can type `/build` for it. |
 | `ready-for-human` | `ready-for-human` | A person must do the work or settle a design. |
 | `wontfix` | `wontfix` | The issue is closed, with a recorded reason. |
 | `P0` | `P0` | Optional priority. The scale of the `friction` skill. |

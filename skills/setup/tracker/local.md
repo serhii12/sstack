@@ -29,7 +29,7 @@ Write `.scratch/<feature>/spec.md`.
 
 ## Publish tickets
 
-Write one file for each ticket under `.scratch/<feature>/tickets/`, blockers first, numbered from `01`.
+Write one file for each ticket under `.scratch/<feature>/tickets/`, blockers first, numbered from `01`. Put the label of the `ready-for-agent` role on the `Labels:` line of each ticket.
 
 ## Fetch a spec or ticket
 

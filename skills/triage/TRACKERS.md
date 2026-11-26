@@ -57,6 +57,7 @@ Reported by: <name>
 ```
 
 - List: read the files in `.scratch/reports/`. The `Labels:` line holds the category, the state and the priority.
+- What is ready to build: read the reports and the ticket files in `.scratch/*/tickets/`. List each open file whose `Labels:` line has `ready-for-agent`. Name it by its path.
 - Change the state: edit the `Labels:` line, such as `Labels: bug, ready-for-agent, P2`. Remove the old state.
 - Comment: append the comment under a `## Comments` heading at the end of the file. If the heading is missing, create it. The check ignores a triage heading above the last `## Comments` heading, because that text is the report.
 - Close a `wontfix` issue: post the Triage Decision under `## Comments`. Then set `Status: closed`.

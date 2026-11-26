@@ -36,7 +36,7 @@ Create one issue. Title: `Spec: <feature>`. Body: the spec. Add no label.
 
 ## Publish tickets
 
-Create one issue for each ticket, blockers first, so each ticket can name real issue numbers. Link each ticket to the spec as in "Make a sub-issue". Link its blockers as in "Link a blocker". Add no label.
+Create one issue for each ticket, blockers first, so each ticket can name real issue numbers. Link each ticket to the spec as in "Make a sub-issue". Link its blockers as in "Link a blocker". Add the label of the `ready-for-agent` role from `docs/agents/triage-labels.md` to each ticket. Add no other label.
 
 ## Fetch a spec or ticket
 

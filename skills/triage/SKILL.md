@@ -41,7 +41,7 @@ The table names the roles. If `docs/agents/triage-labels.md` exists, use the lab
 | `enhancement` | category | A new feature or an improvement. |
 | `needs-triage` | state | The maintainer must evaluate the issue. |
 | `needs-info` | state | The issue waits for the reporter to answer the triage notes. |
-| `ready-for-agent` | state | The issue holds an agent brief. The user can type `/build` for it. For a pull request, an agent takes the next step on the diff. |
+| `ready-for-agent` | state | The issue holds an agent brief, or it is a ticket from `/tickets`. The user can type `/build` for it. For a pull request, an agent takes the next step on the diff. |
 | `ready-for-human` | state | The issue holds a brief, but a person must do the work or settle a design. For a pull request, a person can review and merge it. |
 | `wontfix` | state | The issue is closed, with a recorded reason. |
 | `P0` to `P3` | priority | The scale of the `friction` skill. The maintainer picks it. |
@@ -59,7 +59,7 @@ Before the first change on a tracker, read [TRACKERS.md](TRACKERS.md). It has th
 - "What needs my attention?": show the three groups below.
 - "Look at #42", or a path to a local report: triage that one issue.
 - "Move #42 to ready-for-agent": a quick override, below.
-- "What is ready to build?": list the open `ready-for-agent` issues, oldest first.
+- "What is ready to build?": list the open `ready-for-agent` issues, oldest first. The list also holds the new tickets, which get this state when they are made. Name the open blockers of each. Held by: evals/tickets/06-ready-state-shows-in-triage.md
 
 ## Show what needs attention
 
