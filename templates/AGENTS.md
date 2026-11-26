@@ -27,7 +27,7 @@ If your agent tool cannot run a typed command, read `.claude/skills/<name>/SKILL
 | Bug | Something works wrong today. | Own worktree and branch. | A command fails on the bug before the fix and passes after it. | `/grill` if the right behavior is unclear. If not, use the `diagnose` skill. The agent can load it without a typed command. |
 | Report from someone else | A bug report or a request that another person filed on the tracker. | None. A triage change is a tracker write. | Each claim cites a file and line, or the issue. | `/triage`. |
 | Design question | A question about logic or a screen that talk cannot settle. | The branch `prototype/<name>`. Never merged into `main`. | `prototype-check.mjs` exits 0. The user gives the verdict. | `/prototype`, then `/grill` with the verdict. |
-| Ship request | The user wants the change delivered as a pull request or a finished change in the repo. | The worktree and branch of the task. | Checks and CI results on the head commit, as you saw them. | `/land`. It merges only through its merge gate. |
+| Ship request | The user wants the change delivered as a pull request or a finished change in the repo. | The worktree and branch of the task. | Checks and CI results on the head commit, as you saw them. | `/peer-review` if the branch has no review file, then commit that file. Then `/land`. It merges only through its merge gate. |
 
 A plan, a review or a throwaway experiment is not a ship request. If a read-only task turns into edits, sort the task again.
 

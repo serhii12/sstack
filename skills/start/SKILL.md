@@ -62,12 +62,12 @@ land | typed | Push a finished ticket branch, open its pull request, wait for ch
 | Type | How to tell | Evidence level | Next command today | Not built yet |
 | --- | --- | --- | --- | --- |
 | Read-only question | Explain, review, or investigate. Nothing changes in the repo. | `cite` | None. Ask the question in this session. For a survey of the shape of the code, the user can type `/improve-codebase`. | |
-| Docs-only change | Edits only to docs, comments or text files. | `content` | If the change is unclear, `/grill`. Otherwise edit by hand on a new branch, then type `/land`. | |
+| Docs-only change | Edits only to docs, comments or text files. | `content` | If the change is unclear, `/grill`. Otherwise edit by hand on a new branch. Then `/peer-review`, commit its review file, and type `/land`. | |
 | Code change | Changes behavior, config or dependencies. | `behavior` | `/grill`. After it, the user types `/spec`, then `/tickets`, then `/build` for each ticket. | |
 | Bug | Something works wrong today. | `red-then-green` | If the right behavior is unclear, `/grill`. Otherwise `/diagnose`. | |
 | Report from someone else | A bug report or a request that another person filed on the tracker. | `cite` | The user types `/triage`. After it, `/build <issue>` for a `ready-for-agent` issue, or `/grill` for a design question. | |
 | Design question | A question about logic or a screen that talk cannot settle. Nothing ships. | `behavior` | `/prototype`. After it, `/grill` with the verdict. | |
-| Ship request | The change is made. The user wants it delivered, as a pull request or a finished change in the repo. | `checks` | The user types `/land`. It opens the pull request and merges only through its merge gate. | `pr-body` |
+| Ship request | The change is made. The user wants it delivered, as a pull request or a finished change in the repo. | `checks` | The user types `/peer-review` if the branch has no review file, and commits that file. Then `/land`. It opens the pull request and merges only through its merge gate. | `pr-body` |
 
 What each type needs:
 
