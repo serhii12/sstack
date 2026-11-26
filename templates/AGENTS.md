@@ -22,7 +22,7 @@ A typed command is a skill that only the user starts. In Codex, the user types `
 | Type | How to tell | Isolation | Proof needed | Next step |
 | --- | --- | --- | --- | --- |
 | Read-only question | Explain, review or investigate. Nothing in the repo changes. | None. No branch, commit or pull request. | Each claim cites a file and line, an issue or a commit. | Answer in the session. Use `/decide` to weigh options. |
-| Docs-only change | Edits only to docs, comments or text files. | Own branch, in a checkout that no other task uses. | Links resolve. You ran each example or marked it untested. No made-up runtime proof. | `/grill` if the change is unclear. |
+| Docs-only change | Edits only to docs, comments or text files. | Own branch, in a checkout that no other task uses. | Links resolve. You ran each example or marked it untested. No made-up runtime proof. | `/grill` if the change is unclear. Otherwise edit by hand. Then `/peer-review`, commit its review file, and type `/land`. |
 | Code change | Changes behavior, config or dependencies. | Own branch, in a checkout that no other task uses. | The checks of the repo pass. A test or command shows the new behavior. | The flow above. |
 | Bug | Something works wrong today. | Own branch, in a checkout that no other task uses. | A command fails on the bug before the fix and passes after it. | `/grill` if the right behavior is unclear. If not, use the `diagnose` skill. The agent can load it without a typed command. |
 | Report from someone else | A bug report or a request that another person filed on the tracker. | None. A triage change is a tracker write. | Each claim cites a file and line, or the issue. | `/triage`. |
