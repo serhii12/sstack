@@ -207,7 +207,7 @@ test("--tool codex: the starter docs name the Codex guard files", () => {
 const CLAUDE_SETTINGS = readFileSync(join(dirname(SCRIPT), "..", "templates", "claude-settings.json"), "utf8");
 const CODEX_DENY = [".codex/hooks/**", ".codex/hooks.json", ".codex/config.toml", ".codex/rules/**"];
 
-test("--tool both: the Claude settings and the printed deny rules name the Codex guard files, --tool claude does not", () => {
+test("--tool both: the Claude settings name the Codex guard files, --tool claude does not, and no printed rule names a worktrees folder", () => {
   for (const [tool, wanted] of [["both", true], ["claude", false]]) {
     withDirs((source, target) => {
       write(source, "templates/claude-settings.json", CLAUDE_SETTINGS);
@@ -220,7 +220,7 @@ test("--tool both: the Claude settings and the printed deny rules name the Codex
       const printed = out.join("\n");
       for (const g of CODEX_DENY) {
         assert.equal(settings.permissions.deny.includes(`Edit(/${g})`), wanted, `${tool}: settings ${g}`);
-        assert.equal(printed.includes(`-worktrees/*/${g})"`), wanted, `${tool}: printed ${g}`);
+        assert.equal(printed.includes(`-worktrees/*/${g})"`), false, `${tool}: printed ${g}`);
       }
     });
   }

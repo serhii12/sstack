@@ -923,7 +923,7 @@ test("next steps: an empty repo with no origin hears about AGENTS.md, the missin
     assert.match(steps[1], /^1\. Fill in the Project line .* AGENTS\.md\./);
     assert.match(steps[2], /^2\. This repo has no check command yet, so no commit runs a check\. That includes the commits of the first ticket\./);
     assert.match(steps[3], /^3\. Type \/setup once/);
-    assert.match(steps[4], /^4\. This repo has no origin remote\. \/build makes every worktree from origin\/main\./);
+    assert.match(steps[4], /^4\. This repo has no origin remote\. \/build makes each task branch from origin\/main\./);
     assert.match(steps[5], /^5\. Then type \/start/);
     assert.equal(steps.length, 6);
   } finally {
@@ -989,7 +989,7 @@ test("next steps: a dry run prints the same steps and writes nothing", () => {
   });
 });
 
-// ---- permissions: printed, never written (owner ruling), and the worktree deny rules (e2e run 1 breaks 1 and 8) ----
+// ---- permissions: printed, never written (owner ruling) (e2e run 1 break 1) ----
 
 /** The JSON object that the installer prints after the paste line. */
 function printedRules(out) {
@@ -1006,14 +1006,15 @@ test("permissions: the allow list is printed with where to paste it, and no sett
     install({ source, target, log: (l) => out.push(l), claudeVersion: () => null });
     assert.ok(out.some((l) => l.includes("Paste these rules into the \"permissions\" of .claude/settings.local.json")));
     assert.ok(out.some((l) => l.includes("the first /build stops for permission many times")));
-    const { allow, deny } = printedRules(out);
+    const printed = printedRules(out);
+    const { allow } = printed;
     for (const [rule] of ALLOW_RULES) assert.ok(allow.includes(rule), rule);
     // /land step 7 reads the output of a failed check with these two read-only commands.
     for (const rule of ["Bash(gh pr checks:*)", "Bash(gh run view:*)"]) assert.ok(allow.includes(rule), rule);
     const settings = JSON.parse(readFileSync(join(target, ".claude", "settings.json"), "utf8"));
     assert.equal(settings.permissions?.allow, undefined, "settings.json must hold no allow rule");
     assert.equal(present(join(target, ".claude", "settings.local.json")), false, "settings.local.json is never written");
-    assert.ok(deny.length > 0);
+    assert.deepEqual(Object.keys(printed), ["allow"], "the printed block holds allow rules only");
   });
 });
 
@@ -1023,17 +1024,13 @@ test("permissions: the list never holds a rule that lets the agent run code the 
   for (const rule of allow) assert.doesNotMatch(rule, /^Bash\((?:node|npm|npx|gh|cd|cp|mv|rm|sh|bash|python3):\*\)$/, rule);
 });
 
-test("permissions: the worktrees folder gets read and write rules, and its guard files get deny rules", () => {
-  const { allow, deny, worktrees } = permissionRules("/tmp/some/project", "/tmp/t");
-  assert.equal(worktrees, "/tmp/some/project-worktrees");
-  assert.ok(allow.includes("Read(//tmp/some/project-worktrees/**)"));
-  assert.ok(allow.includes("Edit(//tmp/some/project-worktrees/**)"));
-  assert.ok(allow.includes("Edit(//tmp/t/sstack/**)"));
-  for (const g of [".stack/**", ".githooks/**", ".claude/hooks/**", ".claude/settings.json", ".claude/settings.local.json"]) {
-    assert.ok(deny.includes(`Edit(//tmp/some/project-worktrees/*/${g})`), g);
-  }
-  const lines = permissionLines("/tmp/some/project", "/tmp/t");
-  assert.ok(lines.some((l) => l.includes("Edit(//tmp/some/project-worktrees/*/.stack/**)")));
+test("permissions: the temp folder gets a write rule, and no rule names a folder of worktrees next to the repo", () => {
+  const rules = permissionRules("/tmp/some/project", "/tmp/t");
+  assert.deepEqual(Object.keys(rules), ["allow"]);
+  assert.ok(rules.allow.includes("Edit(//tmp/t/sstack/**)"));
+  for (const rule of rules.allow) assert.doesNotMatch(rule, /-worktrees/, rule);
+  const lines = permissionLines("/tmp/some/project", "/tmp/t", true);
+  assert.ok(!lines.some((l) => /-worktrees|"deny"/.test(l)), lines.join("\n"));
 });
 
 test("permissions: the real settings template still denies edits to the guard files, and holds no allow rule", () => {
@@ -1048,7 +1045,8 @@ test("permissions: docs/agents/permissions.md names the same commands in plain w
     const doc = readFileSync(join(target, "docs", "agents", "permissions.md"), "utf8");
     for (const [, plain] of ALLOW_RULES) if (plain) assert.ok(doc.includes(plain), plain);
     assert.match(doc, /## Never allow/);
-    assert.match(doc, /worktrees folder `\.\.\/<repo>-worktrees\/`/);
+    assert.doesNotMatch(doc, /worktree/i);
+    assert.match(doc, /in every checkout of the repo\./);
     assert.doesNotMatch(doc, /Bash\(/, "no Claude Code syntax in the shared doc");
   });
 });

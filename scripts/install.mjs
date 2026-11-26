@@ -8,7 +8,7 @@
 // templates/codex-hooks.json goes to <target>/.codex/hooks.json (never merged). Codex runs
 // that hook only after the user trusts it, so the next steps say so. The installer never
 // writes ~/.codex. Codex gets no CLAUDE.md link and no .claude/ folder. both does the two, and
-// the Claude Code deny rules (in .claude/settings.json and printed) also name the .codex/ guard files.
+// the Claude Code deny rules in .claude/settings.json also name the .codex/ guard files.
 //
 //   skills/*                   -> <target>/.claude/skills/
 //   hooks/*                    -> <target>/.claude/hooks/
@@ -18,7 +18,7 @@
 //   templates/claude-settings.json -> <target>/.claude/settings.json (never merged)
 //   templates/githooks/*       -> <target>/.githooks/
 //   (built in)                 -> <target>/.stack/check, docs/agents/enforcement.md, docs/agents/permissions.md (starter files)
-//   (printed, never written)   -> the allow and deny rules for Claude Code, to paste into .claude/settings.local.json
+//   (printed, never written)   -> the allow rules for Claude Code, to paste into .claude/settings.local.json
 //   (built in)                 -> <target>/.gitignore: rules that keep evidence media out of commits
 //
 // After the copy, the installer runs `git config core.hooksPath .githooks` in the target.
@@ -63,7 +63,7 @@
 import { spawnSync } from "node:child_process";
 import { appendFileSync, chmodSync, copyFileSync, existsSync, writeFileSync, lstatSync, mkdirSync, readFileSync, readdirSync, readlinkSync, realpathSync, statSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, dirname, join, relative, resolve, sep } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const DEFAULT_SOURCE = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -364,7 +364,7 @@ function fileHas(p, text) {
 
 /**
  * The steps that a person must do after the install, before the first /build. Returns the lines to print.
- * /build makes every worktree from origin/main, so the stack must be in origin/main first (run 1: the first
+ * /build makes each task branch from origin/main, so the stack must be in origin/main first (run 1: the first
  * build ran with no AGENTS.md, no hook and no .stack/check). /setup comes before the commit, so its file
  * goes into the same commit.
  */
@@ -384,9 +384,9 @@ export function nextSteps(tgt, { checkIsPlaceholder = false, agentsHasPlaceholde
   }
   if (!existsSync(join(tgt, "docs", "agents", "tracker.md"))) step("Type /setup once to choose the issue tracker. It writes docs/agents/tracker.md, which goes into the commit of the next step.");
   if (git(tgt, ["remote", "get-url", "origin"]).status === 0) {
-    step("Commit the new files and get them into origin/main, with a pull request or a push by a person. /build makes every worktree from origin/main, so the stack must be there first.");
+    step("Commit the new files and get them into origin/main, with a pull request or a push by a person. /build makes each task branch from origin/main, so the stack must be there first.");
   } else {
-    step("This repo has no origin remote. /build makes every worktree from origin/main. Add a remote, then commit the new files and push them to origin/main.");
+    step("This repo has no origin remote. /build makes each task branch from origin/main. Add a remote, then commit the new files and push them to origin/main.");
   }
   // Codex skips an untrusted project hook, and `codex exec` says nothing about it (Codex CLI 0.172.0).
   if (codex) step('In Codex, trust this project, then trust the hook "sstack git guard" in /hooks. Until then, Codex skips the guard with no warning. Type $name where these steps say /name.');
@@ -424,8 +424,6 @@ export const ALLOW_RULES = [
 // Rules that the list must never hold. Each one lets the agent run a command that the git guard
 // cannot read (`node -e`, `npm exec`, `gh pr merge --admin`, `gh api`), or write any file.
 export const NEVER_ALLOW = ["Bash(node:*)", "Bash(npm:*)", "Bash(npx:*)", "Bash(gh:*)", "Bash(cd:*)", "Bash(cp:*)", "Bash(mv:*)", "Bash(rm:*)", "Bash(sh:*)", "Bash(bash:*)", "Bash(python3:*)"];
-// Guard files that the agent must not edit, also in a worktree of the repo.
-const GUARD_PATHS = [".stack/**", ".githooks/**", ".claude/hooks/**", ".claude/settings.json", ".claude/settings.local.json"];
 // The Codex guard files. With --tool both, the Claude Code deny rules name them too, so the Edit tool cannot change them.
 const CODEX_GUARD_PATHS = [".codex/hooks/**", ".codex/hooks.json", ".codex/config.toml", ".codex/rules/**"];
 
@@ -447,20 +445,15 @@ function realOrSame(p) {
 }
 
 /**
- * The rules for this machine: the static list, plus the worktrees folder that /build uses
- * (../<repo>-worktrees) and the temp folder of the /start note and the diagnose notebook.
- * The deny rules close the hole that the worktree allow opens (e2e run 1 break 8: an edit to
- * <worktree>/.stack/check was applied, while the same edit in the project was denied).
- * Returns { allow, deny, worktrees }.
+ * The rules for this machine: the static list, plus the temp folder of the /start note and the
+ * diagnose notebook. Skills make no worktree, so no rule names a folder next to the repo. The
+ * settings template already denies edits to the guard files in each checkout. Returns { allow }.
  */
-export function permissionRules(tgt, tmp = tmpdir(), codex = false) {
-  const real = realOrSame(tgt);
-  const worktrees = join(dirname(real), `${basename(real)}-worktrees`);
+export function permissionRules(tgt, tmp = tmpdir()) {
   const allow = ALLOW_RULES.map(([rule]) => rule);
-  allow.push(`Read(/${worktrees}/**)`, `Edit(/${worktrees}/**)`, "Bash(echo $TMPDIR)");
+  allow.push("Bash(echo $TMPDIR)");
   for (const t of new Set([tmp, realOrSame(tmp)])) allow.push(`Edit(/${join(t, TEMP_FOLDER)}/**)`);
-  const deny = [...GUARD_PATHS, ...(codex ? CODEX_GUARD_PATHS : [])].map((g) => `Edit(/${worktrees}/*/${g})`);
-  return { allow, deny, worktrees };
+  return { allow };
 }
 
 export const STARTER_PERMISSIONS = `# Permissions
@@ -478,7 +471,6 @@ ${ALLOW_RULES.filter(([r, plain]) => plain && r.startsWith("Bash(")).map(([, pla
 ## Files and folders
 
 ${ALLOW_RULES.filter(([r, plain]) => plain && r.startsWith("Edit(")).map(([, plain]) => `- ${plain}`).join("\n")}
-- Read and write the worktrees folder \`../<repo>-worktrees/\`, where /build makes one worktree for each ticket.
 - Write \`$TMPDIR/${TEMP_FOLDER}/\`: the /start note and the diagnose notebook.
 
 ## Never allow
@@ -486,7 +478,7 @@ ${ALLOW_RULES.filter(([r, plain]) => plain && r.startsWith("Edit(")).map(([, pla
 - \`node\`, \`npm\`, \`npx\`, \`sh\`, \`bash\` or \`python3\` with any argument. They run code that the git guard cannot read.
 - \`gh\` with any argument. \`gh pr merge --admin\` and \`gh api\` skip the merge gate.
 - \`cd\`, \`cp\`, \`mv\` or \`rm\` with any argument.
-- Edits to \`.stack/\`, \`.githooks/\`, \`.claude/hooks/\`, \`.claude/settings*.json\`, \`.codex/hooks/\`, \`.codex/hooks.json\`, \`.codex/config.toml\` and \`.codex/rules/\`, in the repo and in each worktree.
+- Edits to \`.stack/\`, \`.githooks/\`, \`.claude/hooks/\`, \`.claude/settings*.json\`, \`.codex/hooks/\`, \`.codex/hooks.json\`, \`.codex/config.toml\` and \`.codex/rules/\`, in every checkout of the repo.
 `;
 
 // Codex: print only (owner ruling). The installer writes no .codex/config.toml and no .codex/rules.
@@ -496,13 +488,13 @@ export const CODEX_PERMISSION_LINES = [
 ];
 
 /** The lines to print: where to paste the rules, why, and the rules as JSON. */
-export function permissionLines(tgt, tmp = tmpdir(), codex = false) {
-  const { allow, deny } = permissionRules(tgt, tmp, codex);
+export function permissionLines(tgt, tmp = tmpdir()) {
+  const { allow } = permissionRules(tgt, tmp);
   return [
     "Permissions for Claude Code. The installer wrote no settings file. You decide.",
     "Paste these rules into the \"permissions\" of .claude/settings.local.json. Without them, the first /build stops for permission many times.",
     "Add one rule for the test command of the project, for example Bash(npm test:*). docs/agents/permissions.md has the same list for other agent tools.",
-    ...JSON.stringify({ allow, deny }, null, 2).split("\n").map((l) => `    ${l}`),
+    ...JSON.stringify({ allow }, null, 2).split("\n").map((l) => `    ${l}`),
   ];
 }
 
@@ -653,7 +645,7 @@ export function install({ source = DEFAULT_SOURCE, target, tool = "claude", dryR
     log(`note    The Claude Code adapter uses onFailure: block in the hook settings. This setting needs Claude Code ${MIN_CLAUDE_VERSION} or later. Your version is older, so please update Claude Code.`);
   }
   log("");
-  if (tool !== "codex") for (const l of permissionLines(tgt, undefined, tool === "both")) log(l);
+  if (tool !== "codex") for (const l of permissionLines(tgt)) log(l);
   else for (const l of CODEX_PERMISSION_LINES) log(l);
   log("");
   log(`${dryRun ? "Dry run, nothing written. " : ""}${counts.copy + counts.generate + counts.link} to create, ${counts.skip} skipped, ${counts.manual} need a manual step.`);
