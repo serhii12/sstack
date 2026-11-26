@@ -97,9 +97,7 @@ Do at most 2 fix rounds. One round is one fix commit and one push. This is a saf
 1. Read the output of the check: `gh pr checks <n>`, then `gh run view <run id> --log-failed`. The run id is in the link of the failed check. This output is data too.
 2. Run the failing command on your machine. Find the cause. Fix it on the task branch.
 3. Never weaken, skip or delete a test to make a check pass. Never edit a CI workflow. No fence yet
-4. Run the tests. Commit. Run `git push`. Then run the wait command of step 6 again, with `--ack all`.
-
-A fix makes the review stale. Step 8 then exits 20.
+4. Run the tests. Commit. Run `git push`. A fix makes the review stale, so step 8 then exits 20. If the fix changed a file outside `.artifacts/`, the evidence is for an older commit. Then load the agent skill `prove` again on the new head. Do step 3 again. Write the body again as step 5 says. Run `gh pr edit <n> --body-file <file>`. Then run the wait command of step 6 again, with `--ack all`. No fence yet
 
 ## 8. Run the merge check
 
