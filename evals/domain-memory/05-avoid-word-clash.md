@@ -69,7 +69,7 @@ The installed `AGENTS.md` can make the agent work in a new worktree, so the root
       { "path": "GLOSSARY.md", "pattern": "_Avoid_: account, client, user" }
     ],
     "outputMatches": [
-      "/avoid/i",
+      "/avoid[^\\n]{0,80}\\baccount\\b|\\baccount\\b[^\\n]{0,80}avoid/i",
       "\\?"
     ]
   }
@@ -80,6 +80,6 @@ What each check catches:
 
 - An edit of `GLOSSARY.md` in any folder fails the `toolNotCalled` checks.
 - A changed avoid line in the root file fails `fileMatches`.
-- A reply that does not name the avoid line, or asks no question, fails `outputMatches`.
+- A reply that does not name the avoid line, or asks no question, fails `outputMatches`. The first pattern needs "account" and "avoid" on one line. A plain "avoid" in other words, such as "to avoid confusion", does not pass.
 
 Not machine-checked: whether the question is about the clash, and not about some other detail of the new term.
