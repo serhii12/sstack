@@ -200,7 +200,7 @@ A private repo on the GitHub Free plan has no branch protection, no rulesets and
 
 ## What the scripts cannot see
 
-- If the review file tells the truth. The script checks only its commits, its shape and its finding lines. The file can hold one `Range:` line for each review. The ranges must make one chain from the start of the branch to the head. A later block with the same finding id decides the status of that finding.
+- If the review file tells the truth. The script checks only its commits, its shape and its finding lines. The file can hold one `Range:` line for each review. The ranges must make one chain from the merge base of the pull request to the head. A later block with the same finding id decides the status of that finding.
 - If a person approved for a good reason. Approval is a decision of a person.
 - If the user typed the approval. The script sees only the flag `--owner-approved <sha>`.
 - If a check tests the right thing. A required check that always passes still passes.

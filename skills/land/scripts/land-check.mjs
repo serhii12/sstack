@@ -16,7 +16,7 @@
 //   [22] auto-merge is off (the agent never lets GitHub merge on its own). It comes before 12, because
 //        the fix of 12 is a push, and GitHub can merge on its own after that push
 //   [12] GitHub says it is mergeable (not conflicting, not behind, not unknown)
-//   [14] the config on the default branch has no error, and at least one check exists on the head
+//   [14] the config on the default branch has no error, and at least one check passed on the head
 //        (or the config says `"allowNoChecks": true`)
 //   [17] no check failed. With `requiredChecks` in the config: each named check, where neutral, skipped,
 //        cancelled and timed out count as failed. With none: every check run and commit status on the
@@ -25,9 +25,9 @@
 //   [16] no check is still running
 //   [18] no reviewer's latest review requests changes (on any commit, bots included)
 //   [19] no review thread is unresolved (outdated threads are ignored only if the config says so)
-//   [20] the ranges of the peer-review file make one chain with no gap, from the start of the branch
-//        to the head commit (or to a commit after which only text files under `.artifacts/` changed),
-//        and no finding is open unless its severity is low
+//   [20] the ranges of the peer-review file make one chain with no gap, from the merge base of the head
+//        and the base of the pull request to the head commit (or to a commit after which only text
+//        files under `.artifacts/` changed), and no finding is open unless its severity is low
 //   [28] no acceptance check in the evidence index of the task has the status `fail` (`untested`
 //        does not block)
 //   [23] no image or video under `.artifacts/` is in the pull request (land-evidence.mjs puts them on
@@ -90,8 +90,9 @@ const WRITE_ASSOCIATION = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
 const WRITE_PERMISSION = new Set(["admin", "maintain", "write"]);
 const MEDIA = /\.(png|jpe?g|gif|webp|avif|bmp|tiff?|svg|mp4|mov|webm|mkv|avi|m4v)$/i;
 const FULL_SHA = /^[0-9a-f]{40}$/;
-// Text files under `.artifacts/` are committed on the task branch on purpose: the review file, the
-// ticket copy and the evidence index. They can change after the reviewed commit. A script cannot.
+// Text files under `.artifacts/` can be on the task branch: `build` commits the review file and the
+// ticket copy. The evidence folder stays local, but a text file there does not block. These files can
+// change after the reviewed commit. A script cannot.
 const ARTIFACT_TEXT = /^\.artifacts\/.+\.(md|json|txt)$/;
 export const EVIDENCE_PREFIX = "evidence/";
 export const REVIEW_MAX_BYTES = 1024 * 1024;
@@ -149,6 +150,8 @@ export function gather(fetcher, { repo, number }) {
 // ---------------------------------------------------------------------------
 
 const STATUS_CLOSED = [/^fixed\.?$/i, /^won['’]t fix:\s*\S/i];
+/** The severities of a finding. A missing, repeated or other value reads as `unknown`, and it blocks. */
+export const SEVERITIES = ["low", "medium", "high"];
 
 /**
  * Parse a findings file of peer-review: the reviewed ranges, the mode and the findings.
@@ -172,7 +175,7 @@ export function parseReview(text) {
     const statuses = [...b.matchAll(/^Status:[ \t]*(.*)$/gm)].map((m) => m[1].trim());
     const severities = [...b.matchAll(/^Severity:[ \t]*(.*)$/gm)].map((m) => m[1].trim().toLowerCase());
     const closed = statuses.length === 1 && STATUS_CLOSED.some((re) => re.test(statuses[0]));
-    const severity = severities.length === 1 && ["low", "medium", "high"].includes(severities[0]) ? severities[0] : "unknown";
+    const severity = severities.length === 1 && SEVERITIES.includes(severities[0]) ? severities[0] : "unknown";
     // A later block that only sets the status keeps the severity of the first block.
     const before = byId.get(id);
     byId.delete(id);

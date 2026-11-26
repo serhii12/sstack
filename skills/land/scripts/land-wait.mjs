@@ -37,7 +37,7 @@
 //   14 closed           the pull request is closed and not merged
 //   15 deadline         --total seconds passed for this head commit and its checks did not end
 //   16 still-waiting    --max-wait seconds passed in this run and nothing happened. Run it again
-//   18 no-checks        no check exists on the head after --grace seconds, or the config has an error
+//   18 no-checks        no check passed on the head after --grace seconds, or the config has an error
 //   19 fix-cap          a check failed on a third head: the fix rounds are used (--max-fix-rounds). A head
 //                       whose checks pass after a rerun does not count
 //   2  usage error      3 gh or data error after the retries
