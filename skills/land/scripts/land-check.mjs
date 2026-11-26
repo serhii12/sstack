@@ -13,8 +13,9 @@
 //   [10] the pull request is open           [11] it is not a draft
 //   [13] its base is the default branch, and its head is a branch of this repo (not a fork, and not
 //        an `evidence/` branch)
+//   [22] auto-merge is off (the agent never lets GitHub merge on its own). It comes before 12, because
+//        the fix of 12 is a push, and GitHub can merge on its own after that push
 //   [12] GitHub says it is mergeable (not conflicting, not behind, not unknown)
-//   [22] auto-merge is off (the agent never lets GitHub merge on its own)
 //   [14] the config on the default branch has no error, and at least one check exists on the head
 //        (or the config says `"allowNoChecks": true`)
 //   [17] no check failed. With `requiredChecks` in the config: each named check, where neutral, skipped,
@@ -83,7 +84,7 @@ export const EXIT = {
 };
 
 // The order in which gates report. The exit code is the code of the first failure in this list.
-const ORDER = [10, 11, 13, 12, 22, 14, 17, 15, 16, 18, 19, 20, 28, 23, 21];
+const ORDER = [10, 11, 13, 22, 12, 14, 17, 15, 16, 18, 19, 20, 28, 23, 21];
 const WRITE_ASSOCIATION = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
 const WRITE_PERMISSION = new Set(["admin", "maintain", "write"]);
 const MEDIA = /\.(png|jpe?g|gif|webp|avif|bmp|tiff?|svg|mp4|mov|webm|mkv|avi|m4v)$/i;
