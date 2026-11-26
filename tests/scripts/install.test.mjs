@@ -525,6 +525,18 @@ test("this repo: CLAUDE.md is a relative symlink to AGENTS.md, and templates/ ha
   assert.equal(present(join(REPO, "templates", "CLAUDE.md")), false, "the installer makes the link, so there is no template file");
 });
 
+// Codex run r3: the old line "read .claude/skills/<name>/SKILL.md" made Codex open a typed skill that the user did not name.
+test("templates/AGENTS.md: the typed command line names both skill folders and forbids a typed skill the user did not name", () => {
+  const text = readFileSync(join(REPO, "templates", "AGENTS.md"), "utf8");
+  const line = text.split("\n").find((l) => l.startsWith("A typed command is a skill that only the user starts."));
+  assert.ok(line, "the typed command line is there");
+  assert.match(line, /`\$<name>` in place of `\/<name>`/);
+  assert.match(line, /`\.claude\/skills\/<name>\/`/);
+  assert.match(line, /`\.agents\/skills\/<name>\/`/);
+  assert.match(line, /If the user did not type the name of a typed skill, do not open that skill\./);
+  assert.doesNotMatch(text, /cannot run a typed command, read/, "the old line is gone");
+});
+
 test("CLAUDE.md: a missing CLAUDE.md becomes a relative symlink to AGENTS.md", () => {
   withDirs((source, target) => {
     const out = [];

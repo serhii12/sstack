@@ -15,7 +15,7 @@ To sort a task, use the table below. The user can also type `/start`. It sorts t
 
 To find places where the shape of the code can improve, type `/improve-codebase`. It writes a report with ranked candidates and changes no code.
 
-If your agent tool cannot run a typed command, read `.claude/skills/<name>/SKILL.md` and follow it.
+A typed command is a skill that only the user starts. In Codex, the user types `$<name>` in place of `/<name>`. If the user types `/<name>` and your agent tool did not load that skill, open its `SKILL.md` and follow it. Claude Code keeps the skills in `.claude/skills/<name>/`, and Codex keeps them in `.agents/skills/<name>/`. If the user did not type the name of a typed skill, do not open that skill. A typed skill has `disable-model-invocation: true` in its frontmatter.
 
 ## Task types
 
