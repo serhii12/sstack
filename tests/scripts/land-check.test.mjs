@@ -152,6 +152,12 @@ test("several failures: all print, the exit code is the first in the gate order"
   assert.deepEqual(v.failures.map((f) => f.code), [11, 15, 19]);
 });
 
+test("auto-merge on and behind: exit 22 comes first, so the agent does not push while GitHub can merge alone", { timeout: 120000 }, () => {
+  const v = verdict(stateWith({ pr: { mergeable_state: "behind", auto_merge: { merge_method: "squash" } } }));
+  assert.equal(v.exitCode, EXIT.autoMerge);
+  assert.deepEqual(v.failures.map((f) => f.code), [22, 12]);
+});
+
 // ---------------------------------------------------------------- the review file
 
 test("parseReview reads the reviewed sha, the mode and the findings", { timeout: 120000 }, () => {

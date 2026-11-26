@@ -14,8 +14,8 @@ Every failure prints as `FAIL <code>: <what failed>. Fix: <what to do>.` When se
 | 10 | The pull request is closed or already merged. | stopped | Stop. Report what GitHub shows. |
 | 11 | The pull request is a draft. | stopped | Stop. Ask the user. |
 | 13 | The base differs from the default branch, the head is in a fork, the head is another branch, or the head is an `evidence/` branch. | stopped | Stop. Ask a person. |
-| 12 | Conflicts, behind the base, or mergeability not known yet. | fix | The script reads again for 15 seconds first. Then merge the default branch into the task branch, as step 8 of `SKILL.md` says. Never rebase. |
 | 22 | Auto-merge is on. | stopped | Run `gh pr merge <n> --disable-auto`. Tell a person. Stop. |
+| 12 | Conflicts, behind the base, or mergeability not known yet. | fix | The script reads again for 15 seconds first. Then merge the default branch into the task branch, as step 8 of `SKILL.md` says. Never rebase. |
 | 14 | The config on the default branch has an error. Or no check passed on the head and the config does not allow that. | stopped | Stop. A person fixes the config, adds a CI check, or sets `allowNoChecks`. |
 | 17 | A check failed. | fix | Go to step 7 of `SKILL.md`. |
 | 15 | A required check has no run on the head with the exact name and app. | wait | Wait. If it never runs, stop. |
