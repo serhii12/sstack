@@ -58,7 +58,7 @@
 //     Blocked: `update-ref`, `branch -f main`, `branch -M main`, `symbolic-ref HEAD main` then a commit, and a work tree for main.
 //   - Pushes that do not use `git push`: `git send-pack`, `git http-push`, `git remote` with a pushurl and a hook.
 //   - A command text over 256 KB is blocked, and so is a null byte. The shell reads up to a null byte only.
-//   - The source folder `hooks/` of this repo is not protected. Only the installed copy `.claude/hooks` is, because `hooks/` is a common folder name.
+//   - The source folder `hooks/` of this repo is not protected. Only the installed copies `.claude/hooks` and `.codex/hooks` are, because `hooks/` is a common folder name.
 //   - People and scripts outside Claude Code. Branch protection on the host is the real fence.
 
 import path from "node:path";
@@ -118,19 +118,19 @@ const V = {
   protectedPath: {
     rule: "protected-path",
     reason:
-      "This command changes a file that holds the guard itself (.githooks, .stack, .git/config, .claude/settings, .claude/hooks).",
+      "This command changes a file that holds the guard itself (.githooks, .stack, .git/config, .claude/settings, .claude/hooks, .codex/hooks, .codex/hooks.json, .codex/config.toml, .codex/rules).",
     fix: "Do not edit the guard files. Ask the owner to make the change.",
   },
   gitGuardPath: {
     rule: "protected-path",
     reason:
-      "This git command restores, removes, moves, cleans or overwrites a path that holds the guard itself (.githooks, .stack, .git/hooks, .git/config, .claude/settings, .claude/hooks).",
+      "This git command restores, removes, moves, cleans or overwrites a path that holds the guard itself (.githooks, .stack, .git/hooks, .git/config, .claude/settings, .claude/hooks, .codex/hooks, .codex/hooks.json, .codex/config.toml, .codex/rules).",
     fix: "Do not change guard files with git. A person must make this change. Ask the owner.",
   },
   gitPathspecFile: {
     rule: "protected-path",
     reason:
-      "This git command reads its paths from a file, so the guard cannot see whether one of them is a guard file (.githooks, .stack, .git/hooks, .git/config, .claude/settings, .claude/hooks).",
+      "This git command reads its paths from a file, so the guard cannot see whether one of them is a guard file (.githooks, .stack, .git/hooks, .git/config, .claude/settings, .claude/hooks, .codex/hooks, .codex/hooks.json, .codex/config.toml, .codex/rules).",
     fix: "Name each path on the command line. A person must change guard files.",
   },
   configInclude: {
@@ -209,7 +209,7 @@ const WRITE_ALL = new Set([
 ]);
 // cp, install, ditto and rsync write only their destination: the last operand or the -t value.
 const COPY_LIKE = new Set(["cp", "ditto", "install", "rsync"]);
-// Programs that delete or move a whole folder. Their operand `.git` or `.claude` holds guard files.
+// Programs that delete or move a whole folder. Their operand `.git`, `.claude` or `.codex` holds guard files.
 const FOLDER_DESTROYERS = new Set(["mv", "rm", "rmdir", "shred", "unlink"]);
 // Programs that name an output file in an option. The value after the option is written.
 const OUTPUT_OPTIONS = new Map([
@@ -230,11 +230,12 @@ const INLINE_CODE = new Set([
 const STRING_RUNNERS = new Set(["flock", "parallel", "runuser", "script", "ssh", "su", "watch"]);
 const TAR = new Set(["bsdtar", "gtar", "tar"]);
 const GUARD_PATH =
-  /(?:^|[^\w.-])(?:\.githooks|\.stack|\.git\/config|\.git\/(?:head|packed-refs|refs\/heads\/(?:main|master))|\.claude\/(?:settings(?:\.local)?\.json|hooks))(?![\w.-])/u;
+  /(?:^|[^\w.-])(?:\.githooks|\.stack|\.git\/config|\.git\/(?:head|packed-refs|refs\/heads\/(?:main|master))|\.claude\/(?:settings(?:\.local)?\.json|hooks)|\.codex\/(?:hooks(?:\.json)?|config\.toml|rules))(?![\w.-])/u;
 // Sample protected paths. A glob word that matches one of them may expand to it.
 const GUARD_SAMPLES = [
   ".githooks", ".githooks/prepare-commit-msg", ".stack", ".stack/check", ".git/config",
   ".claude/settings.json", ".claude/settings.local.json", ".claude/hooks", ".claude/hooks/guard-git.mjs",
+  ".codex/hooks", ".codex/hooks/guard-git.mjs", ".codex/hooks.json", ".codex/config.toml", ".codex/rules", ".codex/rules/default.rules",
   ".git/HEAD", ".git/packed-refs", ".git/refs/heads/main", ".git/refs/heads/master",
 ];
 const HOOKS_SAMPLES = [".git/hooks", ".git/hooks/pre-commit"];
@@ -1166,7 +1167,7 @@ const expandBraces = (word) => {
 };
 
 // A word with too many variants is read for the names of guard paths only.
-const GUARD_FRAGMENT = /stack|githooks|\.git|claude/u;
+const GUARD_FRAGMENT = /stack|githooks|\.git|claude|codex/u;
 
 // A case-insensitive disk (macOS, Windows) opens `.STACK` as `.stack`, so the match ignores case.
 const hooksNamed = (text) =>
@@ -1234,10 +1235,10 @@ const outputTargets = (program, args) => {
   return found;
 };
 
-/** A whole folder that holds guard files: `.git` or `.claude`, with an optional ./ or ../ or $PWD/ in front. */
+/** A whole folder that holds guard files: `.git`, `.claude` or `.codex`, with an optional ./ or ../ or $PWD/ in front. */
 const guardFolder = (word) => {
   const clean = path.posix.normalize(word.replace(/^\$\{?PWD\}?\//u, "")).replace(/\/+$/u, "");
-  return /^(?:\.\.\/)*\.(?:git|claude)$/iu.test(clean);
+  return /^(?:\.\.\/)*\.(?:git|claude|codex)$/iu.test(clean);
 };
 
 /** The operands of cp, install, ditto or rsync that get written. */

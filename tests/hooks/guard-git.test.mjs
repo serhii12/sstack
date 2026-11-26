@@ -202,6 +202,86 @@ describe("guard-git: settings template", () => {
   });
 });
 
+// The PreToolUse input of Codex CLI 0.172.0 (hooks docs): the Claude Code keys plus turn_id and model.
+const codexInput = (command, cwd) =>
+  JSON.stringify({
+    session_id: "019a0000-0000-7000-8000-000000000000",
+    transcript_path: "/tmp/codex/rollout.jsonl",
+    cwd,
+    hook_event_name: "PreToolUse",
+    permission_mode: "default",
+    tool_name: "Bash",
+    tool_use_id: "call_1",
+    tool_input: { command },
+    turn_id: "turn_1",
+    model: "gpt-5-codex",
+  });
+
+describe("guard-git: Codex input shape", () => {
+  let main;
+  let feature;
+
+  before(() => {
+    main = tempDir("guard-codex-main-");
+    git(main, "init", "-q", "-b", "main");
+    feature = tempDir("guard-codex-feat-");
+    git(feature, "init", "-q", "-b", "feature/x");
+  });
+
+  it("allows git status silently", () => {
+    const result = run(codexInput("git status", feature));
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, "");
+    assert.equal(result.stderr, "");
+  });
+
+  it("blocks --no-verify, a plain force push and a commit on main", () => {
+    assertBlocked(run(codexInput("git commit --no-verify -am 'docs: tweak'", feature)), /skips the git hooks/u);
+    assertBlocked(run(codexInput("git push --force origin feature/x", feature)), /force/u);
+    assertBlocked(run(codexInput("git commit -m x", main)), /main or master/u);
+    assert.equal(run(codexInput("git commit -m x", feature)).status, 0);
+  });
+});
+
+describe("guard-git: Codex hooks template", () => {
+  const template = JSON.parse(readFileSync(path.resolve(here, "../../templates/codex-hooks.json"), "utf8"));
+  const group = template.hooks?.PreToolUse?.[0];
+  const handler = group?.hooks?.[0];
+
+  it("runs the guard on Bash, names itself for /hooks, and blocks when node cannot run", () => {
+    assert.equal(template.description, "sstack git guard");
+    assert.equal(group.matcher, "^Bash$");
+    assert.equal(handler.type, "command");
+    assert.equal(handler.statusMessage, "sstack git guard");
+    assert.ok(Number.isInteger(handler.timeout) && handler.timeout > 0);
+    assert.match(handler.command, /--git-common-dir/u);
+    assert.match(handler.command, /\.codex\/hooks\/guard-git\.mjs.*\|\| exit 2$/u);
+  });
+
+  // A project with the guard in .codex/hooks/ (not committed), and a linked worktree whose branch has no .codex/.
+  const project = () => {
+    const repo = tempDir("guard-codex-proj-");
+    git(repo, "init", "-q", "-b", "main");
+    git(repo, "commit", "-q", "--allow-empty", "-m", "base");
+    mkdirSync(path.join(repo, ".codex", "hooks"), { recursive: true });
+    for (const f of ["guard-git.mjs", "git-policy.mjs"]) copyFileSync(path.resolve(here, "../../hooks", f), path.join(repo, ".codex", "hooks", f));
+    const tree = path.join(tempDir("guard-codex-wt-"), "wt");
+    assert.equal(git(repo, "worktree", "add", "-q", "-b", "feature/x", tree).status, 0);
+    return { repo, tree };
+  };
+  const hookRun = (cwd, command) => spawnSync("sh", ["-c", handler.command], { cwd, input: codexInput(command, cwd), encoding: "utf8" });
+
+  it("finds the guard from the main checkout and from a linked worktree that has no .codex/", () => {
+    const { repo, tree } = project();
+    assert.equal(hookRun(repo, "git status").status, 0, hookRun(repo, "git status").stderr);
+    assertBlocked(hookRun(repo, "git commit -m x"), /main or master/u);
+    const status = hookRun(tree, "git status");
+    assert.equal(status.status, 0, status.stderr);
+    assertBlocked(hookRun(tree, "git commit --no-verify -m x"), /skips the git hooks/u);
+    assert.equal(hookRun(tree, "git commit -m x").status, 0);
+  });
+});
+
 describe("guard-git: protected paths are judged by what the command does to them", () => {
   const reported = "ls; cat -n GLOSSARY.md README.md; find . -iname 'glossary*' -not -path './.git/*'";
 

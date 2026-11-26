@@ -81,6 +81,11 @@ export const ALLOWED = [
   'echo "see .git/hooks for details"',
   'git commit -m "docs: mention .git/config"',
   "git commit -m 'docs: .githooks and .stack are protected'",
+  // Codex: the guard in .codex/hooks and its wiring in .codex/hooks.json are read, never written
+  "cat .codex/hooks.json",
+  "ls .codex/hooks .codex/rules",
+  "grep -n guard .codex/config.toml",
+  "cp .codex/hooks.json /tmp/hooks.bak",
 ];
 
 /** Writes, removals, mode changes, and commands that cannot be classified. They must stay blocked. */
@@ -165,6 +170,13 @@ export const BLOCKED = [
   "cd .git/hooks && rm pre-commit",
   ".git/hooks/pre-commit",
   "python3 tools/x.py .git/hooks",
+  // Codex guard files
+  "echo '{}' > .codex/hooks.json",
+  "rm .codex/hooks/guard-git.mjs",
+  "sed -i '' 's/a/b/' .codex/config.toml",
+  "cp /tmp/x .codex/rules/default.rules",
+  "rm -rf .codex",
+  "mv .codex /tmp/old-codex",
 ];
 
 /** Writes that are hidden inside other shell syntax. Each %s is replaced by one BASE_WRITES entry. */
@@ -202,4 +214,5 @@ export const BASE_WRITES = [
   "find .stack -delete",
   "tar xf evil.tar -C .git/hooks",
   "git config core.hooksPath /dev/null",
+  "rm .codex/hooks.json",
 ];

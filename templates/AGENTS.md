@@ -40,11 +40,11 @@ Each rule ends with what enforces it. `Held by:` names the hook, script or test 
 1. Use one worktree and one branch for each task. If a task changes files, start a new branch from the latest default branch in its own worktree. If the task already has a worktree, keep using it. Never mix two tasks on one branch.
    No fence yet
 2. Never commit or push directly to `main` or `master`. Commit on the task branch. Merge through a pull request. The guard knows only these two names. If your default branch has another name, the guard does not enforce this rule.
-   Held by: .claude/hooks/guard-git.mjs (Claude Code only)
+   Held by: .claude/hooks/guard-git.mjs (Claude Code), .codex/hooks/guard-git.mjs (Codex, after you trust it)
 3. Never use a plain force push (`git push --force` or `-f`). On your own branch, you can use `git push --force-with-lease`. Never use it on `main` or `master`.
-   Held by: .claude/hooks/guard-git.mjs (Claude Code only)
+   Held by: .claude/hooks/guard-git.mjs (Claude Code), .codex/hooks/guard-git.mjs (Codex, after you trust it)
 4. Never skip checks. Do not use `--no-verify`, `-n` on commit, or any other way around the git hooks of the repo.
-   Held by: .claude/hooks/guard-git.mjs (Claude Code only), .githooks/prepare-commit-msg (every tool)
+   Held by: .claude/hooks/guard-git.mjs (Claude Code), .codex/hooks/guard-git.mjs (Codex, after you trust it), .githooks/prepare-commit-msg (every tool)
 5. Report the real result. Say what you ran and what you saw. Never claim a success that you did not see. If you did not run a check, report it as `untested`.
    No fence yet
 6. Write every message from our scripts, hooks, lint rules and checks in one form. This covers the stack and the developer tools of this repo. It does not cover the messages that the product shows to its users. Use `<what failed>. <why>. Fix: <step>.` The step names a command, a file or a change, in a code span. Example: `Commit blocked on main. Work on main skips review. Fix: run git switch -c fix/login-timeout first.`

@@ -22,7 +22,7 @@ Before you report a change as done, run the first four commands. Report each res
 | --- | --- |
 | `skills/<name>/` | One skill: `SKILL.md`, its reference files and its scripts. |
 | `evals/<name>/` | The test cases for one skill. |
-| `hooks/` | The git guard. It is the hook adapter for Claude Code. |
+| `hooks/` | The git guard. It is the hook adapter for Claude Code and Codex. |
 | `scripts/` | The installer, the lints and the eval runner. |
 | `tests/` | The tests for hooks and scripts. |
 | `templates/` | The files that the installer copies into a project. |

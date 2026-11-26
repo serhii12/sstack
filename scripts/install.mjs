@@ -4,8 +4,10 @@
 // --tool claude (the default), codex or both picks the agent tool. The lines below are for claude.
 // For codex: skills/* go to <target>/.agents/skills/, the folder that Codex reads. In each .md and
 // .mjs file of that copy, the text .claude/skills/ becomes .agents/skills/. The source keeps one
-// written form, .claude/skills/. Codex gets no CLAUDE.md link and no .claude/ folder.
-// both does the two.
+// written form, .claude/skills/. hooks/* go to <target>/.codex/hooks/, and
+// templates/codex-hooks.json goes to <target>/.codex/hooks.json (never merged). Codex runs
+// that hook only after the user trusts it, so the next steps say so. The installer never
+// writes ~/.codex. Codex gets no CLAUDE.md link and no .claude/ folder. both does the two.
 //
 //   skills/*                   -> <target>/.claude/skills/
 //   hooks/*                    -> <target>/.claude/hooks/
@@ -156,9 +158,9 @@ The retro skill reads this list and adds a row for each rule that it changes.
 
 | Rule | Written in | Held by | Changed |
 | --- | --- | --- | --- |
-| No commits or direct pushes to main or master | AGENTS.md rule 2 | .claude/hooks/guard-git.mjs (Claude Code only) | install |
-| No plain force push | AGENTS.md rule 3 | .claude/hooks/guard-git.mjs (Claude Code only) | install |
-| Never skip checks | AGENTS.md rule 4 | .claude/hooks/guard-git.mjs (Claude Code only), .githooks/prepare-commit-msg | install |
+| No commits or direct pushes to main or master | AGENTS.md rule 2 | .claude/hooks/guard-git.mjs (Claude Code), .codex/hooks/guard-git.mjs (Codex, after you trust it) | install |
+| No plain force push | AGENTS.md rule 3 | .claude/hooks/guard-git.mjs (Claude Code), .codex/hooks/guard-git.mjs (Codex, after you trust it) | install |
+| Never skip checks | AGENTS.md rule 4 | .claude/hooks/guard-git.mjs (Claude Code), .codex/hooks/guard-git.mjs (Codex, after you trust it), .githooks/prepare-commit-msg | install |
 | Every commit passes the project check | .githooks/prepare-commit-msg | .githooks/prepare-commit-msg, .stack/check (placeholder, no fence yet) | install |
 `;
 
@@ -241,7 +243,10 @@ export function plan(source, target, tool = "claude") {
     addTree(join(source, "skills"), join(target, ".claude", "skills"));
     addTree(join(source, "hooks"), join(target, ".claude", "hooks"));
   }
-  if (codex) addTree(join(source, "skills"), join(target, ".agents", "skills"), { rewrite: true });
+  if (codex) {
+    addTree(join(source, "skills"), join(target, ".agents", "skills"), { rewrite: true });
+    addTree(join(source, "hooks"), join(target, ".codex", "hooks"));
+  }
   for (const f of ["AGENTS.md", "GLOSSARY.md"]) addFile(join("templates", f), f);
   const link = claude ? claudeLinkItem(target, existsSync(join(source, "templates", "AGENTS.md")), notes) : null;
   if (link) items.push(link);
@@ -253,8 +258,12 @@ export function plan(source, target, tool = "claude") {
   items.push({ kind: "generate", content: STARTER_PERMISSIONS, mode: 0o644, dest: join(target, "docs", "agents", "permissions.md") });
 
   const settingsSrc = join(source, "templates", "claude-settings.json");
-  if (claude && existsSync(settingsSrc)) items.push({ kind: "settings", src: settingsSrc, dest: join(target, ".claude", "settings.json") });
+  if (claude && existsSync(settingsSrc)) items.push({ kind: "settings", src: settingsSrc, dest: join(target, ".claude", "settings.json"), merge: '"hooks" and "permissions"' });
   else if (claude) notes.push("nothing to copy: templates/claude-settings.json is missing in the source");
+  // Codex: the git guard hook. Codex runs it only after the user trusts it in /hooks.
+  const codexHooksSrc = join(source, "templates", "codex-hooks.json");
+  if (codex && existsSync(codexHooksSrc)) items.push({ kind: "settings", src: codexHooksSrc, dest: join(target, ".codex", "hooks.json"), merge: '"hooks"' });
+  else if (codex) notes.push("nothing to copy: templates/codex-hooks.json is missing in the source");
 
   for (const it of items) {
     if ((it.kind === "copy" || it.kind === "generate") && present(it.dest)) it.kind = "skip";
@@ -358,7 +367,7 @@ function fileHas(p, text) {
  * build ran with no AGENTS.md, no hook and no .stack/check). /setup comes before the commit, so its file
  * goes into the same commit.
  */
-export function nextSteps(tgt, { checkIsPlaceholder = false, agentsHasPlaceholder = false, hooksOff = false } = {}) {
+export function nextSteps(tgt, { checkIsPlaceholder = false, agentsHasPlaceholder = false, hooksOff = false, codex = false } = {}) {
   const lines = ["Next steps, before the first /build:"];
   let n = 0;
   const step = (text) => lines.push(`${++n}. ${text}`);
@@ -378,6 +387,8 @@ export function nextSteps(tgt, { checkIsPlaceholder = false, agentsHasPlaceholde
   } else {
     step("This repo has no origin remote. /build makes every worktree from origin/main. Add a remote, then commit the new files and push them to origin/main.");
   }
+  // Codex skips an untrusted project hook, and `codex exec` says nothing about it (Codex CLI 0.172.0).
+  if (codex) step('In Codex, trust this project, then trust the hook "sstack git guard" in /hooks. Until then, Codex skips the guard with no warning. Type $name where these steps say /name.');
   step("Then type /start and say what you want done.");
   return lines;
 }
@@ -462,7 +473,7 @@ ${ALLOW_RULES.filter(([r, plain]) => plain && r.startsWith("Edit(")).map(([, pla
 - \`node\`, \`npm\`, \`npx\`, \`sh\`, \`bash\` or \`python3\` with any argument. They run code that the git guard cannot read.
 - \`gh\` with any argument. \`gh pr merge --admin\` and \`gh api\` skip the merge gate.
 - \`cd\`, \`cp\`, \`mv\` or \`rm\` with any argument.
-- Edits to \`.stack/\`, \`.githooks/\`, \`.claude/hooks/\` and \`.claude/settings*.json\`, in the repo and in each worktree.
+- Edits to \`.stack/\`, \`.githooks/\`, \`.claude/hooks/\`, \`.claude/settings*.json\`, \`.codex/hooks/\` and \`.codex/hooks.json\`, in the repo and in each worktree.
 `;
 
 // Codex: print only (owner ruling). The installer writes no .codex/config.toml and no .codex/rules.
@@ -604,10 +615,9 @@ export function install({ source = DEFAULT_SOURCE, target, tool = "claude", dryR
     log("");
     for (const l of it.hint) log(l);
   }
-  const manual = items.find((i) => i.kind === "manual" && i.src);
-  if (manual) {
+  for (const manual of items.filter((i) => i.kind === "manual" && i.src)) {
     log("");
-    log(`${relative(tgt, manual.dest)} already exists, so it was not changed. Add these entries by hand (merge into the existing "hooks" and "permissions"):`);
+    log(`${relative(tgt, manual.dest)} already exists, so it was not changed. Add these entries by hand (merge into the existing ${manual.merge}):`);
     log(readFileSync(manual.src, "utf8").trimEnd().replace(/^/gm, "    "));
   }
   if (items.some((i) => i.dest.startsWith(join(tgt, ".githooks")))) {
@@ -638,6 +648,7 @@ export function install({ source = DEFAULT_SOURCE, target, tool = "claude", dryR
     checkIsPlaceholder: planned(join(".stack", "check")) || fileHas(join(tgt, ".stack", "check"), CHECK_PLACEHOLDER_MARK),
     agentsHasPlaceholder: (planned("AGENTS.md") && fileHas(join(src, "templates", "AGENTS.md"), AGENTS_PLACEHOLDER_MARK)) || fileHas(join(tgt, "AGENTS.md"), AGENTS_PLACEHOLDER_MARK),
     hooksOff: ["kept", "worktree", "other", "no-git"].includes(hooksPath),
+    codex: tool !== "claude",
   });
   log("");
   for (const l of steps) log(l);

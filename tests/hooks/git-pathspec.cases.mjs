@@ -169,6 +169,7 @@ export const ALLOWED = [
   "git rm .claude/commands/old.md",
   "git restore .claude/agents/a.md",
   "git checkout HEAD -- .claude/skills",
+  "git log -- .codex/hooks.json",
 ];
 
 /** Commands that must be blocked. Each one writes a guard path through git. */
@@ -413,6 +414,8 @@ export const BLOCKED = [
   // A substitution that names the guard path is part of the word, so it is read.
   "git rm $(echo .stack/check)",
   "echo ok; git rm $(git ls-files .stack)",
+  "git checkout -- .codex/hooks.json",
+  "git rm -r .codex/hooks",
 ];
 
 /** Known limits. The text does not name the path, so the policy allows them. The header of git-policy.mjs lists them. */

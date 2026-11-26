@@ -1,7 +1,9 @@
 #!/usr/bin/env node
-// Claude Code PreToolUse hook for the Bash tool. It blocks risky git commands.
+// PreToolUse hook for the Bash tool of Claude Code and Codex. It blocks risky git commands.
 //
 // Input: the hook JSON on stdin. The Bash command is at tool_input.command.
+// Codex CLI sends the same keys and adds turn_id and model. This file reads only
+// tool_input.command and cwd, so one file serves both tools. Codex also blocks on exit code 2.
 // Block: exit code 2 and a message on stderr: what was blocked, why, then a line starting "Fix:".
 // Allow: exit code 0 and no output.
 //
@@ -13,6 +15,7 @@
 //
 // Confirm in Claude Code: stdin shape, exit code 2 semantics and the settings wiring
 // (docs: https://code.claude.com/docs/en/hooks). See templates/claude-settings.json.
+// Codex: templates/codex-hooks.json. Codex runs a project hook only after the user trusts it in /hooks.
 
 import { execFileSync } from "node:child_process";
 import { writeSync } from "node:fs";
