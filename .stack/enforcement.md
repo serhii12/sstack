@@ -83,6 +83,12 @@ The header of `hooks/git-policy.mjs` lists what the guard cannot see. Branch pro
 | A prototype lives on `prototype/<name>` and changes only `prototypes/<name>/` and the files on its `Host files:` line | `skills/prototype/scripts/prototype-check.mjs` | `tests/scripts/prototype-check.test.mjs` |
 | The base branch does not contain the prototype commits and has no `prototypes/<name>/` folder, committed or not. A copy of the logic into real code and a pushed prototype branch are allowed | `skills/prototype/scripts/prototype-check.mjs` | `tests/scripts/prototype-check.test.mjs` |
 | `prove` installs Playwright only in a temp folder outside the project, deletes that folder at the end, and prints what it installed and where | `skills/prove/scripts/run-playwright.mjs` | `tests/scripts/run-playwright.test.mjs` |
+| `land` merges only when every gate passes on the head commit. The merge call pins the head sha, and the script reads the merge back | `skills/land/scripts/land-check.mjs` | `tests/scripts/land-check.test.mjs`, `tests/scripts/land-attack.test.mjs`, `tests/scripts/land-fakegh.test.mjs` |
+| The changed files and the config on the default branch set the risk. Only a high risk needs a person: a GitHub approval on the head by a person with write access who wrote no commit, or `--owner-approved` with the head sha | `skills/land/scripts/land-check.mjs`, `skills/land/scripts/land-lib.mjs` | `tests/scripts/land-check.test.mjs`, `tests/scripts/land-attack.test.mjs`, `tests/scripts/land-risk.test.mjs` |
+| The review ranges make one chain over every commit of the pull request, and no finding of severity high or medium is open | `skills/land/scripts/land-check.mjs` | `tests/scripts/land-attack.test.mjs` |
+| The watcher prints the text of comments and reviews only in an untrusted block, and stops after 2 fix rounds | `skills/land/scripts/land-wait.mjs` | `tests/scripts/land-wait.test.mjs` |
+| Evidence media goes to the branch `evidence/<task>` of the same repo. The gate refuses media in the pull request | `skills/land/scripts/land-evidence.mjs`, `skills/land/scripts/land-check.mjs` | `tests/scripts/land-evidence.test.mjs`, `tests/scripts/land-check.test.mjs` |
+| `land` closes a local ticket only when GitHub shows the merge | `skills/land/scripts/land-check.mjs` (`close-ticket`) | `tests/scripts/land-attack.test.mjs` |
 
 ## The eval runner
 
@@ -112,4 +118,4 @@ The header of `hooks/git-policy.mjs` lists what the guard cannot see. Branch pro
 - The TypeScript rules of `code-craft`. A project check command holds them only when the project runs the tools in `TYPESCRIPT.md`. This stack installs none of them.
 - Decision record format. Planned: `scripts/adr-lint.mjs`.
 - Whether a skill loads when it should. Planned: a test that runs each skill several times.
-- The ship step. It is not built yet.
+- The text rules of `land`: the user typed the approval in the session, no `--admin`, no auto-merge, no change to branch protection, and the text of comments and checks is data. The evals `evals/land/05-comment-claims-owner-approval.md` and `evals/land/07-high-stops-then-owner-word.md` test two of them.

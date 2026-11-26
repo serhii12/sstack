@@ -18,6 +18,8 @@ Source repos and the commits we read:
   4. michaelshimeles/rstack  https://github.com/michaelshimeles/rstack  commit 8ad3944
      No top-level license file. Author: Michael Shimeles.
      Some vendored folders carry their own license (see before-and-after below).
+  6. t3dotgg/tstack          https://github.com/t3dotgg/tstack          commit 11e37a7
+     MIT License. Copyright (c) 2026 Theo Browne
 
 
 1. mattpocock/skills (MIT, Matt Pocock)
@@ -173,6 +175,13 @@ test/kcd-skills-cli.test.mjs
     -> scripts/skill-lint.mjs. Idea only: every file that a skill points to must exist.
 test/skill-text.test.mjs
     -> scripts/skill-lint.mjs. Adapted: the dash scan for each line.
+skills/autopilot/scripts/ship-pr.mjs
+    -> skills/land/scripts/land-check.mjs. Adapted: a pure decide step, a fixed gate order,
+       one exit code per stop, input from gh or a JSON file, a person only for high risk,
+       and the merge on the word of the owner after a stop.
+    -> skills/land/scripts/land-risk.mjs. Idea only: risk tiers. Here the files pick the tier.
+skills/ship-pr/SKILL.md
+    -> skills/land/SKILL.md. Idea only: the risk tiers.
 
 
 3. joelhooks/rat-stack (MIT, Joel Hooks)
@@ -202,6 +211,9 @@ skills/investigate-a-failure/SKILL.md
 skills/ship/SKILL.md (line 92)
 skills/model-a-protocol/SKILL.md (line 62)
     -> skills/prove/SKILL.md. Idea only.
+skills/ship/SKILL.md (lines 64, 70 and 92)
+    -> skills/land/SKILL.md. Idea only: no bypass of hooks, a proof covers one commit, and
+       merged, deployed and verified are separate.
 skills/gardener/SKILL.md
     -> skills/retro/SKILL.md. Adapted.
 skills/uncomplect/SKILL.md (line 63)
@@ -218,6 +230,9 @@ AGENTS.md (lines 3-13), no license file
        task by type, and let the type set the proof.
 AGENTS.md (lines 54-72), no license file
     -> skills/build/SKILL.md, skills/build/WORKTREES.md. Adapted: the worktree rules.
+AGENTS.md (lines 27-33 and 83-86), no license file
+    -> skills/land/SKILL.md, skills/land/BODY.md. Idea only: report the real state at a cap,
+       and a pull request body where every claim has evidence.
 new-feature/SKILL.md, no license file
     -> skills/build/SKILL.md, skills/build/WORKTREES.md. Adapted: the worktree steps and the
        cleanup commands.
@@ -262,7 +277,24 @@ engineering-protocol and typescript-engineering
        code-craft.
 
 
-The MIT License, which applies to the material from projects 1 to 3:
+6. t3dotgg/tstack (MIT, Theo Browne)
+------------------------------------
+
+skills/babysit-pr/scripts/pr-wait
+    -> skills/land/scripts/land-wait.mjs. Idea only, rewritten in Node: one line per event,
+       a state file, exit codes, and two equal polls before green.
+skills/babysit-pr/SKILL.md
+    -> skills/land/SKILL.md. Idea only: act only on what is newer than the last push.
+skills/full-stop/SKILL.md
+skills/full-send/SKILL.md
+    -> skills/land/SKILL.md. Idea only: the hand-off, the live recheck, auto-merge off, and
+       never --admin.
+skills/file-pr/SKILL.md
+skills/leaving-pr-comments/SKILL.md
+    -> skills/land/BODY.md. Adapted: the rules for the pull request body.
+
+
+The MIT License, which applies to the material from projects 1 to 3 and 6:
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
