@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-// ticket-in-work: checks that no other worktree or branch already builds one ticket.
+// ticket-in-work: checks that no other checkout or branch already builds one ticket.
 //
-// Two sessions can run `/build` for the same ticket at the same time, in two worktrees or on
-// two machines. The `build` skill runs this check before it makes a worktree.
+// Two sessions can run `/build` for the same ticket at the same time, in two checkouts of one
+// repo or on two machines. The `build` skill runs this check before it makes or keeps a branch.
 //
 // The skill folder ships to projects. So this file runs from the project root as
 //   node .claude/skills/build/scripts/ticket-in-work.mjs <ticket file | task key>
 // In the stack repo, the path is skills/build/scripts/ticket-in-work.mjs.
 //
-// The task key names the ticket in branch and worktree names:
+// The task key names the ticket in branch and folder names:
 //   - A ticket file gives the title part of its name: `01-slugify.md` gives `slugify`.
 //   - Any other argument is the key itself, for example `issue-42`. It uses lowercase letters,
 //     digits and hyphens.
@@ -23,6 +23,8 @@
 //
 // The current checkout is not other work. If its branch matches the key, the session already
 // builds the ticket here. The remote copies of that branch are not other work either.
+// The current checkout is found by its path, else by its branch. In a container the path that
+// git lists for a linked checkout can be the host path, while the session sees a mount path.
 //
 // Exit codes:
 //   0  no other work on the ticket
@@ -106,8 +108,10 @@ export function checkInWork(key, cwd = process.cwd()) {
     return { code: EXIT.GIT, messages: [`Cannot check the ticket ${key}. Git could not list the worktrees or branches (${wt.err || refs.err}). Fix: run \`git worktree list\` and \`git branch -a\` to see the problem.`], checked: 0 };
   }
   const worktrees = parseWorktrees(wt.out);
-  const current = worktrees.find((w) => real(w.path) === here);
-  const ownBranch = current?.branch ?? null;
+  const head = git(cwd, ["branch", "--show-current"]);
+  const ownBranch = (head.ok && head.out.trim()) || null;
+  // git checks out one branch in one place only, so the entry with our branch is this checkout.
+  const current = worktrees.find((w) => real(w.path) === here) ?? worktrees.find((w) => ownBranch !== null && w.branch === ownBranch);
 
   const messages = [];
   const reported = new Set();
@@ -124,7 +128,7 @@ export function checkInWork(key, cwd = process.cwd()) {
     if (ref.startsWith("refs/heads/")) {
       const b = ref.slice("refs/heads/".length);
       if (b === ownBranch || reported.has(b) || !matchesKey(b, key)) continue;
-      messages.push(`Ticket ${key} is already in work. Local branch ${b} exists. Fix: ask its owner, then continue on \`${b}\` or delete it with \`git branch -D ${b}\`.`);
+      messages.push(`Ticket ${key} is already in work. Local branch ${b} exists. Fix: ask its owner, then switch a clean checkout to \`${b}\` to finish it, or delete it with \`git branch -D ${b}\`.`);
     } else if (ref.startsWith("refs/remotes/")) {
       const rest = ref.slice("refs/remotes/".length);
       const slash = rest.indexOf("/");
@@ -132,7 +136,7 @@ export function checkInWork(key, cwd = process.cwd()) {
       const remote = rest.slice(0, slash);
       const b = rest.slice(slash + 1);
       if (b === "HEAD" || b === ownBranch || !matchesKey(b, key)) continue;
-      messages.push(`Ticket ${key} is already in work. Branch ${b} exists on the remote ${remote}, so another session or machine can be building it. Fix: ask its owner, then continue from \`${remote}/${b}\`.`);
+      messages.push(`Ticket ${key} is already in work. Branch ${b} exists on the remote ${remote}, so another session or machine can be building it. Fix: ask its owner, then switch a clean checkout to \`${b}\` to finish it.`);
     }
   }
   const checked = worktrees.length + names.length;

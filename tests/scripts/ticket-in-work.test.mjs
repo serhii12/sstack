@@ -1,7 +1,7 @@
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync, realpathSync, symlinkSync } from "node:fs";
+import { mkdtempSync, mkdirSync, renameSync, rmSync, writeFileSync, realpathSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -132,6 +132,31 @@ test("exit 0: the current worktree is on the ticket branch, and its remote copy 
   assert.match(r.out, /This checkout is on agent\/slugify-0a1, which matches the ticket/);
 });
 
+test("exit 0: the checkout path differs from the listed path, as in a container, and its own branch is not other work", () => {
+  // In a container, `git rev-parse --show-toplevel` gives the mount path, while `git worktree list`
+  // gives the host path. A moved folder gives the same mismatch.
+  const root = repo();
+  const listed = join(dirname(root), "host", "issue-42");
+  sh(root, "worktree", "add", "-q", "-b", "sandcastle/issue-42", listed, "main");
+  const mounted = join(dirname(root), "mount");
+  renameSync(listed, mounted);
+  const sha = sh(root, "rev-parse", "HEAD").trim();
+  sh(root, "update-ref", "refs/remotes/origin/sandcastle/issue-42", sha);
+  const r = run(["issue-42"], mounted);
+  assert.equal(r.code, EXIT.FREE, r.err);
+  assert.equal(r.err, "");
+  assert.match(r.out, /This checkout is on sandcastle\/issue-42, which matches the ticket/);
+});
+
+test("exit 0: a fresh branch that the agent tool made is not other work, also when its name does not match", () => {
+  const root = repo();
+  const wt = join(root, ".claude", "worktrees", "slugify");
+  sh(root, "worktree", "add", "-q", "-b", "worktree-slugify", wt, "main");
+  const r = run(["slugify"], wt);
+  assert.equal(r.code, EXIT.FREE, r.err);
+  assert.doesNotMatch(r.out, /matches the ticket/);
+});
+
 test("exit 1 from the main checkout when the ticket worktree belongs to another session", () => {
   const root = repo();
   const wt = join(dirname(root), "wt", "slugify-0a1");
@@ -161,8 +186,8 @@ test("exit 3: the folder is not in a git repo", () => {
   assertMessageForm(r.err);
 });
 
-test("exit 1 on a second machine: a branch that the first machine pushed right after its worktree", () => {
-  // This is the flow of `build` step 2: make the worktree, push the branch at once.
+test("exit 1 on a second machine: a branch that the first machine pushed right after it made the branch", () => {
+  // This is the flow of `build` step 2: make the branch, push it at once.
   const base = realpathSync(mkdtempSync(join(tmpdir(), "ticket-in-work-push-")));
   dirs.push(base);
   const origin = join(base, "origin.git");
