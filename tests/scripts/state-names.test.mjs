@@ -20,6 +20,8 @@ import * as landLib from "../../skills/land/scripts/land-lib.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
+/** The end of each message about a heading, a line or a column that the test reads to find a list. */
+const ANCHOR = "This test reads that text to find the list. If you changed it on purpose, change tests/scripts/state-names.test.mjs in the same commit.";
 
 // ---------------------------------------------------------------------------
 // Markdown helpers. They read text only.
@@ -43,7 +45,7 @@ function section(text, heading, file) {
   const level = /^#+/.exec(heading)[0].length;
   const lines = scan(text);
   const start = lines.findIndex((l) => !l.fence && l.t.startsWith(heading));
-  assert.ok(start >= 0, `${file} has no heading that starts with "${heading}"`);
+  assert.ok(start >= 0, `${file} has no heading that starts with "${heading}". ${ANCHOR}`);
   const out = [];
   for (const l of lines.slice(start + 1)) {
     const m = /^(#+)\s/.exec(l.t);
@@ -53,24 +55,31 @@ function section(text, heading, file) {
   return out.join("\n");
 }
 
-/** The body rows of the Markdown tables in a text, as arrays of trimmed cells. */
+/** The body rows of the Markdown tables in a text, as arrays of trimmed cells. Each row keeps the header cells of its table in `header`. */
 function tableRows(text) {
   const rows = [];
-  let header = true;
+  let header = null;
   for (const l of scan(text)) {
     if (l.fence || !l.t.trim().startsWith("|")) {
-      header = true;
+      header = null;
       continue;
     }
     const cells = l.t.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
     if (cells.every((c) => /^:?-{3,}:?$/.test(c))) continue;
-    if (header) {
-      header = false;
+    if (header === null) {
+      header = cells;
       continue;
     }
-    rows.push(cells);
+    rows.push(Object.assign(cells, { header }));
   }
   return rows;
+}
+
+/** The cell of a row in the column with this header. A new column elsewhere in the table does not move it. */
+function col(row, name, file) {
+  const i = row.header.indexOf(name);
+  assert.ok(i >= 0, `${file}: a table has no column "${name}". Its columns are ${list(row.header)}. ${ANCHOR}`);
+  return row[i] ?? "";
 }
 
 /** The first fenced code block of a text, without its fence lines. */
@@ -141,12 +150,31 @@ test("T1: each row of the map that names an export lists the same states as that
         const [, name, path] = m;
         const mod = await import(mapPath(path));
         assert.ok(name in mod, `${MAP} (row "${row[0]}") names ${name} in ${path}, and that script does not export it`);
-        sameNames(ticks(row[1]), exportNames(mod[name]), `${MAP} (row "${row[0]}")`, `${name} in ${path}`);
+        sameNames(ticks(col(row, "States", MAP)), exportNames(mod[name]), `${MAP} (row "${row[0]}")`, `${name} in ${path}`);
         checked++;
       }
     }
   }
   assert.ok(checked >= 20, `${MAP}: the test checked only ${checked} rows against an export`);
+});
+
+test("T1: each name in backticks that the map lists with no export is a name that a skill or script writes", () => {
+  const skills = join(ROOT, "skills");
+  const text = readdirSync(skills, { recursive: true })
+    .filter((p) => /\.(md|mjs)$/.test(p) && join("skills", p) !== MAP)
+    .map((p) => readFileSync(join(skills, p), "utf8"))
+    .join("\n");
+  let checked = 0;
+  for (const row of tableRows(read(MAP))) {
+    if (row.some((cell) => /`[A-Z][A-Z_]+` in `[^`]+\.mjs`/.test(cell))) continue;
+    for (const name of ticks(col(row, "States", MAP))) {
+      // The name must stand alone: a longer word or a longer value that starts with it does not count.
+      const alone = new RegExp(`(?:^|[\\s\`(|*])${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=$|[\`|,.)])`, "m");
+      assert.ok(alone.test(text), `${MAP} (row "${row[0]}") names \`${name}\`, and no file under skills/ writes that name. Fix: use the name of the skill, or change both in the same commit.`);
+      checked++;
+    }
+  }
+  assert.ok(checked >= 5, `${MAP}: the test checked only ${checked} names of rows with no export`);
 });
 
 test("T2: each command that the map names is a skill folder, and each script that it names exists", () => {
@@ -229,8 +257,8 @@ const priorityRange = (text) => {
 
 test("T7: the label tables of triage and friction name the CATEGORIES, STATES and PRIORITIES of triage-check.mjs", () => {
   const skill = read("skills/triage/SKILL.md");
-  const rows = tableRows(skill).filter((r) => ["category", "state", "priority"].includes(r[1]));
-  const of = (role) => rows.filter((r) => r[1] === role).flatMap((r) => (role === "priority" ? priorityRange(r[0]) : ticks(r[0])));
+  const rows = tableRows(skill).filter((r) => ["category", "state", "priority"].includes(r[r.header.indexOf("Kind")]));
+  const of = (role) => rows.filter((r) => r[r.header.indexOf("Kind")] === role).flatMap((r) => (role === "priority" ? priorityRange(r[0]) : ticks(r[0])));
   sameNames(of("category"), triage.CATEGORIES, "skills/triage/SKILL.md (label table)", `CATEGORIES in ${TRIAGE}`);
   sameNames(of("state"), triage.STATES, "skills/triage/SKILL.md (label table)", `STATES in ${TRIAGE}`);
   sameNames(of("priority"), triage.PRIORITIES, "skills/triage/SKILL.md (label table)", `PRIORITIES in ${TRIAGE}`);
@@ -238,7 +266,10 @@ test("T7: the label tables of triage and friction name the CATEGORIES, STATES an
   assert.ok(category, "skills/triage/SKILL.md has no `Category: <...>` line");
   sameNames(category[1].split("|").map((x) => x.trim()), triage.CATEGORIES, "skills/triage/SKILL.md (Category line)", `CATEGORIES in ${TRIAGE}`);
 
-  const roles = section(read("skills/triage/TRACKERS.md"), "## Labels on every tracker", "skills/triage/TRACKERS.md").split(/\.\s/)[0];
+  // The sentence that lists the roles: the first one that names a triage state.
+  const sentences = section(read("skills/triage/TRACKERS.md"), "## Labels on every tracker", "skills/triage/TRACKERS.md").split(/\.\s/);
+  const roles = sentences.find((s) => ticks(s).some((t) => triage.STATES.includes(t)));
+  assert.ok(roles, `skills/triage/TRACKERS.md (Labels on every tracker) has no sentence that lists the roles. ${ANCHOR}`);
   sameNames(ticks(roles).filter((x) => !/^P\d$/.test(x)), [...triage.CATEGORIES, ...triage.STATES], "skills/triage/TRACKERS.md (Labels on every tracker)", `CATEGORIES and STATES in ${TRIAGE}`);
   sameNames(priorityRange(roles), triage.PRIORITIES, "skills/triage/TRACKERS.md (Labels on every tracker)", `PRIORITIES in ${TRIAGE}`);
 
@@ -288,7 +319,7 @@ test("T10: every text that tells the agent how to write no blocker in triage giv
 test("T9: the Status words of local reports, tickets and the local tracker are the REPORT_STATUSES of triage-check.mjs", () => {
   const trackers = read("skills/triage/TRACKERS.md");
   const rule = trackers.split("\n").find((l) => l.startsWith("The `Status:` line says only"));
-  assert.ok(rule, "skills/triage/TRACKERS.md has no line \"The `Status:` line says only ...\"");
+  assert.ok(rule, `skills/triage/TRACKERS.md has no line "The \`Status:\` line says only ...". ${ANCHOR}`);
   sameNames(ticks(rule.split(/\.\s/)[0]).filter((t) => t !== "Status:"), triage.REPORT_STATUSES, "skills/triage/TRACKERS.md (Status rule)", `REPORT_STATUSES in ${TRIAGE}`);
   const values = [
     ["skills/triage/TRACKERS.md (report template)", firstFence(section(trackers, "## Local files", "skills/triage/TRACKERS.md"), "skills/triage/TRACKERS.md")],
@@ -344,7 +375,7 @@ test("T12: the severity words of peer-review are the SEVERITIES of land-check.mj
   assert.ok(line, `${PEER}: the findings template has no Severity line`);
   sameNames(line[1].split("|").map((x) => x.trim()), landCheck.SEVERITIES, `${PEER} (template Severity line)`, `SEVERITIES in ${LAND_CHECK}`);
   const rule = scan(step).find((l) => !l.fence && l.t.includes("`Severity:` value"));
-  assert.ok(rule, `${PEER}: step 5 has no sentence that lists the \`Severity:\` values`);
+  assert.ok(rule, `${PEER}: step 5 has no sentence that lists the \`Severity:\` values. ${ANCHOR}`);
   sameNames(ticks(rule.t).filter((t) => t !== "Severity:"), landCheck.SEVERITIES, `${PEER} (step 5 severity sentence)`, `SEVERITIES in ${LAND_CHECK}`);
   for (const s of landCheck.SEVERITIES) {
     const r = landCheck.parseReview(template.replace(/^Severity: .+$/m, `Severity: ${s}`));
@@ -385,13 +416,16 @@ function gateStatesOf(code) {
 test("T13: the land-check exit table of REFERENCE.md has one row per EXIT value, with the state of gateState()", () => {
   const rows = tableRows(section(read(LAND_REF), "## Exit codes of land-check.mjs", LAND_REF));
   const seen = [];
-  for (const [exit, , state] of rows) {
-    for (const code of codes(exit)) {
+  for (const row of rows) {
+    for (const code of codes(row[0])) {
       seen.push(code);
-      sameNames(stateWords(state), gateStatesOf(code), `${LAND_REF} (exit ${code}, State column)`, `gateState() in ${LAND_CHECK}`);
+      sameNames(stateWords(col(row, "State", LAND_REF)), gateStatesOf(code), `${LAND_REF} (exit ${code}, State column)`, `gateState() in ${LAND_CHECK}`);
     }
   }
   sameNames(seen.map(String), Object.values(landCheck.EXIT).map(String), `${LAND_REF} (Exit codes of land-check.mjs)`, `EXIT in ${LAND_CHECK}`);
+  // REFERENCE says that the exit code is the first failure in this table, so the gate rows keep the order of the script.
+  const order = seen.filter((c) => landCheck.ORDER.includes(c));
+  assert.deepEqual(order, landCheck.ORDER, `${LAND_REF} (Exit codes of land-check.mjs) lists the gates in the order ${order.join(", ")}. ORDER in ${LAND_CHECK} is ${landCheck.ORDER.join(", ")}. Fix: change both in the same commit.`);
   const step8 = section(read(LAND_SKILL), "## 8.", LAND_SKILL);
   for (const m of step8.matchAll(/^- Exit (\d+):/gm)) assert.ok(Object.values(landCheck.EXIT).includes(Number(m[1])), `${LAND_SKILL} (step 8) names exit ${m[1]}, and EXIT in ${LAND_CHECK} has no such code`);
 });
@@ -407,8 +441,10 @@ test("T13: the gate state says who acts next: the user for open findings, and no
 test("T14: the watcher exit tables name the codes, names and kept flags of OUTCOMES in land-wait.mjs", () => {
   const rows = tableRows(section(read(LAND_REF), "## Exit codes of land-wait.mjs", LAND_REF));
   const seen = [];
-  for (const [exit, name, , kept] of rows) {
-    for (const code of codes(exit)) {
+  for (const row of rows) {
+    const name = col(row, "Name", LAND_REF);
+    const kept = col(row, "Kept until `--ack`", LAND_REF);
+    for (const code of codes(row[0])) {
       seen.push(code);
       const o = landWait.OUTCOMES[code];
       if (!name) continue;
@@ -434,7 +470,7 @@ function leaves(cell) {
 }
 
 /** The run states of REFERENCE.md: [{ state, leaves }]. */
-const runStates = () => tableRows(section(read(LAND_REF), "## States of a land run", LAND_REF)).map(([state, , to]) => ({ state, leaves: leaves(to) }));
+const runStates = () => tableRows(section(read(LAND_REF), "## States of a land run", LAND_REF)).map((row) => ({ state: row[0], leaves: leaves(col(row, "Leaves to", LAND_REF)) }));
 
 test("T15: the moves of a land run agree with gateState() of land-check.mjs and the exits of land-wait.mjs", () => {
   const runs = runStates();
@@ -457,12 +493,12 @@ test("T15: the moves of a land run agree with gateState() of land-check.mjs and 
   sameNames(watched.map(String), stops.map(String), `${LAND_REF} (the moves of "waiting")`, `EXIT in ${LAND_WAIT}`);
   const row = tableRows(read(MAP)).find((r) => r[0] === "Land run");
   assert.ok(row, `${MAP} has no "Land run" row`);
-  sameNames(row[1].split(",").map((x) => x.trim()), names, `${MAP} (row "Land run")`, `${LAND_REF} (States of a land run)`);
+  sameNames(col(row, "States", MAP).split(",").map((x) => x.trim()), names, `${MAP} (row "Land run")`, `${LAND_REF} (States of a land run)`);
 });
 
 test("T16: each table that REFERENCE.md names is an export of the script that it names", () => {
   const line = read(LAND_REF).split("\n").find((l) => l.startsWith("The scripts hold these tables:"));
-  assert.ok(line, `${LAND_REF} has no line "The scripts hold these tables:"`);
+  assert.ok(line, `${LAND_REF} has no line "The scripts hold these tables:". ${ANCHOR}`);
   const modules = { "land-check.mjs": landCheck, "land-wait.mjs": landWait, "land-lib.mjs": landLib };
   let pending = [];
   for (const t of ticks(line.split(/\.\s/)[0])) {
@@ -511,9 +547,13 @@ test("T20: a planned fence names a path that the installer can copy: inside the 
 test("T19: the three files that list the forms of a decision record status agree", () => {
   const forms = (text) => [...text.matchAll(/\*\*Status:\*\* (proposed|accepted|superseded by NNNN)/g)].map((m) => m[1]);
   const table = forms(section(read("skills/domain-memory/ADR-FORMAT.md"), "## Status", "skills/domain-memory/ADR-FORMAT.md"));
-  const rule = forms(read("skills/domain-memory/SKILL.md").split("\n").find((l) => l.includes("exactly one of these forms")) ?? "");
+  const ruleLine = read("skills/domain-memory/SKILL.md").split("\n").find((l) => l.includes("exactly one of these forms"));
+  assert.ok(ruleLine, `skills/domain-memory/SKILL.md has no line with "exactly one of these forms". ${ANCHOR}`);
   const template = forms(read("templates/adr/0000-template.md"));
   assert.equal(table.length, 3, "skills/domain-memory/ADR-FORMAT.md (## Status) must list three status forms");
-  sameNames(rule, table, "skills/domain-memory/SKILL.md (status rule)", "skills/domain-memory/ADR-FORMAT.md (## Status)");
+  sameNames(forms(ruleLine), table, "skills/domain-memory/SKILL.md (status rule)", "skills/domain-memory/ADR-FORMAT.md (## Status)");
   sameNames(template, table, "templates/adr/0000-template.md", "skills/domain-memory/ADR-FORMAT.md (## Status)");
+  const row = tableRows(read(MAP)).find((r) => r[0] === "Decision record");
+  assert.ok(row, `${MAP} has no "Decision record" row`);
+  sameNames(ticks(col(row, "States", MAP)), table, `${MAP} (row "Decision record")`, "skills/domain-memory/ADR-FORMAT.md (## Status)");
 });

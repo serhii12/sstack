@@ -85,7 +85,7 @@ export const EXIT = {
 };
 
 // The order in which gates report. The exit code is the code of the first failure in this list.
-const ORDER = [10, 11, 13, 22, 12, 14, 17, 15, 16, 18, 19, 20, 28, 23, 21];
+export const ORDER = [10, 11, 13, 22, 12, 14, 17, 15, 16, 18, 19, 20, 28, 23, 21];
 const WRITE_ASSOCIATION = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
 const WRITE_PERMISSION = new Set(["admin", "maintain", "write"]);
 const MEDIA = /\.(png|jpe?g|gif|webp|avif|bmp|tiff?|svg|mp4|mov|webm|mkv|avi|m4v)$/i;
