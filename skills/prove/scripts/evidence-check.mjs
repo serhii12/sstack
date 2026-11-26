@@ -160,16 +160,17 @@ function git(cwd, args) {
 
 // ---------- the ticket ----------
 
-/** Read the `## Acceptance checks` list. Returns the check texts in order. */
+/** Read the `## Acceptance checks` list. A triage brief writes `###`. Returns the check texts in order. */
 export function parseAcceptanceChecks(text) {
   const lines = text.split(/\r?\n/);
   // A heading inside a code block is an example, not the section.
   let inFence = false;
   const start = lines.findIndex((l) => {
     if (/^\s*(```|~~~)/.test(l)) inFence = !inFence;
-    return !inFence && /^##\s+Acceptance checks\s*$/i.test(l);
+    return !inFence && /^###?\s+Acceptance checks\s*$/i.test(l);
   });
   if (start === -1) return null;
+  const level = /^#+/.exec(lines[start])[0].length;
   const items = [];
   let fence = false;
   for (let i = start + 1; i < lines.length; i++) {
@@ -179,7 +180,8 @@ export function parseAcceptanceChecks(text) {
       continue;
     }
     if (fence) continue;
-    if (/^##\s/.test(l)) break;
+    const h = /^(#+)\s/.exec(l);
+    if (h && h[1].length <= level) break;
     const m = /^\s*[-*]\s+\[[ xX]\]\s+(.*\S)\s*$/.exec(l);
     if (m) items.push(m[1]);
     // An indented line, a nested bullet too, belongs to the check above it. tickets-lint.mjs accepts

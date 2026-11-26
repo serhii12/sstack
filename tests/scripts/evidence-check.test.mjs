@@ -329,6 +329,11 @@ test("an Acceptance checks heading inside a code block is an example, not the se
   withProject((p) => assertProblem(mutate(p, (i) => (i.checks = [{ check: "example check", status: "untested", reason: "x" }])), "check-missing", C1), { ticket });
 });
 
+test("a triage brief with `### Acceptance checks` is read, and the next `###` heading ends the list", () => {
+  const ticket = TICKET.replace("## Acceptance checks", "## Agent Brief\n\n### Acceptance checks").replace("## Comments", "### Out of scope\n\n- [ ] not a check\n\n## Comments");
+  withProject((p) => assert.equal(run(p).code, 0, run(p).err), { ticket });
+});
+
 test("a ticket check that wraps over two lines is one check", () => {
   const ticket = TICKET.replace(`- [ ] ${C2}`, `- [ ] slugify returns\n  hello-world for Hello World`);
   withProject((p) => assert.equal(run(p).code, 0, run(p).err), { ticket });
