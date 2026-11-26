@@ -1,6 +1,6 @@
 # Output format
 
-Write the report to `.artifacts/improve-codebase/report.md`, in this shape. `scripts/survey-lint.mjs` checks the shape.
+Write the report to `.artifacts/improve-codebase/report.md`, in this shape. Keep a `.gitignore` with the one line `*` in the same folder, so that git ignores the report. `scripts/survey-lint.mjs` checks the shape.
 
 ```markdown
 # Improve codebase report
@@ -31,7 +31,7 @@ C1: <one reason>
 
 ## Next command
 
-Type `/grill C1: <title>` in a fresh session.
+Reply with a candidate, such as `C1`, to grill it in this session. In a later session, type `/grill C1: <title>`.
 ```
 
 ## Fields

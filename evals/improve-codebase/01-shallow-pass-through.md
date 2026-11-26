@@ -6,6 +6,8 @@
 /improve-codebase src
 ```
 
+Turn 2: `C1`
+
 ## Setup
 
 - A fresh git repo with the stack installed and one setup commit.
@@ -19,15 +21,18 @@
 - [ ] The report at `.artifacts/improve-codebase/report.md` names `order-service.mjs` in the Files field of a candidate.
 - [ ] The problem says that the service fails the deletion test, or calls it shallow or a pass-through.
 - [ ] `survey-lint` passes on the report.
-- [ ] No source file changes. The only new file is the report.
-- [ ] The reply ends with the next command, `/grill`, for one candidate.
+- [ ] No source file changes. The report folder holds a `.gitignore` with `*`, so git shows no new file.
+- [ ] The turn 1 reply asks "Which of these would you like to explore?" and stops. It does not load `grill` in turn 1.
+- [ ] Turn 2: the agent loads `grill` and starts round 1 on C1, with the round status line.
 
 ## Failure looks like
 
 - The agent scans the code itself and starts no subagent.
 - The agent merges the modules or edits a test.
 - The report misses the pass-through service.
-- The agent starts a grill or asks which candidate to explore.
+- The report shows in `git status` as an untracked file.
+- The agent starts a grill in turn 1, before the user picks a candidate.
+- Turn 2 tells the user to type `/grill` in a fresh session and grills nothing.
 
 ## Checks
 
@@ -87,19 +92,37 @@
   "set": "regression",
   "assert": {
     "skillLoaded": [
-      "improve-codebase",
-      "code-craft"
+      {
+        "name": "improve-codebase",
+        "turn": 1
+      },
+      {
+        "name": "code-craft",
+        "turn": 1
+      },
+      {
+        "name": "grill",
+        "turn": 2
+      }
     ],
     "skillNotLoaded": [
-      "grill"
+      {
+        "name": "grill",
+        "turn": 1
+      }
     ],
     "fileExists": [
-      ".artifacts/improve-codebase/report.md"
+      ".artifacts/improve-codebase/report.md",
+      ".artifacts/improve-codebase/.gitignore"
     ],
     "fileMatches": [
       {
         "path": ".artifacts/improve-codebase/report.md",
         "pattern": "/Files:[\\s\\S]{0,300}?order-service\\.mjs/i"
+      },
+      {
+        "path": ".artifacts/improve-codebase/.gitignore",
+        "pattern": "/^\\*\\s*$/m"
       }
     ],
     "scriptPasses": [
@@ -110,12 +133,14 @@
       }
     ],
     "onlyFilesChanged": [
-      ".artifacts/improve-codebase/**"
+      "GLOSSARY.md",
+      "docs/adr/**"
     ],
     "toolCalled": [
       {
         "name": "Agent",
-        "inputMatches": "You scan code and report"
+        "inputMatches": "You scan code and report",
+        "turn": 1
       }
     ],
     "toolOrder": [
@@ -124,23 +149,46 @@
         "after": {
           "name": "Write",
           "inputMatches": "improve-codebase/report\\.md"
-        }
+        },
+        "turn": 1
       }
     ],
     "toolNotCalled": [
       {
         "name": "Write",
-        "inputMatches": "\"file_path\":\"(?![^\"]*\\.artifacts/improve-codebase/)"
+        "inputMatches": "\"file_path\":\"(?![^\"]*\\.artifacts/improve-codebase/)",
+        "turn": 1
       },
       {
         "name": "Edit",
-        "inputMatches": "\"file_path\":\"(?![^\"]*\\.artifacts/improve-codebase/)"
+        "inputMatches": "\"file_path\":\"(?![^\"]*\\.artifacts/improve-codebase/)",
+        "turn": 1
+      },
+      {
+        "name": "Write",
+        "inputMatches": "\"file_path\":\"[^\"]*(?:src|tests)/",
+        "turn": 2
+      },
+      {
+        "name": "Edit",
+        "inputMatches": "\"file_path\":\"[^\"]*(?:src|tests)/",
+        "turn": 2
       }
     ],
     "outputMatches": [
-      "/grill"
+      {
+        "pattern": "/Which of these would you like to explore\\?/i",
+        "turn": 1
+      },
+      {
+        "pattern": "/Round 1\\. [0-9]+ questions?\\./",
+        "turn": 2
+      }
     ]
-  }
+  },
+  "turns": [
+    "C1"
+  ]
 }
 ```
 
@@ -150,4 +198,7 @@ Not machine-checked: whether only one subagent ran, and whether the rank is righ
 - If no `Agent` call holds the first line of the brief, `toolCalled` fails.
 - If no `Agent` call comes before the first `Write` of the report, `toolOrder` fails.
 - If the report breaks its shape, `scriptPasses` fails.
-- If any file outside `.artifacts/improve-codebase/` changes, `onlyFilesChanged` and `toolNotCalled` fail.
+- If git sees the report as a new file, or any file other than the glossary and the decision records changes, `onlyFilesChanged` fails. The runner lists new files with `git ls-files --others --exclude-standard`, so an ignored report does not count.
+- If turn 1 writes outside `.artifacts/improve-codebase/`, or turn 2 edits code or tests, `toolNotCalled` fails.
+- If turn 1 does not ask the question, or loads `grill`, the turn 1 `outputMatches` or `skillNotLoaded` check fails.
+- If turn 2 does not load `grill` and start round 1, the turn 2 checks fail.
