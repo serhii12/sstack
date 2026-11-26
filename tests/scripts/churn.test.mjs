@@ -237,6 +237,18 @@ test("--since shows the date that git read, so a date that git cannot read is vi
   });
 });
 
+test("--since shows the same date in every time zone, also where the UTC date is a different day", () => {
+  // At each hour, the local date at UTC-12 or at UTC+14 is not the UTC date. So one of the two zones always tests the gap.
+  withRepo((dir) => {
+    commit(dir, { "new.mjs": "1" }, { date: new Date().toISOString() });
+    for (const TZ of ["Etc/GMT+12", "Etc/GMT-14", "UTC"]) {
+      const r = cli(["--since", "2020-03-04"], { cwd: dir, env: { TZ } });
+      assert.equal(r.status, EXIT.OK, r.stderr);
+      assert.match(r.stdout, /since 2020-03-04 \(git reads it as 2020-03-04\)/, TZ);
+    }
+  });
+});
+
 test("exit 1: the window holds no file that still exists", () => {
   withRepo((dir) => {
     commit(dir, { "a.mjs": "1" });

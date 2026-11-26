@@ -89,6 +89,12 @@ function isFile(p) {
   }
 }
 
+// git reads a --since date in the local time zone, so the header shows the local date, not the UTC date.
+function localDate(d) {
+  const two = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
+}
+
 /** Count commits per file. Returns { top, commits, files: [{ path, count }] }. */
 export function churn(dirArg, { commits = DEFAULT_COMMITS, since } = {}) {
   const dir = resolve(dirArg ?? ".");
@@ -113,7 +119,7 @@ export function churn(dirArg, { commits = DEFAULT_COMMITS, since } = {}) {
     args.push(`--since=${since}`);
     // git never refuses a date. It reads text that it does not know as "now", and a year that is too large as this year.
     const age = /^--max-age=(\d+)$/m.exec(git(root, ["rev-parse", `--since=${since}`]).out);
-    if (age) sinceDate = new Date(Number(age[1]) * 1000).toISOString().slice(0, 10);
+    if (age) sinceDate = localDate(new Date(Number(age[1]) * 1000));
   } else args.push("-n", String(commits));
   args.push("HEAD", "--");
   const log = git(root, args);
