@@ -14,7 +14,7 @@ Date: <YYYY-MM-DD>
 Rank: Strong | Worth a look | Speculative
 Files: `<path>`, `<path>`
 Problem: <the problem in code-craft terms, with the result of the deletion test>
-Module boundary: <the proposed module boundary and the interface behind it>
+Module boundary: <the proposed module boundary, the interface behind it, and the gain in depth and locality>
 Tests that change: <the tests to write at the new interface, and the old tests to delete after>
 Do not: <what not to do with this candidate>
 
@@ -42,7 +42,7 @@ Type `/grill C1: <title>` in a fresh session.
   - Speculative: a possible problem with weak signs.
 - Files lists files that exist now, with the path from the project root. A folder is not enough, so name the files of the module. Name a new file only in `Module boundary:`.
 - Problem uses the terms of `code-craft`: shallow, deep, deletion test, locality, adapter, module boundary, or a rule of `RULES.md`.
-- Module boundary says where the interface goes and what it hides. Propose no code.
+- Module boundary says where the interface goes and what it hides. It also says what callers and tests gain in depth and locality. Propose no code.
 - Tests that change names the tests at the new interface. It also names the old tests that the change replaces. See "replace, do not layer" in `code-craft`.
 - Do not names one wrong move for this candidate. Examples are a port with one adapter, or a merge of modules that change for different reasons.
 
