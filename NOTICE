@@ -110,8 +110,7 @@ skills/engineering/implement/SKILL.md
 skills/engineering/implement-spec/SKILL.md
     -> skills/build/SKILL.md. Idea only.
 docs/engineering/implement.md
-    -> skills/build/SKILL.md, skills/build/WORKTREES.md. Ideas, and a field report close
-       to the source.
+    -> skills/build/SKILL.md. Ideas, and a field report close to the source.
 skills/engineering/tdd/SKILL.md
     -> skills/test-craft/SKILL.md. Adapted. One of the two bases of the skill.
 skills/engineering/tdd/tests.md
@@ -229,13 +228,12 @@ AGENTS.md (lines 3-13), no license file
     -> skills/start/SKILL.md, skills/prove/SKILL.md, templates/AGENTS.md. Idea only: sort the
        task by type, and let the type set the proof.
 AGENTS.md (lines 54-72), no license file
-    -> skills/build/SKILL.md, skills/build/WORKTREES.md. Adapted: the worktree rules.
+    -> skills/build/SKILL.md. Adapted: the rules for ports, lockfiles and one checkout per task.
 AGENTS.md (lines 27-33 and 83-86), no license file
     -> skills/land/SKILL.md, skills/land/BODY.md. Idea only: report the real state at a cap,
        and a pull request body where every claim has evidence.
 new-feature/SKILL.md, no license file
-    -> skills/build/SKILL.md, skills/build/WORKTREES.md. Adapted: the worktree steps and the
-       cleanup commands.
+    -> skills/build/SKILL.md. Adapted: the sync, scope check, naming and check steps.
 evidence-driven-testing/SKILL.md, no license file
 evidence-driven-testing/scripts/evidence.py, no license file
     -> skills/prove/SKILL.md, skills/prove/CAPTURE.md (the Playwright recipe, from the
