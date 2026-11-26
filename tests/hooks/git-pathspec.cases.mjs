@@ -421,6 +421,7 @@ export const BLOCKED = [
 /** Known limits. The text does not name the path, so the policy allows them. The header of git-policy.mjs lists them. */
 export const KNOWN_OPEN = [
   "git restore .",
+  "git checkout -- .codex/",
   "git checkout -f other-branch",
   "git reset --hard HEAD~3",
   "git checkout-index -a -f",

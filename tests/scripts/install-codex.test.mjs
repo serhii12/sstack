@@ -150,7 +150,7 @@ test("--tool codex: no Claude Code rules and no Claude version note are printed,
     const text = out.join("\n");
     assert.doesNotMatch(text, /Permissions for Claude Code/);
     assert.doesNotMatch(text, /onFailure: block/);
-    assert.match(text, /Permissions for Codex\. The installer wrote no Codex config file\./);
+    assert.match(text, /Permissions for Codex\. The installer wrote no \.codex\/config\.toml and no \.codex\/rules\/ file\./);
     assert.match(text, /docs\/agents\/permissions\.md/);
     for (const f of [".codex/config.toml", ".codex/rules"]) assert.equal(existsSync(join(target, f)), false, f);
     assert.match(readFileSync(join(target, "docs/agents/permissions.md"), "utf8"), /`node \.agents\/skills\/<skill>\/scripts\/<script>\.mjs`/);

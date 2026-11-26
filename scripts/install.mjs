@@ -465,7 +465,7 @@ export const STARTER_PERMISSIONS = `# Permissions
 
 The stack runs the commands below and writes the files below. If your agent tool asks before each command, allow these. If not, an unattended run stops at each one, and the first /build stops many times.
 
-For Claude Code, the installer printed the same list in the syntax of Claude Code. It wrote no settings file. You decide what to allow.
+With \`--tool claude\` or \`--tool both\`, the installer printed the same list in the syntax of Claude Code. It wrote no settings file. You decide what to allow.
 
 ## Commands
 
@@ -489,7 +489,7 @@ ${ALLOW_RULES.filter(([r, plain]) => plain && r.startsWith("Edit(")).map(([, pla
 
 // Codex: print only (owner ruling). The installer writes no .codex/config.toml and no .codex/rules.
 export const CODEX_PERMISSION_LINES = [
-  "Permissions for Codex. The installer wrote no Codex config file. You decide.",
+  "Permissions for Codex. The installer wrote no .codex/config.toml and no .codex/rules/ file. You decide.",
   "docs/agents/permissions.md lists the commands that the stack runs and the files that it writes.",
 ];
 

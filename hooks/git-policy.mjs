@@ -25,7 +25,7 @@
 //     folder is followed, so `cd .git && rm -rf hooks` is blocked. A `cd` in a subshell is read as if it applies to the rest.
 //   - Writes that do not name a protected path: `find . -delete`, `rm -rf .`, `cp -a x/. .`, `rsync -a x/ .git/`,
 //     `tar -x -C .claude`, `H=.stack; rm $H/x` (an assignment of .git/hooks is blocked, of a guard path is not).
-//     `rm`, `mv` and `chmod -R` on the whole folder `.git` or `.claude` are blocked, but `cp -r x .claude` and `rsync --delete` are not.
+//     `rm`, `mv` and `chmod -R` on the whole folder `.git`, `.claude` or `.codex` are blocked, but `cp -r x .claude` and `rsync --delete` are not.
 //   - A guard path that an expansion builds from parts: `rm -rf .sta$(true)ck`, `rm -rf .sta$X`, `$(echo rm) -rf .stack`.
 //     A `$(...)` or backtick text is joined to its word, so `rm $(git rev-parse --show-toplevel)/.stack` is read.
 //   - A link made earlier, or by a program the policy does not know, and written later: `ln -s .stack /tmp/l` is
@@ -38,7 +38,7 @@
 //   - Git commands that name a guard path as a pathspec are blocked when they change it: checkout, restore, rm, mv,
 //     clean, reset, checkout-index, stash push, apply and am with --directory, and --output or -o file options.
 //     A work tree set to a guard folder is blocked. These stay open, because the text does not name a guard path:
-//       * A pathspec of `.` or of a parent folder that holds guard files (`git restore .`, `git rm -r .claude`).
+//       * A pathspec of `.` or of a parent folder that holds guard files (`git restore .`, `git rm -r .claude`, `git checkout -- .codex/`).
 //       * Commands that write the work tree from a source that is not a pathspec: `git checkout -f <branch>`,
 //         `git reset --hard <commit>`, `git switch -f`, `git checkout-index -a`, `git stash pop`, `git merge`,
 //         `git pull`, `git rebase`, `git cherry-pick`, and `git apply` or `git am` with a patch that holds a guard file.
