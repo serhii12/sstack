@@ -108,7 +108,7 @@ For `ready-for-agent`, ask first, as Matt's skill does when no grill ran. Our tr
 - Ask: "Do you want me to write an agent brief?" Then stop. Change no label and post nothing before the answer.
 - If the answer is yes, write the brief as [BRIEF.md](BRIEF.md) says. Set the state after the brief exists.
 - If the answer is no, push back once. The check needs a brief. With no brief, the build gets no acceptance checks.
-- If the maintainer still says no, set the state with no brief. Run the check and report that it fails.
+- If the maintainer still says no, set the state with no brief. Run the check. It prints a `brief` problem. Do not fix that problem. Report that the check fails because the issue has no brief.
 
 Held by: evals/triage/06-quick-override-asks-brief.md
 
