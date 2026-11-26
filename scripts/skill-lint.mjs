@@ -236,9 +236,6 @@ export function lint(rootArg) {
     if (lines.length > MAX_LINES) {
       add(file, MAX_LINES + 1, "max-lines", `SKILL.md has ${lines.length} lines (limit ${MAX_LINES})`, "move long reference material to a file beside SKILL.md and link to it.");
     }
-    if (!lines.some((l) => !l.fence && /^##\s+Provenance\s*$/.test(l.t))) {
-      add(file, 1, "provenance", "no `## Provenance` section", "add a `## Provenance` section naming each source file, repo, license, copyright holder and what changed.");
-    }
     for (const l of lines) {
       if (l.t.includes("\u2014") || l.t.includes("\u2013")) {
         add(file, l.n, "dash", `${l.t.includes("\u2014") ? "em" : "en"} dash found`, "use a period, comma, colon or parentheses.");

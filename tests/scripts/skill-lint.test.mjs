@@ -312,11 +312,6 @@ test("text: semicolon in prose fails, in inline code or code block passes", () =
   assert.deepEqual(rules(ok, "semicolon"), []);
 });
 
-test("text: missing Provenance section fails", () => {
-  const r = run({ "skills/helper/SKILL.md": skillText({ name: "helper", body: "x", provenance: false }) });
-  assert.equal(rules(r, "provenance").length, 1);
-});
-
 test("text: 150 lines pass, 151 fail", () => {
   const sized = (total) => {
     for (let n = 0; n < 400; n++) {
@@ -379,7 +374,7 @@ function cli(args) {
 
 test("cli: exit 0 on a clean fixture, 1 with one formatted line per problem, --json is machine readable", () => {
   const clean = fixture();
-  const dirty = fixture({ "skills/helper/SKILL.md": skillText({ name: "helper", body: "Bad — dash.", provenance: false }) });
+  const dirty = fixture({ "skills/helper/SKILL.md": skillText({ name: "helper", body: "Bad — dash.\nBad; semicolon." }) });
   try {
     const ok = cli([clean]);
     assert.equal(ok.status, 0, ok.stdout + ok.stderr);
@@ -478,11 +473,4 @@ test("description: an angle bracket is an error", () => {
   }
   const ok = run({ "skills/helper/SKILL.md": skillText({ name: "helper", description: "Plain words only.", body: "Help. No fence yet" }) });
   assert.equal(rules(ok, "description-brackets").length, 0);
-});
-
-test("provenance fix text uses American spelling", () => {
-  const r = run({ "skills/helper/SKILL.md": skillText({ name: "helper", provenance: false, body: "Help. No fence yet" }) });
-  const hit = rules(r, "provenance")[0];
-  assert.match(hit.fix, /license/);
-  assert.doesNotMatch(hit.fix, /licence/);
 });
