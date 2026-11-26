@@ -442,3 +442,82 @@ test("cli: an empty file exits 1 with the empty rule", () => {
   assert.equal(r.status, 1);
   assert.match(r.stdout, /invalid-empty\.md:1 {2}empty /);
 });
+
+// ---- the two heading sets: Matt Pocock's template and the earlier one ----
+
+const matt = () => text("valid-matt.md");
+const matt2 = () => text("valid-matt-not-agreed.md");
+
+test("form: a spec with the headings of Matt's template has no problems", () => {
+  assert.deepEqual(checkSpec(matt()), []);
+});
+
+test("form: Matt's template with essentials that were not agreed has no problems", () => {
+  assert.deepEqual(checkSpec(matt2()), []);
+});
+
+test("form: a spec with the earlier headings still has no problems", () => {
+  assert.deepEqual(checkSpec(valid()), []);
+  assert.deepEqual(checkSpec(valid2()), []);
+});
+
+test("form: every section of Matt's template is checked", () => {
+  const names = [
+    "## Problem Statement", "## Solution", "### Who it is for", "### In scope", "### User-visible behavior",
+    "## User Stories", "## Implementation Decisions", "## Testing Decisions", "## Out of Scope", "## Further Notes",
+    "### Assumed without asking", "### Open questions", "### Glossary terms and decision records",
+  ];
+  for (const n of names) {
+    const t = matt().replace(`${n}\n`, `${n.replace(/^(#+) /, "$1 Renamed ")}\n`);
+    assert.notEqual(t, matt(), n);
+    const h = checkSpec(t).filter((p) => p.rule === "section");
+    assert.equal(h.length, 1, `${n}: ${JSON.stringify(h)}`);
+    assert.ok(h[0].message.includes(`\`${n}\``), `${n}: ${h[0].message}`);
+  }
+});
+
+test("form: a spec with no section names the headings of Matt's template", () => {
+  const missing = checkSpec("# Spec: x\n\nStatus: draft\n\nSome text.\n").filter((p) => p.rule === "section").map((p) => p.message);
+  assert.ok(missing.some((m) => m.includes("## Problem Statement")), JSON.stringify(missing));
+  assert.ok(!missing.some((m) => m.includes("## Scope`")), JSON.stringify(missing));
+});
+
+test("form: a second `## Testing Decisions` fails", () => {
+  const t = matt().replace("## Out of Scope\n", "## Testing Decisions\n\n- A second list.\n\n## Out of Scope\n");
+  const h = checkSpec(t).filter((p) => p.rule === "duplicate-section");
+  assert.equal(h.length, 1);
+  assert.match(h[0].message, /## Testing Decisions/);
+});
+
+test("form: each essential of Matt's template has its own open question", () => {
+  const cases = [
+    ["## Problem Statement", "Problem"],
+    ["### Who it is for", "Who it is for"],
+    ["### In scope", "In scope"],
+    ["### User-visible behavior", "User-visible behavior"],
+    ["## Testing Decisions", "Test boundaries"],
+    ["## Out of Scope", "Out of scope"],
+  ];
+  for (const [heading, essential] of cases) {
+    const v = matt();
+    const re = new RegExp(`(${heading}\\n\\n)[\\s\\S]*?(\\n#{2,3} )`);
+    const t = v.replace(re, `$1Not agreed. See Open questions.\n$2`);
+    assert.notEqual(t, v, heading);
+    const probs = checkSpec(t);
+    assert.deepEqual(probs.map((p) => p.rule), ["open-question"], `${heading}: ${JSON.stringify(probs)}`);
+    assert.ok(probs[0].fix.includes(`${essential}: not agreed yet`), probs[0].fix);
+    const fixed = t.replace("### Open questions\n\nNone", `### Open questions\n\n- ${essential}: not agreed yet.`);
+    assert.deepEqual(checkSpec(fixed), [], heading);
+  }
+});
+
+test("form: the `Prior art:` line can stay in a not agreed `## Testing Decisions`", () => {
+  assert.deepEqual(checkSpec(matt2()), []);
+  const t = matt2().replace("## Testing Decisions\n\nNot agreed. See Open questions.\n", "## Testing Decisions\n\nNot agreed. See Open questions.\n\n- GET /report.csv: the body. new\n");
+  assert.deepEqual(checkSpec(t).map((p) => p.rule), ["not-agreed"]);
+});
+
+test("cli: a spec in Matt's template exits 0", () => {
+  const r = cli([fx("valid-matt.md")]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});

@@ -1657,7 +1657,9 @@ test("--jobs with a fake binary: two agents run at once, each in its own folder,
 test("grill 05 and 06 run as multi-turn evals", () => {
   const five = parseEvalFile(readFileSync(join(ROOT, "evals", "grill", "05-summary-feeds-spec.md"), "utf8"));
   const six = parseEvalFile(readFileSync(join(ROOT, "evals", "grill", "06-user-ends-the-questions.md"), "utf8"));
-  assert.ok(five.checks.turns.length >= 3 && five.checks.turns.at(-1).startsWith("/spec"));
+  // `/spec` first checks the test boundaries with the user, so one answer turn follows it.
+  assert.ok(five.checks.turns.length >= 4 && five.checks.turns.at(-2).startsWith("/spec"));
+  assert.match(five.checks.turns.at(-1), /^Yes, they match\./);
   assert.deepEqual(six.checks.turns, ["enough, write it up"]);
   for (const e of [five, six]) assert.deepEqual(networkWritingTools(e.checks.allowedTools), []);
 });

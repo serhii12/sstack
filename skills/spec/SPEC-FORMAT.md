@@ -1,6 +1,8 @@
 # Spec format
 
-The template for [SKILL.md](SKILL.md). Fill every section from the agreed plan. Write each section once. If the user said so, write "None" in a section. If the plan is silent on a section that is not essential, write "None" there too. If the plan is silent on an essential section, write "Not agreed. See Open questions." there. Add an open question for it. Write nothing else in that section. In "Test boundaries", the "Prior art" line can stay. Invent no content. An open question is a missing essential, an item that the plan lists as still open, or a gap that the agent found. Mark a gap that the agent found with `(found by the agent)`.
+The template for [SKILL.md](SKILL.md). The `##` sections and their order are those of the spec template in Matt Pocock's `to-spec`. The `###` sections hold the essentials and the notes that our flow needs.
+
+Fill every section from the agreed plan. Write each section once. If the user said so, write "None" in a section. If the plan is silent on a section that is not essential, write "None" there too. If the plan is silent on an essential section, write "Not agreed. See Open questions." there. Add an open question for it. Write nothing else in that section. In "Testing Decisions", the "Prior art" line can stay. Invent no content. An open question is a missing essential, an item that the plan lists as still open, or a gap that the agent found. Mark a gap that the agent found with `(found by the agent)`.
 
 ```markdown
 # Spec: <feature>
@@ -8,60 +10,79 @@ The template for [SKILL.md](SKILL.md). Fill every section from the agreed plan. 
 Status: draft
 Agreed in: <"grill summary confirmed by the user on <date>", or "this conversation">
 
-## Problem
+## Problem Statement
 
 The problem that the user faces, from the user's side. Write one short paragraph.
 
-## Who it is for
+## Solution
+
+The solution, from the user's side, in one or two sentences. This line is optional.
+
+### Who it is for
 
 The people or systems that will use this. Use the words of the glossary.
 
-## Scope
-
-### In
+### In scope
 
 - <what this spec delivers>
 
-### Out
-
-- <what the user chose to leave out, and why when they said why>
-
-## User stories
-
-1. As a <actor>, I want <what>, so that <why>.
-
-## User-visible behavior
+### User-visible behavior
 
 1. When <actor> <does something>, <what they see or get>.
 2. When <the edge case>, <what happens>.
 
-## Test boundaries
+## User Stories
 
-Where tests will observe the behavior. A test boundary is a public interface where a test can watch the behavior without reaching inside. Prefer a boundary that already exists. Prefer the highest boundary that works. Use as few boundaries as possible. One is ideal. A good test checks what a user can observe. A good test never checks how the code works inside.
+1. As a <actor>, I want <what>, so that <why>.
 
-- <boundary>: <what a test there checks>. <existing | new>
-
-Prior art: <existing tests in the code that look like these, or "None found">
-
-## Decisions
+## Implementation Decisions
 
 The implementation decisions the user agreed. These are modules to build or change, their interfaces, schema changes, API contracts, and technical choices. Write no source file paths and no code.
 
 - <decision>
 
-## Assumed without asking
+## Testing Decisions
+
+The test boundaries that the user accepted in step 5 of SKILL.md. A test boundary is a public interface where a test can watch the behavior without reaching inside. Prefer a boundary that already exists. Prefer the highest boundary that works. Use as few boundaries as possible. One is ideal. A good test checks what a user can observe. A good test never checks how the code works inside.
+
+- <boundary>: <what a test there checks>. <existing | new>
+
+Prior art: <existing tests in the code that look like these, or "None found">
+
+## Out of Scope
+
+- <what the user chose to leave out, and why when they said why>
+
+## Further Notes
+
+### Assumed without asking
 
 - <what was taken as given, and why> (copy from the grill summary, or "None")
 
-## Open questions
+### Open questions
 
 - <question>: <why it is open> (or "None"). Every essential that the plan did not settle is a question here. Write it as "<essential>: not agreed yet". Copy each other item that the plan lists as still open. Add each gap that you found and end it with `(found by the agent)`.
 
-## Glossary terms and decision records
+### Glossary terms and decision records
 
 - <Term>: <link to the term in GLOSSARY.md>
 - <NNNN title>: <link to docs/adr/NNNN-title.md> (<status>)
 ```
+
+## Essentials and their sections
+
+| Essential | Section |
+| --- | --- |
+| Problem | `## Problem Statement` |
+| Who it is for | `### Who it is for` |
+| In scope | `### In scope` |
+| User-visible behavior | `### User-visible behavior` |
+| Test boundaries | `## Testing Decisions` |
+| Out of scope | `## Out of Scope` |
+
+## Earlier specs
+
+An earlier version of this template used other headings. Examples are `## Problem`, `## Scope` with `### In` and `### Out`, `## Test boundaries` and `## Decisions`. The notes were `##` sections. `spec-lint.mjs` accepts a spec in that form too. Write a new spec in the form above. Held by: skills/spec/scripts/spec-lint.mjs
 
 ## Writing rules
 
@@ -74,4 +95,4 @@ The implementation decisions the user agreed. These are modules to build or chan
 
 ## Provenance
 
-Adapted from the `<spec-template>` in `skills/engineering/to-spec/SKILL.md` of [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock). Kept: Problem (his "Problem Statement"), the user stories (short, with a rule against padding), the prior art line, Out of Scope, the implementation decisions list and its "no file paths or code" rule with the prototype exception (close to his wording), and his rules for test boundaries (prefer existing, highest, fewest, one is ideal). Changed: "Solution" became "Who it is for", "Scope" and numbered behavior lines. The long user story list became a short one. "Testing Decisions" became "Test boundaries". "Further Notes" became "Open questions" and "Assumed without asking", which match our grill summary. Added the status line, the "Agreed in" line, and the glossary and decision record links. The quoted line, the user story complaint and the refactor limit come from `docs/engineering/to-spec.md` in the same repo.
+Adapted from the `<spec-template>` in `skills/engineering/to-spec/SKILL.md` of [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock). Kept: his seven `##` sections with his names and in his order (Problem Statement, Solution, User Stories, Implementation Decisions, Testing Decisions, Out of Scope, Further Notes), the short description of each in our words, the prior art line, the "no file paths or code" rule with the prototype exception (close to his wording), and his rules for test boundaries (prefer existing, highest, fewest, one is ideal). Changed: "Solution" holds three `###` essentials (who it is for, in scope, and numbered behavior lines). "Further Notes" holds "Assumed without asking", "Open questions" and the glossary and decision record links, which match our grill summary and the rule that the skill asks nothing new. The long user story list became a short one. Added the status line, the "Agreed in" line, and the "Not agreed" rule for an essential. An earlier version of this file replaced his section names with our own. The owner did not ask for that, and his names are back. The lint still accepts specs in that earlier form. The quoted line, the user story complaint and the refactor limit come from `docs/engineering/to-spec.md` in the same repo.

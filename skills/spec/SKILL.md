@@ -1,6 +1,6 @@
 ---
 name: spec
-description: Turn this conversation, usually a confirmed /grill summary, into one draft spec in the tracker. Asks nothing new.
+description: Turn this conversation, usually a confirmed /grill summary, into one draft spec in the tracker. Checks the test boundaries with you first.
 argument-hint: "[feature name]"
 disable-model-invocation: true
 ---
@@ -11,7 +11,7 @@ disable-model-invocation: true
 
 ## It asks nothing new
 
-Work only from this conversation, the code, `GLOSSARY.md` and the decision records in `docs/adr/`. Do not interview the user. Do not settle an open decision yourself. Invent nothing. If little was agreed, still write the spec. If an essential is missing, write it as an open question.
+Work only from this conversation, the code, `GLOSSARY.md` and the decision records in `docs/adr/`. Do not interview the user. Do not settle an open decision yourself. Invent nothing. If little was agreed, still write the spec. If an essential is missing, write it as an open question. The one question is the check of the test boundaries in step 5. Matt Pocock's `to-spec` asks it too.
 No fence yet
 
 ## Gaps that you find
@@ -45,7 +45,7 @@ No fence yet
    | User-visible behavior | What a user will see or get, including the edge cases discussed |
    | Test boundaries | Where tests will observe the behavior, agreed with the user |
 
-   If an essential is missing, or the grill summary lists it under "Still open", still write the spec. Do not invent it. Write "Not agreed. See Open questions." in its section. Add one open question for it. Start your reply with this line:
+   If an essential is missing, or the grill summary lists it under "Still open", still write the spec. Do not invent it. Write "Not agreed. See Open questions." in its section. Add one open question for it. Step 5 can settle "Test boundaries". Start the report of step 9 with this line:
 
    ```
    Missing from the spec: <essentials, separated by commas>. Type `/grill` to settle them.
@@ -55,12 +55,21 @@ No fence yet
 
    Held by: skills/spec/scripts/spec-lint.mjs (not-agreed rule only)
 4. Read the area. Read `GLOSSARY.md` and the decision records in `docs/adr/` that touch this change. Read enough of the code to use the right names. Use the words of the glossary throughout. Note each term and each record you use, so the spec can link to them.
-5. Write the spec in the format in [SPEC-FORMAT.md](SPEC-FORMAT.md). Each line must trace to the plan or to a file you read. Copy exact numbers, orderings and "must not" rules as the user gave them. Write the user stories short. Under "Open questions", put each missing essential and each item that the user or the summary names as open. Add each gap that you found, marked `(found by the agent)`. Put the "Assumed without asking" items of the grill in the section of that name.
+5. Check the test boundaries with the user, before you write. Matt's skill does this step too.
+   - Sketch the main modules that the change touches and the test boundaries on them. Start from the boundaries that the plan names.
+   - Prefer a boundary that exists. Prefer the highest one. Use as few as possible. One is ideal.
+   - Show the sketch in a short message. Ask one question: "Do these test boundaries match what you expect?" Then stop and wait.
+   - Write the spec only after the user answers. Use the boundaries that the user accepts or gives. Then "Test boundaries" is agreed.
+   - If the user is not sure, or rejects the sketch and gives no boundary, "Test boundaries" is not agreed.
+   - If the user asks to skip this check, say in one line that nobody confirmed the boundaries. Then put your sketch under "Open questions" with `(found by the agent)`.
+   - If the plan has no user-visible behavior, skip this step. Nothing is there to test yet.
+   Held by: evals/spec/01-complete-summary.md
+6. Write the spec in the format in [SPEC-FORMAT.md](SPEC-FORMAT.md). Each line must trace to the plan or to a file you read. Copy exact numbers, orderings and "must not" rules as the user gave them. Write the user stories short. Under "Open questions", put each missing essential and each item that the user or the summary names as open. Add each gap that you found, marked `(found by the agent)`. Put the "Assumed without asking" items of the grill in the section of that name.
    Held by: skills/spec/scripts/spec-lint.mjs (sections only)
-6. Check the spec. From the project root, run `node .claude/skills/spec/scripts/spec-lint.mjs <spec-file>`. Run it alone and with this relative path, so that a permission rule can match it. Its last line gives the count of problems. For a tracker, save the body to a file first. Fix every problem that it prints. Run it again until it exits 0. Exit code 2 means that the script cannot run. If the script is missing or exits 2, check the spec by hand against [SPEC-FORMAT.md](SPEC-FORMAT.md). Then say in your report that the lint did not run. Held by: skills/spec/scripts/spec-lint.mjs
-7. Publish it as `docs/agents/tracker.md` says. If the user typed text after `/spec`, use it as the feature name. Otherwise make a short lowercase name with dashes. If a local file already exists, ask before you replace it. On GitHub or GitLab, run the check from the tracker doc before the first write.
+7. Check the spec. From the project root, run `node .claude/skills/spec/scripts/spec-lint.mjs <spec-file>`. Run it alone and with this relative path, so that a permission rule can match it. Its last line gives the count of problems. For a tracker, save the body to a file first. Fix every problem that it prints. Run it again until it exits 0. Exit code 2 means that the script cannot run. If the script is missing or exits 2, check the spec by hand against [SPEC-FORMAT.md](SPEC-FORMAT.md). Then say in your report that the lint did not run. Held by: skills/spec/scripts/spec-lint.mjs
+8. Publish it as `docs/agents/tracker.md` says. If the user typed text after `/spec`, use it as the feature name. Otherwise make a short lowercase name with dashes. If a local file already exists, ask before you replace it. On GitHub or GitLab, run the check from the tracker doc before the first write.
    No fence yet
-8. Report. Reply with the link or path, the list of open questions and assumptions, and the next command. Name the gaps that you found as statements. Ask no question in the report. If an essential is missing, the first line is the "Missing from the spec" line. The next command is then `/grill`, then `/spec` again. Otherwise, the next command is `/tickets`, typed in this same session. In the same session, `/tickets` does not have to fetch a long spec from the tracker.
+9. Report. Reply with the link or path, the list of open questions and assumptions, and the next command. Name the gaps that you found as statements. Ask no question in the report. If an essential is missing, the first line is the "Missing from the spec" line. The next command is then `/grill`, then `/spec` again. Otherwise, the next command is `/tickets`, typed in this same session. In the same session, `/tickets` does not have to fetch a long spec from the tracker.
 
 ## When to skip the spec
 
@@ -70,7 +79,8 @@ A spec is worth its cost when the work spans several sessions. If the agreed cha
 
 All sources are from [mattpocock/skills](https://github.com/mattpocock/skills), MIT license, Copyright (c) 2026 Matt Pocock.
 
-- `skills/engineering/to-spec/SKILL.md`: the base of this skill. We kept "do not interview the user, just synthesize what you know", the glossary vocabulary, respect for decision records, the user stories (now short), and his rules for test boundaries (now in the template). His "Do not interview the user" line is kept word for word. The test boundary sentences in the template stay close to his wording. The rest is reworded. Changes: renamed to `spec`, his step where the user confirms the test boundaries is gone because the skill asks nothing new, the essentials check and the "Missing from the spec" line are new, a missing essential becomes an open question instead of a stop, a gap that the agent finds goes into the open questions marked `(found by the agent)` and into the reply, the `ready-for-agent` label is dropped, the user stories must stay short, a local file is used when no tracker is set up, and glossary terms and decision records are linked. The template moved to [SPEC-FORMAT.md](SPEC-FORMAT.md), which has its own provenance.
+- `skills/engineering/to-spec/SKILL.md`: the base of this skill. We kept "do not interview the user, just synthesize what you know", the glossary vocabulary, respect for decision records, the user stories (now short), his rules for test boundaries, his step that sketches the test boundaries and checks them with the user before the spec is written, and the section names and order of his template. His "Do not interview the user" line is kept word for word. The test boundary sentences in the template stay close to his wording. The rest is reworded. Changes: renamed to `spec`, the essentials check and the "Missing from the spec" line are new, a missing essential becomes an open question instead of a stop, a gap that the agent finds goes into the open questions marked `(found by the agent)` and into the reply, the `ready-for-agent` label is dropped, the user stories must stay short, a local file is used when no tracker is set up, and glossary terms and decision records are linked. The template moved to [SPEC-FORMAT.md](SPEC-FORMAT.md), which has its own provenance.
 - `docs/engineering/to-spec.md`: ideas in our words. The spec is a decision record and invents nothing. The `ready-for-agent` label on the spec makes polling agents build it whole (his most-reported problem, fixed here by never marking it ready). Run `to-tickets` in the same session so a long spec is not fetched back. A spec is worth it only for multi-session work. The spec did not link the decision records it followed (fixed here).
 - Removed: `agents/openai.yaml`, the `/setup-matt-pocock-skills` pointer, and the aihero.dev links.
 - An earlier version refused to write a spec when nothing was agreed, and it kept gaps that the agent found out of the spec and the reply. The owner did not ask for either, and both are gone. Like Matt's skill, `spec` now writes from what the conversation holds.
+- A later version dropped his check of the test boundaries and used its own section names. The owner did not ask for either. Both are back. The check is skipped only when the plan has no user-visible behavior, because then nothing is there to sketch.

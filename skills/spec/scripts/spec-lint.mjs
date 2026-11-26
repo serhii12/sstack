@@ -9,13 +9,16 @@
 //   title          the first non-empty line is `# Spec: <feature>`
 //   status         exactly one `Status:` line, and it reads `Status: draft`
 //   ready-marker   no `ready-for-...` marker and no `Label:` line
-//   section        every required section exists
+//   section        every required section exists. The lint accepts two heading
+//                  sets: the template of Matt Pocock's to-spec (the current one) and
+//                  the earlier template of this skill. It checks a spec against
+//                  the set of which it has more headings. A tie picks the current set.
 //   duplicate-section  every required section exists only once
 //   empty-section  every required section has content ("None" counts)
 //   not-agreed     a line in an essential that starts with "Not agreed" reads
 //                  exactly "Not agreed. See Open questions.", and it is the only
-//                  line of the section. In "Test boundaries" the "Prior art:"
-//                  line of the template can stay.
+//                  line of the section. In the test boundary section ("Testing
+//                  Decisions", earlier "Test boundaries") the "Prior art:" line can stay.
 //   open-question  each such essential has an open question
 //                  "<essential>: not agreed yet" under "Open questions"
 //
@@ -35,8 +38,26 @@ const USAGE = "Usage: node .claude/skills/spec/scripts/spec-lint.mjs <spec-file>
 const NOT_AGREED = "Not agreed. See Open questions.";
 
 // Required sections, in the order of SPEC-FORMAT.md. `essential` is the name that
-// the table in SKILL.md and the open question use.
+// the table in SKILL.md and the open question use. The `##` headings and their
+// order are those of the spec template in Matt Pocock's to-spec.
 const SECTIONS = [
+  { level: 2, name: "Problem Statement", essential: "Problem" },
+  { level: 2, name: "Solution", bodyless: true },
+  { level: 3, name: "Who it is for", essential: "Who it is for" },
+  { level: 3, name: "In scope", essential: "In scope" },
+  { level: 3, name: "User-visible behavior", essential: "User-visible behavior" },
+  { level: 2, name: "User Stories" },
+  { level: 2, name: "Implementation Decisions" },
+  { level: 2, name: "Testing Decisions", essential: "Test boundaries" },
+  { level: 2, name: "Out of Scope", essential: "Out of scope" },
+  { level: 2, name: "Further Notes", bodyless: true },
+  { level: 3, name: "Assumed without asking" },
+  { level: 3, name: "Open questions" },
+  { level: 3, name: "Glossary terms and decision records" },
+];
+
+// The sections of the earlier template. A spec written in that form still passes.
+const EARLIER_SECTIONS = [
   { level: 2, name: "Problem", essential: "Problem" },
   { level: 2, name: "Who it is for", essential: "Who it is for" },
   { level: 2, name: "Scope", bodyless: true },
@@ -134,8 +155,12 @@ export function checkSpec(input) {
     .map((l) => (/^#{1,6}\s/.test(l.t) ? l.n : null))
     .filter((n) => n !== null);
 
+  const has = (s) => headings.some((x) => x.level === s.level && x.name.toLowerCase() === s.name.toLowerCase());
+  const matched = (set) => set.filter(has).length;
+  const sections = matched(EARLIER_SECTIONS) > matched(SECTIONS) ? EARLIER_SECTIONS : SECTIONS;
+
   const found = new Map();
-  for (const s of SECTIONS) {
+  for (const s of sections) {
     const marks = "#".repeat(s.level);
     const all = headings.filter((x) => x.level === s.level && x.name.toLowerCase() === s.name.toLowerCase());
     const h = all[0];
@@ -164,14 +189,16 @@ export function checkSpec(input) {
     const texts = content.map((l) => l.t.trim());
     const markers = texts.filter((t) => MARKER_LINE.test(t));
     if (markers.length === 0) continue;
-    const rest = texts.filter((t) => !MARKER_LINE.test(t) && !(s.name === "Test boundaries" && /^Prior art:/i.test(t)));
+    const boundaries = s.essential === "Test boundaries";
+    const rest = texts.filter((t) => !MARKER_LINE.test(t) && !(boundaries && /^Prior art:/i.test(t)));
     const exact = markers.length === 1 && markers[0] === NOT_AGREED && rest.length === 0;
     if (!exact) {
-      const extra = s.name === "Test boundaries" ? " The `Prior art:` line can stay." : "";
+      const extra = boundaries ? " The `Prior art:` line can stay." : "";
       add(h.n, "not-agreed", `the section \`${s.name}\` says "not agreed" but does not read only \`${NOT_AGREED}\``, `make the whole section read exactly \`${NOT_AGREED}\`.${extra}`);
     }
     if (exact && oq && !questions.includes(`${s.essential.toLowerCase()}: not agreed yet`)) {
-      add(h.n, "open-question", `the section \`${s.name}\` is not agreed, and \`Open questions\` has no question for it`, `add the open question \`${s.essential}: not agreed yet\` under \`## Open questions\`.`);
+      const oqMarks = oq ? "#".repeat(oq.s.level) : "###";
+      add(h.n, "open-question", `the section \`${s.name}\` is not agreed, and \`Open questions\` has no question for it`, `add the open question \`${s.essential}: not agreed yet\` under \`${oqMarks} Open questions\`.`);
     }
   }
 

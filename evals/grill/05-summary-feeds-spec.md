@@ -12,6 +12,7 @@ A grill is a conversation. The runner runs it as one session: it runs turn 1, th
 3. `If the summary is already above, post it again unchanged. If not, I say yes to every recommended answer. Post the summary now.` Turn 2 can ask one more round. Turn 3 makes sure that the last message before the confirm holds the summary.
 4. `confirm`
 5. `/spec`
+6. `Yes, they match.` After `/spec`, the agent first shows the test boundaries and asks if they match, as Matt Pocock's `to-spec` does. Turn 6 answers that check.
 
 ## Setup
 
@@ -24,7 +25,8 @@ A grill is a conversation. The runner runs it as one session: it runs turn 1, th
 - [ ] Turn 1 and the following turns load `grill`. The agent does not ask again for what the user gave in turn 1. It asks about what is still open.
 - [ ] The conversation settles all the essentials: problem, who it is for, in scope, out of scope, user-visible behavior with the private-note case, and test boundaries.
 - [ ] The summary has `Status: WAITING FOR YOUR CONFIRMATION`. After `confirm`, the agent replies `Status: CONFIRMED by the user`.
-- [ ] After `/spec`, the agent writes one file, `.scratch/<feature>/spec.md`, with `Status: draft`.
+- [ ] After `/spec`, the agent shows the test boundaries and asks if they match. It writes no file in turn 5.
+- [ ] After the yes in turn 6, the agent writes one file, `.scratch/<feature>/spec.md`, with `Status: draft`.
 - [ ] The spec does not refuse. It has no "Spec not written" reply.
 - [ ] The spec keeps the facts: the button text Copied, the 2 seconds and no button on a private note. It keeps the test boundary, the HTML that the page renderer returns. Email sharing and link expiry are out of scope. The spec skill allows no code names, so `renderNotePage` does not appear.
 - [ ] The Open questions section of the spec holds none of the six essentials. It says "None", or it lists only decisions that are not essential.
@@ -41,7 +43,7 @@ A grill is a conversation. The runner runs it as one session: it runs turn 1, th
 node scripts/eval-run.mjs --eval grill/05-summary-feeds-spec.md --models opus,sonnet --jobs 2
 ```
 
-The runner makes the temp repo, runs the five turns and checks the block below. Read the transcript of every turn for the items that no check can see. Run this eval twice.
+The runner makes the temp repo, runs the six turns and checks the block below. Read the transcript of every turn for the items that no check can see. Run this eval twice.
 
 ## Checks
 
@@ -66,7 +68,8 @@ The runner makes the temp repo, runs the five turns and checks the block below. 
     "Yes to every recommended answer. If you have no more questions, post the summary now.",
     "If the summary is already above, post it again unchanged. If not, I say yes to every recommended answer. Post the summary now.",
     "confirm",
-    "/spec"
+    "/spec",
+    "Yes, they match."
   ],
   "allowedTools": [
     "Skill",
@@ -127,11 +130,11 @@ The runner makes the temp repo, runs the five turns and checks the block below. 
       },
       {
         "pattern": "Spec not written",
-        "turn": 5
+        "turn": 6
       },
       {
         "pattern": "Missing from the spec",
-        "turn": 5
+        "turn": 6
       }
     ],
     "toolNotCalled": [
@@ -174,6 +177,16 @@ The runner makes the temp repo, runs the five turns and checks the block below. 
         "name": "Edit",
         "inputMatches": "\\.scratch",
         "turn": 4
+      },
+      {
+        "name": "Write",
+        "inputMatches": "\\.scratch",
+        "turn": 5
+      },
+      {
+        "name": "Edit",
+        "inputMatches": "\\.scratch",
+        "turn": 5
       }
     ],
     "fileMatches": [
@@ -219,7 +232,7 @@ Machine-checked:
 
 - Turn 1 loads `grill` and `domain-memory`. Its text starts with "Loaded domain-memory." and the round 1 status line, or with the summary.
 - Turn 3 holds the summary with `Status: WAITING FOR YOUR CONFIRMATION`. Turn 4 says `Status: CONFIRMED by the user`. Turns 1 to 3 do not.
-- No Write or Edit call on `.scratch` comes before turn 5. Only files under `.scratch/` change.
+- No Write or Edit call on `.scratch` comes before turn 6. Turn 5 is the boundary check of `spec`. Only files under `.scratch/` change.
 - After `/spec`, `.scratch/<feature>/spec.md` exists with `Status: draft`, the word Copied, the 2 seconds, the private note, email sharing and link expiry. It does not name `renderNotePage`.
 - Turn 5 has no "Spec not written" and no "Missing from the spec" line. The spec skill starts its reply with that line when an essential is missing.
 

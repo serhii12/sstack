@@ -1,6 +1,6 @@
 # Eval spec-04: no plan in the conversation
 
-Kind: task sort (nothing agreed). The skill writes the spec also when nothing was agreed. Every essential is an open question, and the skill invents nothing.
+Kind: task sort (nothing agreed). The skill writes the spec also when nothing was agreed. Every essential is an open question, and the skill invents nothing. The plan has no behavior, so the boundary check of step 5 has nothing to sketch and the agent skips it.
 
 ## User prompt
 
@@ -56,8 +56,8 @@ The planning skills run on Opus or Fable only. Read each transcript in the outpu
     "onlyFilesChanged": [".scratch/dark-mode/spec.md"],
     "fileMatches": [
       { "path": ".scratch/dark-mode/spec.md", "pattern": "\\nStatus: draft\\s*\\n" },
-      { "path": ".scratch/dark-mode/spec.md", "pattern": "\\n## Problem\\s*\\n+Not agreed\\. See Open questions\\.\\s*\\n" },
-      { "path": ".scratch/dark-mode/spec.md", "pattern": "\\n## User-visible behavior\\s*\\n+Not agreed\\. See Open questions\\.\\s*\\n" },
+      { "path": ".scratch/dark-mode/spec.md", "pattern": "\\n## Problem Statement\\s*\\n+Not agreed\\. See Open questions\\.\\s*\\n" },
+      { "path": ".scratch/dark-mode/spec.md", "pattern": "\\n### User-visible behavior\\s*\\n+Not agreed\\. See Open questions\\.\\s*\\n" },
       { "path": ".scratch/dark-mode/spec.md", "pattern": "/Test boundaries: not agreed yet/i" }
     ],
     "toolCalled": [
