@@ -46,7 +46,7 @@ The frontmatter of a skill is the one source of truth for the facts about that s
 - Move long reference material to a file beside `SKILL.md`. Link to it straight from `SKILL.md` and say when to read it. Do not link from one reference file to another. Start a reference file that has more than 100 lines with a list of contents.
 - If a skill runs a script, put the script inside the skill folder. The installer copies only skill folders.
 - Every rule that matters ends with one of these lines:
-  - `Held by: <path to the script, hook or test that enforces it>`
+  - `Held by: <path from the repo root to the script, hook or test that enforces it>`
   - `No fence yet` (nothing enforces it, so it is only an instruction)
 - Each skill ends with a `## Provenance` section. It names each source file, its repo, its license and its copyright holder, and says what we changed.
 - Each skill has at least 3 evals in `evals/<name>/`. An eval has the user prompt, the setup, a checklist of expected behaviors, and a description of a failure. A typed skill needs one eval for each kind of task that it sorts. It also needs one eval for a request that it must refuse. An agent skill needs one eval where it must load. It also needs one eval where one option is obvious, and one eval where it must not load. Run each eval live on a fresh instance before you ship. If an eval fails, fix the skill and run the eval again.

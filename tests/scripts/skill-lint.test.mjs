@@ -176,6 +176,16 @@ test("held-by: missing path fails", () => {
   assert.match(hits[0].message, /does not exist/);
 });
 
+test("held-by: a path from the skill folder fails, only the path from the repo root passes", () => {
+  const r = run({
+    "skills/helper/scripts/help.mjs": "// help\n",
+    "skills/helper/SKILL.md": skillText({ name: "helper", body: "Rule. Held by: scripts/help.mjs\n\nRule. Held by: skills/helper/scripts/help.mjs" }),
+  });
+  const hits = rules(r, "held-by");
+  assert.equal(hits.length, 1);
+  assert.match(hits[0].message, /`Held by: scripts\/help\.mjs` names a path that does not exist/);
+});
+
 test("held-by: a reference file beside SKILL.md is checked and counted too", () => {
   const r = run({ "skills/helper/NOTES.md": "# Notes\n\n- Rule. Held by: tests/hooks/none.test.mjs\n- Rule. Held by: scripts/check.mjs\n- Rule. No fence yet\n" });
   const hits = rules(r, "held-by");

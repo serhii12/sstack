@@ -136,8 +136,8 @@ export function lint(rootArg) {
   let noFenceYet = 0;
   const add = (file, line, rule, message, fix) =>
     problems.push({ path: relative(root, file) || file, line, rule, message, fix });
-  // Rule 3: each `Held by:` names a path that exists. Counts the `No fence yet` rules.
-  const checkHeldBy = (file, lines, skillDir) => {
+  // Rule 3: each `Held by:` names a path from the repo root that exists. Counts the `No fence yet` rules.
+  const checkHeldBy = (file, lines) => {
     for (const l of lines) {
       if (l.fence || l.inFrontmatter) continue;
       if (/(?:^|[\s`*_.])No fence yet(?:\s*\(planned:[^)]*\))?[`*_.]*\s*$/.test(l.t)) noFenceYet++;
@@ -157,7 +157,7 @@ export function lint(rootArg) {
       for (const part of value.split(/\s*,\s*|\s+and\s+/)) {
         const p = part.replace(/\([^)]*\)/g, "").replace(/`/g, "").replace(/[.]+$/, "").trim();
         if (!p) continue;
-        if (!pathExists(join(root, p)) && !pathExists(join(skillDir, p))) {
+        if (!pathExists(join(root, p))) {
           add(file, l.n, "held-by", `\`Held by: ${p}\` names a path that does not exist`, `create ${p}, fix the path, or write \`No fence yet (planned: ...)\`.`);
         }
       }
@@ -292,7 +292,7 @@ export function lint(rootArg) {
     }
 
     // Rule 3: Held by.
-    checkHeldBy(file, lines, skillDir);
+    checkHeldBy(file, lines);
 
     // Rule 4: a typed workflow must not run another typed workflow.
     if (s.typed) {
@@ -329,7 +329,7 @@ export function lint(rootArg) {
         throw new LintError(`cannot read ${file}: ${err.message}`);
       }
       const lines = scanLines(text, 0);
-      checkHeldBy(file, lines, skillDir);
+      checkHeldBy(file, lines);
       for (const l of lines) {
         if (l.fence || l.inProvenance) continue;
         for (const m of stripInlineCode(l.t).matchAll(/\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
