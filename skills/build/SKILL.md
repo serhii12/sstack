@@ -104,6 +104,8 @@ If a problem outside the ticket will hit the next agent too, load the agent skil
 
 After the last commit of step 7, load the agent skill `prove`, also when a finding is still `open`. An open `high` or `medium` finding keeps the ticket open in step 9, but the proof is done in this run. Give `prove` the task name from step 2, the full text of the ticket, and the head commit. Put its result for each Acceptance check in the report: `pass`, `fail` or `untested`. If it will not load, tell the user. Mark every check `untested`. `prove` keeps its evidence under `.artifacts/<task-name>/evidence/`. Never commit that folder to the task branch. The installed `.gitignore` keeps its media out of `git status`. `/land` pushes the media to `evidence/<task-name>`. No fence yet
 
+Then commit `.artifacts/<task-name>/review.md` and `.artifacts/<task-name>/ticket.md` if git shows them as changed or new. A follow-up with no findings leaves the review file changed. When the user types `/land`, it stops while a file outside `evidence/` is not committed. Held by: skills/land/scripts/land-check.mjs (exit 33 of preflight)
+
 ## 9. Close a local ticket and report
 
 A local ticket has no pull request, so nothing else closes it. An open ticket blocks every ticket that names it. So close it here when the work is done:
@@ -129,7 +131,7 @@ Changed after the review: <short sha> <files> (one per line), and "follow-up rev
 Skipped at the user's request: <step>: <what is lost> (or "None")
 Not tested: <behavior or case>: <why> (or "None")
 Design notes: <a shallow module or a missing module boundary outside the ticket, not changed> (or "None")
-Ticket: closed in <path> | open, closes when the pull request merges | open, blocked by <what blocks the close>, edit for the user: <the exact edit>
+Ticket: closed in <path> | issue #<n>, open, closes when the pull request merges | open, blocked by <what blocks the close>, edit for the user: <the exact edit>
 ```
 
 ## 10. Next command
