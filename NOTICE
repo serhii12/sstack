@@ -4,8 +4,8 @@ Copyright (c) 2026 Serhii Panchyshyn. MIT License, see LICENSE.
 sstack reuses and adapts text and code from the projects below.
 Each entry names one source file, the files of this repo that use it, and how.
 "Adapted" means that we copied text or code and changed it. "Idea only" means
-that we took an idea and wrote our own text. The "## Provenance" section of each
-skill, and the header of each script, says what we changed.
+that we took an idea and wrote our own text. This file is the one place for
+these credits. The header of a script that reuses code also names its source.
 
 Source repos and the commits we read:
 
@@ -18,6 +18,8 @@ Source repos and the commits we read:
   4. michaelshimeles/rstack  https://github.com/michaelshimeles/rstack  commit 8ad3944
      No top-level license file. Author: Michael Shimeles.
      Some vendored folders carry their own license (see before-and-after below).
+  5. The owner's own skills  engineering-protocol and typescript-engineering
+     No license file. Author: Serhii Panchyshyn.
   6. t3dotgg/tstack          https://github.com/t3dotgg/tstack          commit 11e37a7
      MIT License. Copyright (c) 2026 Theo Browne
 
@@ -69,6 +71,8 @@ skills/engineering/setup-matt-pocock-skills/triage-labels.md
     -> skills/setup/triage-labels.md. Adapted: the table of roles and labels.
     -> skills/triage/scripts/triage-check.mjs. Idea only: map the label of the tracker to
        its role.
+    -> skills/triage/SKILL.md. Idea only: read the label names from the mapping file
+       that setup writes.
 skills/engineering/setup-matt-pocock-skills/issue-tracker-local.md
     -> skills/setup/tracker/local.md. Adapted.
 docs/engineering/setup-matt-pocock-skills.md
@@ -291,6 +295,22 @@ skills/full-send/SKILL.md
 skills/file-pr/SKILL.md
 skills/leaving-pr-comments/SKILL.md
     -> skills/land/BODY.md. Adapted: the rules for the pull request body.
+
+
+7. Facts only (no text or code copied)
+--------------------------------------
+
+mattpocock/sandcastle docs, https://github.com/mattpocock/sandcastle, commit 1b380ca
+    -> docs/parallel-work.md. The branch strategies, the .sandcastle/.env file, and
+       the --no-stash fix of 31 Oct 2026.
+Claude Code docs (code.claude.com/docs/en/worktrees) and Codex docs
+(developers.openai.com/codex)
+    -> docs/parallel-work.md. The worktree flags and folders.
+GitHub REST API docs, the endpoint "Update branch protection"
+    -> skills/setup/EXTRAS.md. The fields of the branch protection body.
+The public docs of TypeScript, ESLint, typescript-eslint, dependency-cruiser and
+@eslint-community/eslint-plugin-eslint-comments
+    -> skills/code-craft/TYPESCRIPT.md. The names of the compiler options and lint rules.
 
 
 The MIT License, which applies to the material from projects 1 to 3 and 6:
