@@ -16,7 +16,7 @@
 
 ## Expected behaviors
 
-- [ ] The agent runs `ticket-in-work.mjs`, reads `git status --short`, `git branch --show-current` and the commit count ahead of `origin/main`.
+- [ ] The agent runs `ticket-in-work.mjs`, reads `git status --short --untracked-files=all`, `git branch --show-current` and the commit count ahead of `origin/main`.
 - [ ] The agent keeps `worktree-slugify`. It makes no second branch, and it makes no worktree.
 - [ ] The task name is `worktree-slugify`, the last part of the branch. The review file is `.artifacts/worktree-slugify/review.md`.
 - [ ] The agent writes a failing test first, commits on `worktree-slugify`, runs `peer-review` and `prove`.

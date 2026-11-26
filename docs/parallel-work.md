@@ -5,8 +5,12 @@
 `build` reads the checkout first:
 
 - On the default branch or a detached HEAD, it makes the task branch with `git switch -c`.
-- On a branch with no commits ahead of `origin/main`, it keeps that branch. The task name is the last part of the branch.
-- On uncommitted work, or on the commits of another task, it stops as blocked.
+- On a branch of the same ticket, it keeps that branch.
+- On a branch with no commits ahead of `origin/main`, it keeps that branch, if `.artifacts/` has no folder of that task name. If the branch is behind `origin/main`, it moves it forward with `git merge --ff-only origin/main`.
+- On uncommitted work, or on the commits of another task, it stops as blocked. Local tickets under `.scratch/` and the untracked evidence of earlier tasks do not count as uncommitted work.
+- With no `origin/main`, it stops as blocked.
+
+When `build` keeps a branch, the task name is the branch name after its last `/`.
 
 ## One rule
 
@@ -36,12 +40,13 @@ Use `-D`. After a squash merge or a rebase merge, `-d` refuses, also when the wo
 
 - Add `.claude/worktrees/` to `.gitignore`.
 - A `.worktreeinclude` file copies ignored files, such as `.env`, into the new folder.
-- Use the ticket key as `<name>`, for example `slugify`. Then `ticket-in-work.mjs` in another checkout of the repo finds the folder.
+- Use the ticket key as `<name>`, for example `slugify`. Then `ticket-in-work.mjs` in another checkout of the same repo finds the folder. In the new folder, it says that the checkout matches the ticket.
 - `build` keeps the branch `worktree-<name>`, so the task name is `worktree-<name>`.
+- Another clone of the repo does not see `worktree-<name>` as work on the ticket. The check reads the folder name only in this repo, and the branch name does not end with the key.
 
 ## Codex
 
-`codex --worktree` and `codex exec --worktree` start in a new managed worktree under `$CODEX_HOME/worktrees`, with a detached HEAD. `build` makes the task branch there with `git switch -c`.
+`codex --worktree` and `codex exec --worktree` start in a new managed worktree under `$CODEX_HOME/worktrees`, with a detached HEAD. `build` makes the task branch there with `git switch -c`. Until then, `ticket-in-work.mjs` in another checkout sees that session only when its folder name matches the ticket key.
 
 ## Sandcastle
 
@@ -62,13 +67,13 @@ Type `/land` on the host, in a checkout of the task branch, after the session en
 
 ## Who says that a ticket is taken
 
-`ticket-in-work.mjs` finds the other checkouts of the repo, the local branches and the fetched remote branches. `build` pushes its branch at once, so another machine sees it after `git fetch origin`. A runner can claim a ticket in its own way, with a fixed branch name, a label or an assignee.
+`ticket-in-work.mjs` finds the other checkouts of the repo, the local branches and the fetched remote branches. A branch counts when its last part is the ticket key, or the key plus a suffix with a digit. `build` pushes its branch at once, so another machine sees such a branch after `git fetch origin`. Between the check and the push, a second session on another machine does not see the first one. A runner can claim a ticket in its own way, with a fixed branch name, a label or an assignee.
 
 ## What was run and what was not
 
-Run in fake repos for this doc: `ticket-in-work.mjs`, `ticket-ready.mjs`, `evidence-check.mjs` and the `git archive` step of `prove`. The cases were a checkout on `main`, a detached HEAD, a fresh branch from the agent tool, and a branch of another task. One more case moved a checkout. A moved checkout gives the same path mismatch as a container mount.
+Run in fake repos for this doc: `ticket-in-work.mjs`, `ticket-ready.mjs`, `evidence-check.mjs` and the `git archive` step of `prove`. The cases were a checkout on `main`, a detached HEAD, a fresh branch from the agent tool, and a branch of another task. More cases were a branch behind `origin/main`, a merged task branch, two checkouts on two tickets, and a second clone. One more case moved a checkout. A moved checkout gives the same path mismatch as a container mount.
 
-Not run: Codex, Sandcastle, Docker and any other container. The Claude Code, Codex and Sandcastle facts come from their docs, read on 25 Nov 2026. That `merge-to-head` skips the hooks is from the Sandcastle docs. That a sandbox loses ignored evidence is an inference from the Sandcastle code.
+Not run: `claude --worktree`, Codex, Sandcastle, Docker and any other container. The `--help` output of Claude Code 2.1.332 and Codex CLI 0.172.0 lists the flag `--worktree`. The other Claude Code, Codex and Sandcastle facts come from their docs, read on 25 Nov 2026. That `merge-to-head` skips the hooks is from the Sandcastle docs. That a sandbox loses ignored evidence is an inference from the Sandcastle code.
 
 ## Provenance
 
