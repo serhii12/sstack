@@ -34,7 +34,7 @@ If that file does not exist, or says there is no tracker, use a local file: `.sc
 
 1. **Search first.** Search the open issues with the `friction` label, or the files in `.scratch/friction/`, for the same problem. Also search the issue titles for the key words, because the label can be missing. If you find a match, comment with what this session adds. Examples are a new way to reproduce it, or a new cost. Then stop. Do not file a duplicate. No fence yet
 2. **Write the issue.** If the project has a friction form (an issue template), use it. Otherwise use the format below. Each issue states what happened and what you wanted. It states how to reproduce the problem and the cost. It lists what you already looked at and the relevant files.
-3. **Label it.** Add `friction` and one priority. If a human must choose, for example between two fixes, or if the fix changes a rule, add `needs-decision`. If `docs/agents/tracker.md` maps the label names, use those names.
+3. **Label it.** Add `friction` and one priority. If a human must choose, for example between two fixes, or if the fix changes a rule, add `needs-decision`. If `docs/agents/triage-labels.md` maps the label names, use those names.
 4. **Report.** Tell the user what you filed, commented on or left unfiled, with a link or path for each.
 
 ## Troubleshooting
