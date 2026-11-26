@@ -131,7 +131,7 @@ node scripts/install.mjs --dry-run /path/to/project
 node scripts/install.mjs /path/to/project
 ```
 
-Use `--tool claude`, `--tool codex` or `--tool both` to choose the agent tool. The default is `claude`. With `codex`, the installer copies the skills to `.agents/skills/`, the folder that Codex reads. In that copy, it changes each `.claude/skills/` path to `.agents/skills/`. It copies the git guard to `.codex/hooks/` and its hook entry to `.codex/hooks.json`. Codex runs that hook only after you trust the project and the hook `sstack git guard` in `/hooks`. Codex gets no `.claude/` folder and no `CLAUDE.md` link. The steps below are for `claude`.
+Use `--tool claude`, `--tool codex` or `--tool both` to choose the agent tool. The default is `claude`. With `codex`, the installer copies the skills to `.agents/skills/`, the folder that Codex reads. In that copy, it changes each `.claude/skills/` path to `.agents/skills/`. It copies the git guard to `.codex/hooks/` and its hook entry to `.codex/hooks.json`. Codex runs that hook only after you trust the project and the hook `sstack git guard` in `/hooks`. Codex gets no `.claude/` folder and no `CLAUDE.md` link. With `both`, the installer does the two, and the Claude Code deny rules also name the `.codex/` guard files. The steps below are for `claude`.
 
 The installer does these steps:
 

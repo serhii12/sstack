@@ -199,6 +199,42 @@ test("--tool codex: the starter docs name the Codex guard files", () => {
   withDirs((source, target) => {
     install({ source, target, tool: "codex", log: quiet, claudeVersion: () => null });
     assert.match(readFileSync(join(target, "docs/agents/enforcement.md"), "utf8"), /\.codex\/hooks\/guard-git\.mjs \(Codex, after you trust it\)/);
-    assert.match(readFileSync(join(target, "docs/agents/permissions.md"), "utf8"), /`\.codex\/hooks\/` and `\.codex\/hooks\.json`/);
+    assert.match(readFileSync(join(target, "docs/agents/permissions.md"), "utf8"), /`\.codex\/hooks\/`, `\.codex\/hooks\.json`, `\.codex\/config\.toml` and `\.codex\/rules\/`/);
+  });
+});
+
+// Check of PR 8: in a both install, the Edit tool of Claude Code could change the Codex guard files.
+const CLAUDE_SETTINGS = readFileSync(join(dirname(SCRIPT), "..", "templates", "claude-settings.json"), "utf8");
+const CODEX_DENY = [".codex/hooks/**", ".codex/hooks.json", ".codex/config.toml", ".codex/rules/**"];
+
+test("--tool both: the Claude settings and the printed deny rules name the Codex guard files, --tool claude does not", () => {
+  for (const [tool, wanted] of [["both", true], ["claude", false]]) {
+    withDirs((source, target) => {
+      write(source, "templates/claude-settings.json", CLAUDE_SETTINGS);
+      const out = [];
+      install({ source, target, tool, log: (l) => out.push(l), claudeVersion: () => null });
+      const settings = JSON.parse(readFileSync(join(target, ".claude/settings.json"), "utf8"));
+      const template = JSON.parse(CLAUDE_SETTINGS);
+      assert.deepEqual(settings.hooks, template.hooks, `${tool}: the hook entry is the template entry`);
+      for (const r of template.permissions.deny) assert.ok(settings.permissions.deny.includes(r), `${tool}: ${r}`);
+      const printed = out.join("\n");
+      for (const g of CODEX_DENY) {
+        assert.equal(settings.permissions.deny.includes(`Edit(/${g})`), wanted, `${tool}: settings ${g}`);
+        assert.equal(printed.includes(`-worktrees/*/${g})"`), wanted, `${tool}: printed ${g}`);
+      }
+    });
+  }
+});
+
+test("--tool both: an existing .claude/settings.json is not changed, and the printed entries name the Codex guard files", () => {
+  withDirs((source, target) => {
+    write(source, "templates/claude-settings.json", CLAUDE_SETTINGS);
+    write(target, ".claude/settings.json", '{ "model": "x" }\n');
+    const out = [];
+    install({ source, target, tool: "both", log: (l) => out.push(l), claudeVersion: () => null });
+    assert.equal(readFileSync(join(target, ".claude/settings.json"), "utf8"), '{ "model": "x" }\n');
+    const text = out.join("\n");
+    assert.match(text, /\.claude\/settings\.json already exists, so it was not changed/);
+    for (const g of CODEX_DENY) assert.ok(text.includes(`"Edit(/${g})"`), g);
   });
 });

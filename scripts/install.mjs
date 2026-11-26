@@ -7,7 +7,8 @@
 // written form, .claude/skills/. hooks/* go to <target>/.codex/hooks/, and
 // templates/codex-hooks.json goes to <target>/.codex/hooks.json (never merged). Codex runs
 // that hook only after the user trusts it, so the next steps say so. The installer never
-// writes ~/.codex. Codex gets no CLAUDE.md link and no .claude/ folder. both does the two.
+// writes ~/.codex. Codex gets no CLAUDE.md link and no .claude/ folder. both does the two, and
+// the Claude Code deny rules (in .claude/settings.json and printed) also name the .codex/ guard files.
 //
 //   skills/*                   -> <target>/.claude/skills/
 //   hooks/*                    -> <target>/.claude/hooks/
@@ -258,7 +259,7 @@ export function plan(source, target, tool = "claude") {
   items.push({ kind: "generate", content: STARTER_PERMISSIONS, mode: 0o644, dest: join(target, "docs", "agents", "permissions.md") });
 
   const settingsSrc = join(source, "templates", "claude-settings.json");
-  if (claude && existsSync(settingsSrc)) items.push({ kind: "settings", src: settingsSrc, dest: join(target, ".claude", "settings.json"), merge: '"hooks" and "permissions"' });
+  if (claude && existsSync(settingsSrc)) items.push({ kind: "settings", src: settingsSrc, dest: join(target, ".claude", "settings.json"), merge: '"hooks" and "permissions"', content: codex ? claudeSettingsText(readFileSync(settingsSrc, "utf8")) : undefined });
   else if (claude) notes.push("nothing to copy: templates/claude-settings.json is missing in the source");
   // Codex: the git guard hook. Codex runs it only after the user trusts it in /hooks.
   const codexHooksSrc = join(source, "templates", "codex-hooks.json");
@@ -423,6 +424,16 @@ export const ALLOW_RULES = [
 export const NEVER_ALLOW = ["Bash(node:*)", "Bash(npm:*)", "Bash(npx:*)", "Bash(gh:*)", "Bash(cd:*)", "Bash(cp:*)", "Bash(mv:*)", "Bash(rm:*)", "Bash(sh:*)", "Bash(bash:*)", "Bash(python3:*)"];
 // Guard files that the agent must not edit, also in a worktree of the repo.
 const GUARD_PATHS = [".stack/**", ".githooks/**", ".claude/hooks/**", ".claude/settings.json", ".claude/settings.local.json"];
+// The Codex guard files. With --tool both, the Claude Code deny rules name them too, so the Edit tool cannot change them.
+const CODEX_GUARD_PATHS = [".codex/hooks/**", ".codex/hooks.json", ".codex/config.toml", ".codex/rules/**"];
+
+/** The Claude settings template with deny rules for the Codex guard files added. */
+export function claudeSettingsText(text) {
+  const settings = JSON.parse(text);
+  const deny = [...(settings.permissions?.deny ?? []), ...CODEX_GUARD_PATHS.map((g) => `Edit(/${g})`)];
+  settings.permissions = { ...settings.permissions, deny };
+  return `${JSON.stringify(settings, null, 2)}\n`;
+}
 export const TEMP_FOLDER = "sstack";
 
 function realOrSame(p) {
@@ -440,13 +451,13 @@ function realOrSame(p) {
  * <worktree>/.stack/check was applied, while the same edit in the project was denied).
  * Returns { allow, deny, worktrees }.
  */
-export function permissionRules(tgt, tmp = tmpdir()) {
+export function permissionRules(tgt, tmp = tmpdir(), codex = false) {
   const real = realOrSame(tgt);
   const worktrees = join(dirname(real), `${basename(real)}-worktrees`);
   const allow = ALLOW_RULES.map(([rule]) => rule);
   allow.push(`Read(/${worktrees}/**)`, `Edit(/${worktrees}/**)`, "Bash(echo $TMPDIR)");
   for (const t of new Set([tmp, realOrSame(tmp)])) allow.push(`Edit(/${join(t, TEMP_FOLDER)}/**)`);
-  const deny = GUARD_PATHS.map((g) => `Edit(/${worktrees}/*/${g})`);
+  const deny = [...GUARD_PATHS, ...(codex ? CODEX_GUARD_PATHS : [])].map((g) => `Edit(/${worktrees}/*/${g})`);
   return { allow, deny, worktrees };
 }
 
@@ -473,7 +484,7 @@ ${ALLOW_RULES.filter(([r, plain]) => plain && r.startsWith("Edit(")).map(([, pla
 - \`node\`, \`npm\`, \`npx\`, \`sh\`, \`bash\` or \`python3\` with any argument. They run code that the git guard cannot read.
 - \`gh\` with any argument. \`gh pr merge --admin\` and \`gh api\` skip the merge gate.
 - \`cd\`, \`cp\`, \`mv\` or \`rm\` with any argument.
-- Edits to \`.stack/\`, \`.githooks/\`, \`.claude/hooks/\`, \`.claude/settings*.json\`, \`.codex/hooks/\` and \`.codex/hooks.json\`, in the repo and in each worktree.
+- Edits to \`.stack/\`, \`.githooks/\`, \`.claude/hooks/\`, \`.claude/settings*.json\`, \`.codex/hooks/\`, \`.codex/hooks.json\`, \`.codex/config.toml\` and \`.codex/rules/\`, in the repo and in each worktree.
 `;
 
 // Codex: print only (owner ruling). The installer writes no .codex/config.toml and no .codex/rules.
@@ -483,8 +494,8 @@ export const CODEX_PERMISSION_LINES = [
 ];
 
 /** The lines to print: where to paste the rules, why, and the rules as JSON. */
-export function permissionLines(tgt, tmp = tmpdir()) {
-  const { allow, deny } = permissionRules(tgt, tmp);
+export function permissionLines(tgt, tmp = tmpdir(), codex = false) {
+  const { allow, deny } = permissionRules(tgt, tmp, codex);
   return [
     "Permissions for Claude Code. The installer wrote no settings file. You decide.",
     "Paste these rules into the \"permissions\" of .claude/settings.local.json. Without them, the first /build stops for permission many times.",
@@ -602,7 +613,8 @@ export function install({ source = DEFAULT_SOURCE, target, tool = "claude", dryR
       log(`${dryRun ? "would copy" : "copy"}  ${rel}`);
       if (!dryRun) {
         mkdirSync(dirname(it.dest), { recursive: true });
-        if (it.rewrite) writeFileSync(it.dest, codexText(readFileSync(it.src, "utf8")), { flag: "wx" });
+        if (it.content !== undefined) writeFileSync(it.dest, it.content, { flag: "wx" });
+        else if (it.rewrite) writeFileSync(it.dest, codexText(readFileSync(it.src, "utf8")), { flag: "wx" });
         else copyFileSync(it.src, it.dest);
         chmodSync(it.dest, statSync(it.src).mode & 0o777);
       }
@@ -618,7 +630,7 @@ export function install({ source = DEFAULT_SOURCE, target, tool = "claude", dryR
   for (const manual of items.filter((i) => i.kind === "manual" && i.src)) {
     log("");
     log(`${relative(tgt, manual.dest)} already exists, so it was not changed. Add these entries by hand (merge into the existing ${manual.merge}):`);
-    log(readFileSync(manual.src, "utf8").trimEnd().replace(/^/gm, "    "));
+    log((manual.content ?? readFileSync(manual.src, "utf8")).trimEnd().replace(/^/gm, "    "));
   }
   if (items.some((i) => i.dest.startsWith(join(tgt, ".githooks")))) {
     log("");
@@ -639,7 +651,7 @@ export function install({ source = DEFAULT_SOURCE, target, tool = "claude", dryR
     log(`note    The Claude Code adapter uses onFailure: block in the hook settings. This setting needs Claude Code ${MIN_CLAUDE_VERSION} or later. Your version is older, so please update Claude Code.`);
   }
   log("");
-  if (tool !== "codex") for (const l of permissionLines(tgt)) log(l);
+  if (tool !== "codex") for (const l of permissionLines(tgt, undefined, tool === "both")) log(l);
   else for (const l of CODEX_PERMISSION_LINES) log(l);
   log("");
   log(`${dryRun ? "Dry run, nothing written. " : ""}${counts.copy + counts.generate + counts.link} to create, ${counts.skip} skipped, ${counts.manual} need a manual step.`);
