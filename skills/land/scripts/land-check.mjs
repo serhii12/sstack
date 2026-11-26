@@ -328,7 +328,7 @@ export const REVIEW_STATES = {
   "not-ancestor": { blocks: true, what: (rv) => `the reviewed commit ${quoteName(rv.reviewed ?? "")} is not in the history of the head`, fix: REVIEW_AGAIN },
   stale: { blocks: true, what: (rv) => `the review is stale: ${(rv.changedAfter ?? []).length} file(s) changed after the reviewed commit ${quoteName(rv.reviewed ?? "")}`, fix: REVIEW_AGAIN },
   partial: { blocks: true, what: (rv) => (rv.startsInPr ? `the first review range starts at a commit of the pull request (${quoteName(String(rv.startsInPr).slice(0, 12))}), so the commits before it have no review` : `the review range does not cover every commit of the pull request (${Number(rv.covered)} of ${Number(rv.prCommits)})`), fix: "load peer-review with the default branch as the base, and let it write a new review file in place of the old one. Commit it, push, and wait again" },
-  "open-findings": { blocks: true, what: (rv) => `the review has open findings that are not of severity low: ${ids(rv.blocking)}`, fix: "fix each finding and set its status to fixed, or stop and ask a person" },
+  "open-findings": { blocks: true, what: (rv) => `the review has open findings that are not of severity low: ${ids(rv.blocking)}`, fix: "stop and list them. The user decides on each one: fix it and set its status to fixed, or set won't fix: <reason>" },
   unknown: { blocks: true, what: () => "the review state is not known", fix: REVIEW_AGAIN },
 };
 
