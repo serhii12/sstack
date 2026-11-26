@@ -136,6 +136,32 @@ export function lint(rootArg) {
   let noFenceYet = 0;
   const add = (file, line, rule, message, fix) =>
     problems.push({ path: relative(root, file) || file, line, rule, message, fix });
+  // Rule 3: each `Held by:` names a path that exists. Counts the `No fence yet` rules.
+  const checkHeldBy = (file, lines, skillDir) => {
+    for (const l of lines) {
+      if (l.fence || l.inFrontmatter) continue;
+      if (/(?:^|[\s`*_.])No fence yet(?:\s*\(planned:[^)]*\))?[`*_.]*\s*$/.test(l.t)) noFenceYet++;
+      const m = l.t.match(/Held by:\s*(.*)$/);
+      if (!m) continue;
+      const value = m[1].trim().replace(/^`+|`+$/g, "").trim();
+      if (/^planned\b/i.test(value)) {
+        add(file, l.n, "held-by-planned", "`Held by:` names a planned item", "write `No fence yet (planned: ...)` until the script or test exists.");
+        continue;
+      }
+      if (/^No fence yet/i.test(value)) continue;
+      if (value === "") {
+        add(file, l.n, "held-by", "`Held by:` is empty", "name the script, hook or test that enforces the rule, or write `No fence yet`.");
+        continue;
+      }
+      for (const part of value.split(/\s*,\s*|\s+and\s+/)) {
+        const p = part.replace(/\([^)]*\)/g, "").replace(/`/g, "").replace(/[.]+$/, "").trim();
+        if (!p) continue;
+        if (!pathExists(join(root, p)) && !pathExists(join(skillDir, p))) {
+          add(file, l.n, "held-by", `\`Held by: ${p}\` names a path that does not exist`, `create ${p}, fix the path, or write \`No fence yet (planned: ...)\`.`);
+        }
+      }
+    }
+  };
 
   const folders = readdirSync(skillsDir, { withFileTypes: true })
     .filter((e) => e.isDirectory() && !e.name.startsWith("."))
@@ -265,29 +291,7 @@ export function lint(rootArg) {
     }
 
     // Rule 3: Held by.
-    for (const l of lines) {
-      if (l.fence || l.inFrontmatter) continue;
-      if (/(?:^|[\s`*_.])No fence yet(?:\s*\(planned:[^)]*\))?[`*_.]*\s*$/.test(l.t)) noFenceYet++;
-      const m = l.t.match(/Held by:\s*(.*)$/);
-      if (!m) continue;
-      const value = m[1].trim().replace(/^`+|`+$/g, "").trim();
-      if (/^planned\b/i.test(value)) {
-        add(file, l.n, "held-by-planned", "`Held by:` names a planned item", "write `No fence yet (planned: ...)` until the script or test exists.");
-        continue;
-      }
-      if (/^No fence yet/i.test(value)) continue;
-      if (value === "") {
-        add(file, l.n, "held-by", "`Held by:` is empty", "name the script, hook or test that enforces the rule, or write `No fence yet`.");
-        continue;
-      }
-      for (const part of value.split(/\s*,\s*|\s+and\s+/)) {
-        const p = part.replace(/\([^)]*\)/g, "").replace(/`/g, "").replace(/[.]+$/, "").trim();
-        if (!p) continue;
-        if (!pathExists(join(root, p)) && !pathExists(join(skillDir, p))) {
-          add(file, l.n, "held-by", `\`Held by: ${p}\` names a path that does not exist`, `create ${p}, fix the path, or write \`No fence yet (planned: ...)\`.`);
-        }
-      }
-    }
+    checkHeldBy(file, lines, skillDir);
 
     // Rule 4: a typed workflow must not run another typed workflow.
     if (s.typed) {
@@ -311,7 +315,7 @@ export function lint(rootArg) {
     }
   }
 
-  // Rule 2b: relative links in the files beside SKILL.md must resolve too.
+  // Rule 2b and rule 3 for the files beside SKILL.md: relative links and `Held by:` paths must resolve too.
   for (const folder of folders) {
     const skillDir = join(skillsDir, folder);
     for (const e of readdirSync(skillDir, { withFileTypes: true })) {
@@ -323,7 +327,9 @@ export function lint(rootArg) {
       } catch (err) {
         throw new LintError(`cannot read ${file}: ${err.message}`);
       }
-      for (const l of scanLines(text, 0)) {
+      const lines = scanLines(text, 0);
+      checkHeldBy(file, lines, skillDir);
+      for (const l of lines) {
         if (l.fence || l.inProvenance) continue;
         for (const m of stripInlineCode(l.t).matchAll(/\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
           const href = m[1];
