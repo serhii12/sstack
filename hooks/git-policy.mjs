@@ -59,7 +59,7 @@
 //   - Pushes that do not use `git push`: `git send-pack`, `git http-push`, `git remote` with a pushurl and a hook.
 //   - A command text over 256 KB is blocked, and so is a null byte. The shell reads up to a null byte only.
 //   - The source folder `hooks/` of this repo is not protected. Only the installed copies `.claude/hooks` and `.codex/hooks` are, because `hooks/` is a common folder name.
-//   - People and scripts outside Claude Code. Branch protection on the host is the real fence.
+//   - People and scripts outside Claude Code and Codex. Branch protection on the host is the real fence.
 
 import path from "node:path";
 
