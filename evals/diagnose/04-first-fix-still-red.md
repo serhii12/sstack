@@ -13,16 +13,16 @@ npm test fails in this repo and I do not know why. Diagnose it, then fix it.
   - `src/slug.mjs`. `slugify` calls `replaceAll(/ /, "-")`. A regular expression with no `g` flag makes `replaceAll` throw a `TypeError`. This is the obvious first cause.
   - `src/clean.mjs`. `clean` removes every character that matches `[^a-y0-9-]`, so it also drops the letter `z`. The crash hides this second cause.
   - `test/slug.test.mjs` with two tests. Test 1: `slugify("Hello lazy World")` must equal `"hello-lazy-world"`. Test 2: `slugify("Hi, there!")` must equal `"hi-there"`. Both tests fail with the `TypeError`.
-- After the first fix, test 1 still fails with `'hello-lay-world'`. Then the skill wants a ranked list before the next change.
+- After the first fix, test 1 still fails with `'hello-lay-world'`. This is a new symptom, so the skill wants a new ranked list before the next change.
 - Allowed tools: the same as eval 01.
 
 ## Expected behaviors
 
 - [ ] The agent loads the `diagnose` skill.
 - [ ] The agent runs `npm test` or `node --test` before any edit and prints `Red command:`.
-- [ ] The agent can fix the `replaceAll` call at once, as its first cause.
-- [ ] After that fix, the red command still fails with a new symptom. The agent stops and prints `Ranked causes:` with 3 to 5 causes. Each cause has a prediction of the form "If X is the cause, then changing Y ...".
-- [ ] The list comes before the next edit.
+- [ ] Before the first edit, the agent prints `Ranked causes:` with 3 to 5 causes. The `replaceAll` call can be the top cause.
+- [ ] After that fix, the red command still fails with a new symptom. The agent prints a new `Ranked causes:` list with 3 to 5 causes. Each cause has a prediction of the form "If X is the cause, then changing Y ...".
+- [ ] The new list comes before the next edit.
 - [ ] The agent changes one thing per experiment.
 - [ ] The agent names the second cause: the character class `a-y` drops `z`.
 - [ ] At the end, `npm test` passes and the test file still expects `"hello-lazy-world"`.
@@ -30,7 +30,7 @@ npm test fails in this repo and I do not know why. Diagnose it, then fix it.
 
 ## Failure looks like
 
-- The agent fixes the crash, sees the new failure and edits again with no ranked list.
+- The agent fixes the crash, sees the new failure and edits again with no new ranked list.
 - The agent edits both files in one step.
 - The agent changes the expected value in the test to make it pass.
 
@@ -97,7 +97,7 @@ npm test fails in this repo and I do not know why. Diagnose it, then fix it.
     ],
     "outputMatches": [
       "Red command:",
-      "Ranked causes:",
+      "Ranked causes:[\\s\\S]*Ranked causes:",
       "(If [^\\n]{1,200}? is the cause,? then[\\s\\S]*){3}",
       "/a-y|\\[\\^a-z|\\bz\\b|letter z|`z`|'z'|\"z\"/i"
     ],
@@ -119,6 +119,6 @@ npm test fails in this repo and I do not know why. Diagnose it, then fix it.
 }
 ```
 
-This eval is in the `capability` set. On 25 Nov 2026 no run printed the ranked list: 0 of 8 runs, before and after one fix round of the skill text. So the rule in the skill says `No fence yet`.
+This eval is in the `capability` set. On 25 Nov 2026 no run printed the ranked list after the first fix. That was 0 of 8 runs, before and after one fix round of the skill text. So that rule in the skill says `No fence yet`. Since then the skill prints a first list before any test, so the check now asks for two lists.
 
-Not machine-checked: that the ranked list comes after the first fix and before the second edit, and that `npm test` passes at the end. The runner cannot order text against tool calls or run a command after the agent stops.
+Not machine-checked: the first list comes before the first edit. The second list comes after the first fix and before the second edit. `npm test` passes at the end. The runner cannot order text against tool calls or run a command after the agent stops.

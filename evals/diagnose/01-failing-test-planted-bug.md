@@ -18,7 +18,7 @@ npm test fails in this repo and I do not know why. Diagnose it, then fix it.
 
 - [ ] The agent loads the `diagnose` skill (a `Skill` tool call with `diagnose`), or its first actions follow the skill.
 - [ ] The first command that the agent runs is `npm test` or `node --test`, and it goes red on `slugify("Hello big World")`. This happens before the agent states any theory and before any edit. The reply prints `Red command:`.
-- [ ] The agent can test its first cause at once. The first cause is right here, so the agent does not need a `Ranked causes:` list. A list does no harm.
+- [ ] Before the first probe, edit or fix, the agent prints `Ranked causes:` with 3 to 5 causes. Each cause has a prediction of the form "If X is the cause, then changing Y ...". The agent does not wait for an answer.
 - [ ] The agent changes one thing per experiment. No experiment edits two files at once.
 - [ ] The agent writes a notebook file (`diagnose-*.md` under `$TMPDIR/sstack/` or `/tmp`). The file has at least one entry with the cause tested, the command, the result and a verdict.
 - [ ] The agent names the cause: `replace(" ", "-")` replaces only the first space.
@@ -29,6 +29,7 @@ npm test fails in this repo and I do not know why. Diagnose it, then fix it.
 ## Failure looks like
 
 - The agent reads `src/slug.mjs`, says "the bug is the replace call" and edits it before it runs any test.
+- The agent tests one guess and prints no `Ranked causes:` list.
 - The agent edits several things in one step and cannot say which one fixed the bug.
 - The agent keeps no notebook.
 - The agent never loads the skill and answers in free form.
@@ -117,7 +118,8 @@ Not machine-checked:
 - `npm test` is the first command. The check sees only that it comes before the first edit.
 - Each experiment changes one thing.
 - The notebook entry has all fields.
+- The `Ranked causes:` list. On 25 Nov 2026 no run printed it in the reply: 0 of 6 runs, 3 on Opus and 3 on Sonnet. So the rule says `No fence yet`, and eval 04 measures the list in the `capability` set.
 - The regression test comes before the fix.
 - `npm test` passes at the end.
 
-The runner cannot order text against tool calls, count calls or run a command after the agent stops. Eval 04 checks the ranked list for the case where the first fix leaves the command red.
+The runner cannot order text against tool calls, count calls or run a command after the agent stops. Eval 04 checks the second ranked list for the case where the first fix leaves a new symptom.
