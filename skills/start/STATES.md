@@ -4,7 +4,7 @@ This file lists each thing in the stack that moves through named states. Read it
 
 Contents: Words with one meaning. Task stage. Plan. Build. Ship. Side entrances, guards and stack tools.
 
-In the States column, a word in backticks is stored in a file, a label or a line of output. A plain word is a state that a reader works out from other marks. A path starts in the skills folder, except a path that starts with `scripts/`. The host is GitHub or CI. In the Read by column, `NAME` in `<script>` is the list of names in the script that reads or works out the state. In the Travels column, "one machine" means that a new session on another machine does not see it. `.scratch/` stays on one machine until the user commits it.
+In the States column, a word in backticks is stored in a file, a label or a line of output. A plain word is a state that a reader works out from other marks. A script path starts in the skills folder, except a path that starts with `scripts/`. The host is GitHub or CI. In the Read by column, `NAME` in `<script>` is the list of names in the script that reads or works out the state. In the Travels column, "one machine" means that a new session on another machine does not see it. `.scratch/` stays on one machine until the user commits it.
 
 ## Words with one meaning
 
@@ -29,6 +29,7 @@ stateDiagram-v2
   ticketed --> in_work: /build one ticket
   in_work --> built: build step 9
   built --> in_pull_request: /land
+  in_work --> in_pull_request: /land, the ticket stays open
   in_pull_request --> merged: land-check --merge or a person
   merged --> in_work: /build next ticket
   merged --> [*]
