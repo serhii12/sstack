@@ -17,7 +17,7 @@ test("plainPath refuses `..`, `.`, empty parts, backslashes, leading slash and c
   assert.equal(plainPath("docs/a.md"), true);
 });
 
-test("built-in rules: only the fences (CI, hook folders, .claude, .stack, CODEOWNERS) and path tricks", { timeout: 120000 }, () => {
+test("built-in rules: only the fences (CI, hook folders, .claude, .agents, .codex, .stack, CODEOWNERS) and path tricks", { timeout: 120000 }, () => {
   const want = {
     ".github/workflows/ci.yml": "ci-workflow", ".GitHub/Workflows/ci.yml": "ci-workflow", ".gitlab-ci.yml": "ci-workflow",
     ".github/actions/setup/action.yml": "ci-workflow", ".circleci/config.yml": "ci-workflow",
@@ -140,6 +140,34 @@ test("git mode: the config comes from the base, so a change to .stack/risk.json 
     assert.deepEqual(res.paths.medium, ["src/x.mjs"], "src/** is medium under the BASE config, not low under the head config");
   } finally {
     r.rm();
+  }
+});
+
+test("the Codex folders .agents/ and .codex/ are fixed guard folders like .claude/: high, also when the base config lowers them", { timeout: 120000 }, () => {
+  for (const p of [".agents/skills/land/SKILL.md", ".codex/hooks.json", "pkg/.agents/x.md", ".Codex./config.toml", ".ag\u200bents/x", "agents~1/x", "codex~1/hooks.json"]) assert.equal(builtinRule(p), "guard-files", p);
+  for (const p of ["agents/x.md", "docs/codex.md", "AGENTS.md"]) assert.notEqual(builtinRule(p), "guard-files", p);
+  for (const path of [".agents/skills/land/SKILL.md", ".codex/hooks.json", ".claude/skills/land/SKILL.md"]) {
+    const r = repo();
+    try {
+      // The base config tries to lower all three folders and clears the default high list.
+      r.g("switch", "-q", "main");
+      r.w(".stack/risk.json", JSON.stringify({ levels: { low: [".agents/**", ".codex/**", ".claude/**"], high: [] } }));
+      r.g("add", "-A");
+      r.g("commit", "-q", "-m", "lower the agent folders");
+      r.g("update-ref", "refs/remotes/origin/main", "HEAD");
+      r.g("switch", "-q", "agent/t");
+      r.g("merge", "-q", "--ff-only", "main");
+      r.w(path, "changed\n");
+      r.g("add", "-A");
+      r.g("commit", "-q", "-m", "edit");
+      const out = spawnSync(process.execPath, [SCRIPT], { encoding: "utf8", cwd: r.dir });
+      assert.equal(out.status, 0, out.stderr);
+      const res = JSON.parse(out.stdout);
+      assert.equal(res.level, "high", path);
+      assert.equal(res.rule, "builtin:guard-files", path);
+    } finally {
+      r.rm();
+    }
   }
 });
 
