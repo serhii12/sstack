@@ -104,7 +104,7 @@ If a change needs one of those paths, do not use a shell command to get around t
 
 List each approved item. Give the files written and the failing run that you saw. Give the passing run after the fix. Name each rule that is still `No fence yet`. Commit on the branch. Never skip the git hooks. Held by: hooks/guard-git.mjs
 
-Tell the user to type `/land` next. It pushes the branch, opens the pull request and merges it through the merge gate. If the user declined every item, there is no next command.
+Tell the user to type `/peer-review` next and to commit its review file. Then `/land` pushes the branch, opens the pull request and merges it through the merge gate. `/land` stops when the branch has no review file. If the user declined every item, there is no next command.
 
 `retro` never runs another typed skill. It tells the user the next command to type. No fence yet
 
