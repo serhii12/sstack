@@ -131,6 +131,8 @@ node scripts/install.mjs --dry-run /path/to/project
 node scripts/install.mjs /path/to/project
 ```
 
+Use `--tool claude`, `--tool codex` or `--tool both` to choose the agent tool. The default is `claude`. With `codex`, the installer copies the skills to `.agents/skills/`, the folder that Codex reads. In that copy, it changes each `.claude/skills/` path to `.agents/skills/`. Codex gets no `.claude/` folder and no `CLAUDE.md` link. The steps below are for `claude`.
+
 The installer does these steps:
 
 - It copies the skills to `.claude/skills/`, the git guard to `.claude/hooks/`, and the templates to the project.

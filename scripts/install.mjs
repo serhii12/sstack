@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 // install: copies this stack into a project repo.
 //
+// --tool claude (the default), codex or both picks the agent tool. The lines below are for claude.
+// For codex: skills/* go to <target>/.agents/skills/, the folder that Codex reads. In each .md and
+// .mjs file of that copy, the text .claude/skills/ becomes .agents/skills/. The source keeps one
+// written form, .claude/skills/. Codex gets no CLAUDE.md link and no .claude/ folder.
+// both does the two.
+//
 //   skills/*                   -> <target>/.claude/skills/
 //   hooks/*                    -> <target>/.claude/hooks/
 //   templates/AGENTS.md, GLOSSARY.md -> <target>/
@@ -48,7 +54,7 @@
 // skills live in `.claude/skills/<name>/SKILL.md`, and a hook command refers to a
 // project script as `${CLAUDE_PROJECT_DIR}/.claude/hooks/<script>`.
 //
-// Usage: node scripts/install.mjs [--dry-run] [--replace-git-hooks] <target-repo>
+// Usage: node scripts/install.mjs [--tool claude|codex|both] [--dry-run] [--replace-git-hooks] <target-repo>
 // Exit 0 done, 1 refused (not a git repo, or the target is this repo), 2 usage or read error.
 
 import { spawnSync } from "node:child_process";
@@ -59,10 +65,21 @@ import { fileURLToPath } from "node:url";
 
 const DEFAULT_SOURCE = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 // The "kept" hook message tells the user to run the install again with --replace-git-hooks, so the usage line names it.
-export const USAGE = "Usage: node scripts/install.mjs [--dry-run] [--replace-git-hooks] <target-repo>";
+export const USAGE = "Usage: node scripts/install.mjs [--tool claude|codex|both] [--dry-run] [--replace-git-hooks] <target-repo>";
 
 export class InstallRefusal extends Error {}
 export class InstallUsageError extends Error {}
+
+export const TOOLS = ["claude", "codex", "both"];
+// Codex reads skills from .agents/skills/, not from .claude/skills/ (Codex CLI 0.172.0, skills docs).
+export const CLAUDE_SKILLS = ".claude/skills/";
+export const CODEX_SKILLS = ".agents/skills/";
+const REWRITE_FILES = /\.(?:md|mjs)$/;
+
+/** The text of a skill file for the Codex copy: each .claude/skills/ becomes .agents/skills/. */
+export function codexText(text) {
+  return text.replaceAll(CLAUDE_SKILLS, CODEX_SKILLS);
+}
 
 function walk(dir) {
   const out = [];
@@ -198,16 +215,18 @@ function claudeLinkItem(target, agentsComing, notes) {
   return { kind: "link", dest, linkTo: CLAUDE_LINK };
 }
 
-/** Build the plan. Returns { items, notes }. Does not write. */
-export function plan(source, target) {
+/** Build the plan for tool claude, codex or both. Returns { items, notes }. Does not write. */
+export function plan(source, target, tool = "claude") {
   const items = [];
   const notes = [];
-  const addTree = (srcDir, destDir) => {
+  const claude = tool !== "codex";
+  const codex = tool !== "claude";
+  const addTree = (srcDir, destDir, { rewrite = false } = {}) => {
     if (!isDir(srcDir)) {
       notes.push(`nothing to copy: ${relative(source, srcDir)}/ is missing in the source`);
       return;
     }
-    for (const f of walk(srcDir)) items.push({ kind: "copy", src: f, dest: join(destDir, relative(srcDir, f)) });
+    for (const f of walk(srcDir)) items.push({ kind: "copy", src: f, dest: join(destDir, relative(srcDir, f)), rewrite: rewrite && REWRITE_FILES.test(f) });
   };
   const addFile = (rel, destRel) => {
     const src = join(source, rel);
@@ -218,10 +237,13 @@ export function plan(source, target) {
     items.push({ kind: "copy", src, dest: join(target, destRel) });
   };
 
-  addTree(join(source, "skills"), join(target, ".claude", "skills"));
-  addTree(join(source, "hooks"), join(target, ".claude", "hooks"));
+  if (claude) {
+    addTree(join(source, "skills"), join(target, ".claude", "skills"));
+    addTree(join(source, "hooks"), join(target, ".claude", "hooks"));
+  }
+  if (codex) addTree(join(source, "skills"), join(target, ".agents", "skills"), { rewrite: true });
   for (const f of ["AGENTS.md", "GLOSSARY.md"]) addFile(join("templates", f), f);
-  const link = claudeLinkItem(target, existsSync(join(source, "templates", "AGENTS.md")), notes);
+  const link = claude ? claudeLinkItem(target, existsSync(join(source, "templates", "AGENTS.md")), notes) : null;
   if (link) items.push(link);
   addTree(join(source, "templates", "adr"), join(target, "docs", "adr"));
   addTree(join(source, "templates", "githooks"), join(target, ".githooks"));
@@ -231,8 +253,8 @@ export function plan(source, target) {
   items.push({ kind: "generate", content: STARTER_PERMISSIONS, mode: 0o644, dest: join(target, "docs", "agents", "permissions.md") });
 
   const settingsSrc = join(source, "templates", "claude-settings.json");
-  if (existsSync(settingsSrc)) items.push({ kind: "settings", src: settingsSrc, dest: join(target, ".claude", "settings.json") });
-  else notes.push("nothing to copy: templates/claude-settings.json is missing in the source");
+  if (claude && existsSync(settingsSrc)) items.push({ kind: "settings", src: settingsSrc, dest: join(target, ".claude", "settings.json") });
+  else if (claude) notes.push("nothing to copy: templates/claude-settings.json is missing in the source");
 
   for (const it of items) {
     if ((it.kind === "copy" || it.kind === "generate") && present(it.dest)) it.kind = "skip";
@@ -367,7 +389,7 @@ export function nextSteps(tgt, { checkIsPlaceholder = false, agentsHasPlaceholde
 // Each entry: [Claude Code rule, the same thing in plain words for other agent tools].
 export const ALLOW_RULES = [
   ["Bash(git:*)", "`git`. In Claude Code the git guard hook still checks each git command."],
-  ["Bash(node .claude/skills/*)", "`node .claude/skills/<skill>/scripts/<script>.mjs`: the lints and checks of the stack."],
+  ["Bash(node .claude/skills/*)", "`node .claude/skills/<skill>/scripts/<script>.mjs`, or in Codex `node .agents/skills/<skill>/scripts/<script>.mjs`: the lints and checks of the stack."],
   ["Bash(./.stack/check)", "`./.stack/check`: the project check, the same file that the commit hook runs."],
   ["Bash(gh --version)", "`gh --version`, `gh auth status`, `gh repo view`, `gh issue view|list|create`, `gh pr list|view|diff|create`: read or create only, for /setup, /tickets, /build and /land."],
   ["Bash(gh auth status)", null],
@@ -421,7 +443,7 @@ export const STARTER_PERMISSIONS = `# Permissions
 
 The stack runs the commands below and writes the files below. If your agent tool asks before each command, allow these. If not, an unattended run stops at each one, and the first /build stops many times.
 
-The installer printed the same list in the syntax of Claude Code. It wrote no settings file. You decide what to allow.
+For Claude Code, the installer printed the same list in the syntax of Claude Code. It wrote no settings file. You decide what to allow.
 
 ## Commands
 
@@ -442,6 +464,12 @@ ${ALLOW_RULES.filter(([r, plain]) => plain && r.startsWith("Edit(")).map(([, pla
 - \`cd\`, \`cp\`, \`mv\` or \`rm\` with any argument.
 - Edits to \`.stack/\`, \`.githooks/\`, \`.claude/hooks/\` and \`.claude/settings*.json\`, in the repo and in each worktree.
 `;
+
+// Codex: print only (owner ruling). The installer writes no .codex/config.toml and no .codex/rules.
+export const CODEX_PERMISSION_LINES = [
+  "Permissions for Codex. The installer wrote no Codex config file. You decide.",
+  "docs/agents/permissions.md lists the commands that the stack runs and the files that it writes.",
+];
 
 /** The lines to print: where to paste the rules, why, and the rules as JSON. */
 export function permissionLines(tgt, tmp = tmpdir()) {
@@ -515,7 +543,8 @@ export function isOlderVersion(text, min = MIN_CLAUDE_VERSION) {
  * OS that refuses symlinks. claudeVersion returns the output of `claude --version` or null.
  * Tests pass a fake, so no real binary runs.
  */
-export function install({ source = DEFAULT_SOURCE, target, dryRun = false, replaceGitHooks = false, log = console.log, symlink = symlinkSync, claudeVersion = lookupClaudeVersion }) {
+export function install({ source = DEFAULT_SOURCE, target, tool = "claude", dryRun = false, replaceGitHooks = false, log = console.log, symlink = symlinkSync, claudeVersion = lookupClaudeVersion }) {
+  if (!TOOLS.includes(tool)) throw new InstallUsageError(`unknown tool "${tool}". Use claude, codex or both.`);
   if (!target) throw new InstallUsageError("missing target directory");
   const src = resolve(source);
   const tgt = resolve(target);
@@ -527,7 +556,7 @@ export function install({ source = DEFAULT_SOURCE, target, dryRun = false, repla
     throw new InstallRefusal(`target ${tgt} is not a git repo (no .git). Run \`git init\` there first, or pick the repo root.`);
   }
 
-  const { items, notes } = plan(src, tgt);
+  const { items, notes } = plan(src, tgt, tool);
   checkDestinations(items, tgt);
   const counts = { copy: 0, generate: 0, link: 0, skip: 0, manual: 0 };
   for (const it of items) {
@@ -562,7 +591,8 @@ export function install({ source = DEFAULT_SOURCE, target, dryRun = false, repla
       log(`${dryRun ? "would copy" : "copy"}  ${rel}`);
       if (!dryRun) {
         mkdirSync(dirname(it.dest), { recursive: true });
-        copyFileSync(it.src, it.dest);
+        if (it.rewrite) writeFileSync(it.dest, codexText(readFileSync(it.src, "utf8")), { flag: "wx" });
+        else copyFileSync(it.src, it.dest);
         chmodSync(it.dest, statSync(it.src).mode & 0o777);
       }
     }
@@ -592,14 +622,15 @@ export function install({ source = DEFAULT_SOURCE, target, dryRun = false, repla
   // A note for the Claude Code adapter only. It never changes the result of the install.
   let version = null;
   try {
-    version = claudeVersion();
+    if (tool !== "codex") version = claudeVersion();
   } catch {}
   if (isOlderVersion(version)) {
     log("");
     log(`note    The Claude Code adapter uses onFailure: block in the hook settings. This setting needs Claude Code ${MIN_CLAUDE_VERSION} or later. Your version is older, so please update Claude Code.`);
   }
   log("");
-  for (const l of permissionLines(tgt)) log(l);
+  if (tool !== "codex") for (const l of permissionLines(tgt)) log(l);
+  else for (const l of CODEX_PERMISSION_LINES) log(l);
   log("");
   log(`${dryRun ? "Dry run, nothing written. " : ""}${counts.copy + counts.generate + counts.link} to create, ${counts.skip} skipped, ${counts.manual} need a manual step.`);
   const planned = (rel) => dryRun && items.some((i) => i.dest === join(tgt, rel) && (i.kind === "copy" || i.kind === "generate"));
@@ -616,6 +647,7 @@ export function install({ source = DEFAULT_SOURCE, target, dryRun = false, repla
 function main(argv) {
   let dryRun = false;
   let replaceGitHooks = false;
+  let tool = "claude";
   let target;
   let source;
   for (let i = 0; i < argv.length; i++) {
@@ -623,6 +655,7 @@ function main(argv) {
     if (a === "--dry-run") dryRun = true;
     else if (a === "--replace-git-hooks") replaceGitHooks = true;
     else if (a === "--source") source = argv[++i];
+    else if (a === "--tool") tool = argv[++i] ?? "";
     else if (a.startsWith("-")) {
       console.error(`install: unknown option ${a}\n${USAGE}`);
       return 2;
@@ -633,7 +666,7 @@ function main(argv) {
     }
   }
   try {
-    install({ source: source ?? DEFAULT_SOURCE, target, dryRun, replaceGitHooks });
+    install({ source: source ?? DEFAULT_SOURCE, target, tool, dryRun, replaceGitHooks });
     return 0;
   } catch (e) {
     if (e instanceof InstallRefusal) {
