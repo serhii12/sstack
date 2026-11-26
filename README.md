@@ -13,7 +13,7 @@ flowchart TD
   TG -->|"ready-for-agent"| B
   S -->|"a question"| A["Answer.<br/>No branch, no pull request"]
   S -->|"a code change, or a bug<br/>with unclear behavior"| G
-  S -->|"a bug with<br/>clear behavior"| DG["/diagnose<br/>a failing command first,<br/>then a regression test"]
+  S -->|"a bug with<br/>clear behavior"| DG["/diagnose<br/>a failing command first"]
   S -->|"work made by hand"| HR["/peer-review<br/>commit its review file"]
   DG -->|"to ship the fix"| HR
   HR -->|"/land"| SH
@@ -22,7 +22,6 @@ flowchart TD
     G["/grill<br/>rounds of questions,<br/>each with a recommended answer"] --> C{"You confirm<br/>the summary?"}
     C -->|"no"| G
     G -.->|"new term or<br/>hard-to-undo decision"| DM["domain-memory<br/>glossary and decision records"]
-    G -.->|"a trade-off"| D["decide<br/>options and one recommendation"]
     G -.->|"a question that talk<br/>cannot settle"| PT["/prototype<br/>throwaway branch,<br/>never merged into main"]
     PT -.->|"your verdict"| G
   end
@@ -30,26 +29,25 @@ flowchart TD
   C -->|"yes"| SP
 
   subgraph P2["2. Plan"]
-    SP["/spec<br/>you confirm the test boundaries,<br/>then it writes a draft spec"] --> TK["/tickets<br/>small tickets,<br/>each ready-for-agent"]
+    SP["/spec<br/>a draft spec"] --> TK["/tickets<br/>small tickets"]
   end
 
   SP -.->|"an essential is missing"| G
   TK -->|"/build for each ticket"| B
 
   subgraph P3["3. Build one ticket"]
-    B["/build<br/>in the checkout that it gets"] --> TC["test-craft<br/>failing test first"]
+    B["/build"] --> TC["test-craft<br/>failing test first"]
     TC --> CODE["Write the code"]
     CODE --> CM["Commit<br/>the git guard checks the command"]
     CM --> PR["peer-review<br/>two fresh reviewers"]
     PR --> FIX["Fix each finding and commit.<br/>One follow-up review"]
-    CODE -.->|"a bug"| DG2["diagnose<br/>a failing command first"]
-    CODE -.->|"a lasting problem"| FR["friction<br/>file it as an issue"]
+    FIX -.->|"a lasting problem"| FR["friction<br/>file it as an issue"]
   end
 
   FIX --> PV
 
   subgraph P4["4. Prove"]
-    PV["prove, run by /build<br/>evidence for each acceptance check:<br/>pass, fail or untested"]
+    PV["prove, run by /build<br/>pass, fail or untested"]
   end
 
   PV -->|"you type /land"| SH
@@ -98,24 +96,24 @@ You type a typed skill as a command. The agent loads an agent skill when it need
 | `skills/domain-memory` | agent | Keeps the project glossary and decision records current during a grill or a design talk. |
 | `skills/decide` | agent | Lists options with effort and undo cost, recommends one, then waits for you to choose. |
 | `skills/setup` | typed | Finds the tracker (GitHub, GitLab, local files, or another tracker as free text), sets up the triage labels, and writes the files in `docs/agents/` after you confirm. It creates missing labels after you confirm. |
-| `skills/spec` | typed | Turns this conversation, usually a confirmed grill summary, into one draft spec with the seven sections of Matt Pocock. It asks one question only: do the test boundaries match? It lists the gaps that it finds. |
+| `skills/spec` | typed | Turns this conversation, usually a confirmed grill summary, into one draft spec with the seven sections of Matt Pocock. Before it writes, it asks if the test boundaries match. It lists the gaps that it finds. |
 | `skills/tickets` | typed | Splits one spec into small tickets with acceptance checks and named blockers. Each new ticket gets the `ready-for-agent` state. It has no cap on the number of tickets. |
 | `skills/build` | typed | Builds one ticket on a task branch in the checkout that it gets: test first, then commit, review, fix, prove and report. It commits `review.md` and `ticket.md`. It makes no worktree and opens no pull request. The user can skip a step, and the report names it. |
 | `skills/test-craft` | agent | Picks the kind of test and the test boundary, writes the test first, and plants a bug in each new check. |
 | `skills/peer-review` | agent | Reviews a change with two fresh reviewers, one for repo standards and one for the spec. It writes each finding with a status to `.artifacts/<task>/review.md`. |
 | `skills/diagnose` | agent | Finds the cause of a failure from a command that fails, then fixes it with a regression test. It writes ranked causes in a notebook before the first change. |
-| `skills/prove` | agent | Gathers proof that a change works and marks each acceptance check pass, fail or untested. For a bug, it copies the old tree with `git archive` to capture the failure. |
+| `skills/prove` | agent | Gathers proof that a change works and marks each acceptance check pass, fail or untested. For a bug that is already fixed, it copies the old tree with `git archive` to capture the failure. |
 | `skills/code-craft` | agent | Gives the shared terms and rules for the shape of code: module, interface, depth and module boundary. It is a reference and runs no process. |
 | `skills/improve-codebase` | typed | Scans the code for shallow modules and rule breaks, and writes a ranked report with no cap on the candidates. The report is in `.artifacts/improve-codebase/`, which git ignores. Then it asks which candidate to explore and loads `grill` for it. It changes no source file. |
 | `skills/triage` | typed | Sorts issues that other people filed into a triage state, then posts a brief, questions or a close reason. When the repo opts in, it also sorts pull requests from outside contributors. It uses the label mapping and never merges. Before a quick override to `ready-for-agent`, it asks if it must write a brief. Works with GitHub, GitLab and local files. |
-| `skills/prototype` | agent | Builds throwaway code on its own `prototype/<name>` branch to answer one design question. The branch never merges into `main`. It leaves a pointer to the branch on the ticket. |
+| `skills/prototype` | agent | Builds throwaway code on its own `prototype/<name>` branch to answer one design question. The branch never merges into `main`. If a ticket holds the question, it leaves a pointer to the branch on that ticket. |
 | `skills/friction` | agent | Files a lasting problem in the repo or its tools as an issue with a priority. |
 | `skills/retro` | typed | Lists the mistakes of the agent in a session, proposes one fix for each, and waits for approval. |
 | `skills/land` | typed | Pushes a finished ticket branch and its evidence, opens the pull request with the evidence, waits for the checks, and merges through the merge gate. Only a high risk needs a person. A change in `.claude/`, `.agents/`, `.codex/`, `.stack/`, the git hooks or the CI files is always high risk. |
 | `hooks/guard-git.mjs`, `hooks/git-policy.mjs` | hook | The git guard. It blocks git commands that skip checks, commits on `main` or `master`, plain force pushes, direct pushes to `main`, and writes to guard files. It is the hook adapter for Claude Code and Codex. |
 | `templates/githooks/prepare-commit-msg` | git hook | Runs `.stack/check` before every commit, also when `git commit -n` skips the other hooks. |
-| `templates/` | template | The files that the installer copies into a project: `AGENTS.md`, `GLOSSARY.md`, the decision record template, the Claude Code settings and the Codex hook file. |
-| `scripts/install.mjs` | script | Copies the stack into a project repo for Claude Code, Codex or both. It prints the permission list and writes it into no settings file. |
+| `templates/` | template | The files that the installer copies: `AGENTS.md`, `GLOSSARY.md`, the decision record template, the Claude Code settings, the Codex hook file and the git hook. |
+| `scripts/install.mjs` | script | Copies the stack into a project repo for Claude Code, Codex or both. For Claude Code, it prints the permission list. It writes no allow rule into a settings file. |
 | `scripts/skill-lint.mjs` | lint | Checks every skill: frontmatter, links, `Held by:` targets, the router list in `start`, and the generated Codex file. It also checks the links and `Held by:` targets of the reference files, in subfolders too. |
 | `scripts/openai-yaml.mjs` | script | Writes `skills/<name>/agents/openai.yaml` for Codex from the frontmatter of each skill. Run `bun run gen:codex` after you change a frontmatter. |
 | `scripts/style-lint.mjs` | lint | Checks the writing rules of `CONVENTIONS.md`. Each finding says if it is an STE rule or a house rule. |
@@ -184,7 +182,7 @@ bun run lint:style
 
 `npm run test:node` runs the same tests on Node. `bun run lint:style` is not part of `bun run test`. CI runs it in both jobs, after the tests and `lint:skills`.
 
-`bun run gen:codex` writes the Codex file of each skill whose frontmatter changed. `bun run eval -- --dry-run` lists the evals and the budget cap, and starts no agent.
+`bun run gen:codex` writes the Codex file of each skill when that file is missing or old. `bun run eval -- --dry-run` lists the evals and the budget cap, and starts no agent.
 
 ## Status
 
