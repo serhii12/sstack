@@ -315,12 +315,12 @@ export function lint(rootArg) {
     }
   }
 
-  // Rule 2b and rule 3 for the files beside SKILL.md: relative links and `Held by:` paths must resolve too.
+  // Rule 2b and rule 3 for the other .md files of a skill, in subfolders too: relative links and `Held by:` paths must resolve.
   for (const folder of folders) {
     const skillDir = join(skillsDir, folder);
-    for (const e of readdirSync(skillDir, { withFileTypes: true })) {
-      if (!e.isFile() || !e.name.endsWith(".md") || e.name === "SKILL.md") continue;
-      const file = join(skillDir, e.name);
+    for (const e of readdirSync(skillDir, { withFileTypes: true, recursive: true })) {
+      const file = join(e.parentPath, e.name);
+      if (!e.isFile() || !e.name.endsWith(".md") || file === join(skillDir, "SKILL.md")) continue;
       let text;
       try {
         text = readFileSync(file, "utf8");
@@ -335,8 +335,8 @@ export function lint(rootArg) {
           const href = m[1];
           if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith("#") || href.startsWith("/")) continue;
           const target = cleanPathToken(href);
-          if (target && !PLACEHOLDER.test(target) && !pathExists(join(skillDir, target))) {
-            add(file, l.n, "pointer", `link \`${target}\` points to a file that does not exist`, `create skills/${folder}/${target}, fix the path, or remove the link.`);
+          if (target && !PLACEHOLDER.test(target) && !pathExists(join(dirname(file), target))) {
+            add(file, l.n, "pointer", `link \`${target}\` points to a file that does not exist`, `create ${relative(root, join(dirname(file), target))}, fix the path, or remove the link.`);
           }
         }
       }
