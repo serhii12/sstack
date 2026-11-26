@@ -7,9 +7,9 @@ Contents: Folder layout. The index. Fields. Rules the script checks. Example.
 ```
 .artifacts/<task>/
   ticket.md                 only when the ticket is a tracker issue
-  capture.mjs               the script that made the captures
   evidence/
     index.json              the index (this file)
+    capture.mjs             the script that made the captures
     screenshots/            images
     video/                  video, for people
     output/                 command output as text

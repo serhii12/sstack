@@ -22,14 +22,14 @@ Find the browser with `which chromium chromium-browser google-chrome google-chro
 To use Playwright when the project has none, do not ask. Write the capture script of section 2. Then run it from the project root:
 
 ```bash
-node .claude/skills/prove/scripts/run-playwright.mjs .artifacts/<task>/capture.mjs
+node .claude/skills/prove/scripts/run-playwright.mjs .artifacts/<task>/evidence/capture.mjs
 ```
 
 The helper installs the pinned Playwright with `npm ci` in a temp folder outside the project. It installs Chromium in the Playwright browser cache of the user, and the browser stays there. It runs the script with the project root as the working folder. Then it deletes the temp folder. Its first line says what it installed and where. Copy that line to the `Installed:` line of the report. Exit 3 means that the install failed. Then mark the visual checks `untested` with the reason. Keep the script self-contained, because the helper copies only that one file.
 
 ## 2. Playwright
 
-Write `.artifacts/<task>/capture.mjs`. If the project has Playwright, run it from the project root with `node`, so that the project's own Playwright loads. If not, run it with `run-playwright.mjs`, as section 1 says. The script checks each state before it takes a screenshot.
+Write `.artifacts/<task>/evidence/capture.mjs`. Keep it in `evidence/`, because `/land` stops on a file outside it that git does not track. If the project has Playwright, run it from the project root with `node`, so that the project's own Playwright loads. If not, run it with `run-playwright.mjs`, as section 1 says. The script checks each state before it takes a screenshot.
 
 ```js
 import { chromium } from "playwright";
