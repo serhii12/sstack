@@ -3,7 +3,7 @@
 // to the branch `evidence/<task>` of the same repo, and prints a section for the pull request body.
 //
 // The files never go to an outside host and never into the ticket branch. The script uses git
-// plumbing only (hash-object, mktree, commit-tree, push), so the worktree, the index, HEAD, the
+// plumbing only (hash-object, mktree, commit-tree, push), so the working tree, the index, HEAD, the
 // current branch and every local ref stay as they are.
 //
 // Rules:

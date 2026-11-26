@@ -44,7 +44,7 @@
 // Several events in one poll all print. The exit code is that of the first in the order
 // 13, 14, 19, 10, 11, 18, 12, 0. Events 10, 11, 12, 18 and 19 stay in the state file until --ack.
 //
-// Usage (from the project root, or the worktree of the task):
+// Usage (from the project root, or the checkout of the task):
 //   node .claude/skills/land/scripts/land-wait.mjs --pr <n> [--ack <id>|all] [--repo owner/name]
 //        [--interval 30] [--max-wait 100] [--total 3600] [--grace 120] [--max-fix-rounds 2] [--state <file>]
 // The state file defaults to <git common dir>/land/wait-<owner>-<name>-<n>.json.

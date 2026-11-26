@@ -364,6 +364,17 @@ test("preflight exit 34: no base ref", { timeout: 120000 }, () => {
   }
 });
 
+test("preflight exit 2 outside a git repo: the fix names the checkout of the task", () => {
+  const dir = mkdtempSync(join(tmpdir(), "land-check-nogit-"));
+  try {
+    const p = preflight(dir);
+    assert.equal(p.code, EXIT.usage);
+    assert.match(p.message, /run the script in the checkout of the task/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 // ---------------------------------------------------------------- command line
 
 function runCli(args, opts = {}) {

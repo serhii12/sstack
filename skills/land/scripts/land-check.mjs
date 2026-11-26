@@ -52,7 +52,7 @@
 //   [32] the branch has no commit that the base lacks     [33] the work tree has changes
 //   [34] no base ref found
 //
-// Usage (from the project root, or the worktree of the task):
+// Usage (from the project root, or the checkout of the task):
 //   node .claude/skills/land/scripts/land-check.mjs preflight [--base <ref>]
 //   node .claude/skills/land/scripts/land-check.mjs --pr <n> --review <file> [--branch <name>] [--repo owner/name] [--merge] [--owner-approved <head sha>] [--json]
 //   node .claude/skills/land/scripts/land-check.mjs --input <state.json> [--review <file>] [--owner-approved <head sha>] [--json]
@@ -598,7 +598,7 @@ export function mergeNow(fetcher, state, verdict) {
 /** Check the local branch before a push. Returns { code, message, branch, base, ahead }. */
 export function preflight(dir = ".", baseArg) {
   const top = git(dir, ["rev-parse", "--show-toplevel"]);
-  if (!top.ok) return { code: EXIT.usage, message: msg(`not a git repository: ${resolve(dir)}`, "run the script in the worktree of the task") };
+  if (!top.ok) return { code: EXIT.usage, message: msg(`not a git repository: ${resolve(dir)}`, "run the script in the checkout of the task") };
   const root = top.out.trim();
   const br = git(root, ["symbolic-ref", "--quiet", "--short", "HEAD"]);
   if (!br.ok) return { code: EXIT.detached, message: msg("HEAD is detached", "switch to the task branch that /build made") };

@@ -31,7 +31,7 @@ The input is what the build step leaves: commits on a task branch, the review fi
 
 ## 1. Check the branch
 
-Run each command from the worktree of the task.
+Run each command from the checkout of the task.
 
 ```bash
 node .claude/skills/land/scripts/land-check.mjs preflight
