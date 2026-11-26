@@ -2,7 +2,7 @@
 
 A rule is here when a script, hook or test holds it. Rules that are only instructions are marked `No fence yet` in the skill that states them. Run `node scripts/skill-lint.mjs --json` for the current count.
 
-The git guard is the hook adapter for Claude Code. In other agent tools, only the git hook, the scripts and CI hold these rules.
+The git guard is the hook adapter for Claude Code and Codex. Codex runs it only after the user trusts the hook. In other agent tools, only the git hook, the scripts and CI hold these rules.
 
 ## The git guard
 
@@ -10,7 +10,7 @@ The git guard is the hook adapter for Claude Code. In other agent tools, only th
 |---|---|---|
 | No git flags that skip checks (`--no-verify`, `commit -n`), in any wrapper or nested shell | `hooks/guard-git.mjs`, `hooks/git-policy.mjs` | `tests/hooks/git-policy.test.mjs`, `tests/hooks/redteam.test.mjs` |
 | No change to the hooks path, and no `include.path` or `includeIf` in git config | `hooks/git-policy.mjs` | `tests/hooks/git-policy.test.mjs`, `tests/hooks/redteam.test.mjs` |
-| No command that writes, removes or changes the mode of `.git/hooks`, `.git/config`, `.githooks/`, `.stack/`, `.claude/settings.json` or `.claude/hooks/`. A command that only reads them runs | `hooks/git-policy.mjs` | `tests/hooks/protected-paths.test.mjs` |
+| No command that writes, removes or changes the mode of `.git/hooks`, `.git/config`, `.githooks/`, `.stack/`, `.claude/settings.json`, `.claude/settings.local.json`, `.claude/hooks/`, `.codex/hooks/`, `.codex/hooks.json`, `.codex/config.toml` or `.codex/rules/`. A command that only reads them runs | `hooks/git-policy.mjs` | `tests/hooks/protected-paths.test.mjs`, `tests/hooks/redteam.test.mjs` |
 | No git command that changes a guard file through a pathspec: checkout, restore, rm, mv, clean, reset, checkout-index, stash push, apply, am and output options | `hooks/git-policy.mjs` | `tests/hooks/git-pathspec.test.mjs` |
 | No agent edits to the guard files and the settings files. The guard runs on every Bash call, and a guard that cannot run blocks | deny rules and the hook entry in `templates/claude-settings.json` | `tests/hooks/guard-git.test.mjs` |
 | No commits, cherry-picks, reverts or `commit-tree` while on `main` or `master` | `hooks/git-policy.mjs` | `tests/hooks/git-policy.test.mjs` |
@@ -40,6 +40,8 @@ The header of `hooks/git-policy.mjs` lists what the guard cannot see. Branch pro
 | The installer appends `.gitignore` rules that keep evidence media (`.artifacts/*/evidence/**/*.png` and other media types) out of commits. It adds only missing rules, never rewrites a line and never writes through a symlink. The review file and the evidence index stay visible to git | `scripts/install.mjs` | `tests/scripts/install.test.mjs` |
 | The installer creates `CLAUDE.md` as a relative symlink to `AGENTS.md`. It never changes a `CLAUDE.md` that exists | `scripts/install.mjs` | `tests/scripts/install.test.mjs` |
 | In this repo, `CLAUDE.md` is a relative symlink to `AGENTS.md`, and `templates/` has no `CLAUDE.md` | `tests/scripts/install.test.mjs` | `tests/scripts/install.test.mjs` |
+| With `--tool codex`, the installer copies the skills to `.agents/skills/`, the guard to `.codex/hooks/` and the hook entry to `.codex/hooks.json`. It makes no `.claude/` folder and no `CLAUDE.md` | `scripts/install.mjs` | `tests/scripts/install-codex.test.mjs` |
+| The installer prints the permission list and writes no allow rule into a settings file | `scripts/install.mjs` | `tests/scripts/install.test.mjs` |
 
 ## The lints
 
@@ -53,7 +55,7 @@ The header of `hooks/git-policy.mjs` lists what the guard cannot see. Branch pro
 | The router list in `skills/start` matches the `skills/` folder and the type of each skill | `scripts/skill-lint.mjs` | `tests/scripts/skill-lint.test.mjs` |
 | Skill text has no semicolons and no em or en dashes | `scripts/skill-lint.mjs` | `tests/scripts/skill-lint.test.mjs` |
 | In the files that the test reads, each state name, exit code and gate order equals the list that its script exports. The test compares names only. It never checks a move that a person makes | `tests/scripts/state-names.test.mjs` | `tests/scripts/state-names.test.mjs` |
-| The writing rules of `CONVENTIONS.md` in skills, templates, evals, `README.md`, `CONVENTIONS.md` and `AGENTS.md`: STE rules and house rules, American spelling, and every pattern of the owner's slop checker. CI runs it in both jobs. It is not part of `bun run test` | `scripts/style-lint.mjs` | `tests/scripts/style-lint.test.mjs` |
+| The writing rules of `CONVENTIONS.md` in skills, templates, evals, `docs/`, `README.md`, `CONVENTIONS.md` and `AGENTS.md`: STE rules and house rules, American spelling, and every pattern of the owner's slop checker. CI runs it in both jobs. It is not part of `bun run test` | `scripts/style-lint.mjs` | `tests/scripts/style-lint.test.mjs` |
 
 ## Scripts inside skills
 
