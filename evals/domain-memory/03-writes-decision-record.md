@@ -89,7 +89,7 @@ Path rules did not match in headless runs, so `Write` and `Edit` are bare. The `
     ],
     "toolNotCalled": [
       { "name": "Write", "inputMatches": "\"file_path\":\"[^\"]*docs/adr/(?!0002-)" },
-      { "name": "Edit", "inputMatches": "\"file_path\":\"[^\"]*docs/adr/" },
+      { "name": "Edit", "inputMatches": "\"file_path\":\"[^\"]*docs/adr/(?!0002-)" },
       { "name": "Write", "inputMatches": "Status: (accepted|proposed|superseded)" },
       { "name": "Write", "inputMatches": "\\*\\*Status:\\*\\* proposed" },
       { "name": "Write", "inputMatches": "## Status" },
@@ -113,5 +113,5 @@ The path checks read only the `file_path` field. A record can name `docs/adr/000
 - If the record is numbered `0001` or `0000`, the `docs/adr/(?!0002-)` check fails.
 - If the status line has another form, the `Status:` checks fail.
 - If the record has a `## Revisit if` section, the `toolNotCalled` check fails. The user named no condition.
-- If the agent edits the old record or `GLOSSARY.md`, the `toolNotCalled` checks fail.
+- If the agent edits the old record or `GLOSSARY.md`, the `toolNotCalled` checks fail. An edit of the new record `0002-` is allowed.
 - If the record has no "do not" line about an ORM, or no outage reason, the `toolCalled` checks fail.
