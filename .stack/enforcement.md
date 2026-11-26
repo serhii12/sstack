@@ -62,7 +62,7 @@ The header of `hooks/git-policy.mjs` lists what the guard cannot see. Branch pro
 | A spec has every required section, one `Status: draft` line and no ready marker | `skills/spec/scripts/spec-lint.mjs` | `tests/scripts/spec-lint.test.mjs` |
 | An essential that is not agreed reads "Not agreed. See Open questions." and has an open question | `skills/spec/scripts/spec-lint.mjs` | `tests/scripts/spec-lint.test.mjs` |
 | Local ticket files have a valid name, a title, acceptance checks and one `Blocked by:` line | `skills/tickets/scripts/tickets-lint.mjs` | `tests/scripts/tickets-lint.test.mjs` |
-| Local tickets have no number clash and no blocker cycle | `skills/tickets/scripts/tickets-lint.mjs` | `tests/scripts/tickets-lint.test.mjs` |
+| Local tickets have no number clash and no blocker cycle. The ticket with the lowest number has no blockers | `skills/tickets/scripts/tickets-lint.mjs` | `tests/scripts/tickets-lint.test.mjs` |
 | With `--max <n>`, one tickets folder holds n ticket files or fewer. There is no default cap | `skills/tickets/scripts/tickets-lint.mjs` | `tests/scripts/tickets-lint.test.mjs` |
 | `build` starts a local ticket only when every blocker has `Status: closed` | `skills/build/scripts/ticket-ready.mjs` | `tests/scripts/ticket-ready.test.mjs` |
 | `build` makes no worktree when another worktree, a local branch or a fetched remote branch already builds the ticket | `skills/build/scripts/ticket-in-work.mjs` | `tests/scripts/ticket-in-work.test.mjs` |
