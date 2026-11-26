@@ -430,6 +430,13 @@ test("cli: a missing file exits 3", () => {
   assert.match(r.stderr, /Cannot read .*ENOENT.*Fix:/);
 });
 
+test("cli: a label mapping that cannot be read exits 3 with a fix for the mapping", () => {
+  const r = cli(["--labels", "/nonexistent/triage-check/labels.md", "/nonexistent/triage-check/report.md"]);
+  assert.equal(r.status, EXIT.INPUT);
+  assert.match(r.stderr, /Cannot read the label mapping .*ENOENT.*Fix: .*--labels/);
+  assert.doesNotMatch(r.stderr, /readable report file/);
+});
+
 test("cli: usage errors exit 2", () => {
   assert.equal(cli([]).status, EXIT.USAGE);
   assert.equal(cli(["--json"]).status, EXIT.USAGE);
