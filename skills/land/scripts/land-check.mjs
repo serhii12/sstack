@@ -191,10 +191,11 @@ const sameCommit = (a, b) => typeof a === "string" && typeof b === "string" && M
  * isAncestor(a, b), changedPaths(a, b) and countCommits(a, b).
  * The ranges of the file must make one chain with no gap: each range starts at the commit where the
  * range before it ends. The chain must start at or before the first commit of the pull request
- * (`prCommits` is the number of its commits, `prShas` their shas). It must end at the head, or at an
- * ancestor of the head after which only text files under `.artifacts/` changed.
+ * (`prCommits` is the number of its commits, `prShas` their shas). With `baseSha` (the base of the pull
+ * request on GitHub), it must start at the merge base of that commit and the head. It must end at the
+ * head, or at an ancestor of the head after which only text files under `.artifacts/` changed.
  */
-export function reviewEvidence(text, headSha, repoGit, { prCommits = null, prShas = null } = {}) {
+export function reviewEvidence(text, headSha, repoGit, { prCommits = null, prShas = null, baseSha = null } = {}) {
   if (text === null || text === undefined) return { state: "missing" };
   if (text.length > REVIEW_MAX_BYTES) return { state: "too-large" };
   const r = parseReview(text);
@@ -215,6 +216,14 @@ export function reviewEvidence(text, headSha, repoGit, { prCommits = null, prSha
     if (prev && !sameCommit(prev.end, start)) return { ...base, state: "gap", gapAfter: prev.end, gapBefore: start };
     if (repoGit.countCommits(start, end) === null) return { ...base, state: "gap", gapAfter: start, gapBefore: end };
     chain.push({ start, end });
+  }
+  // GitHub diffs the pull request from the merge base. A merge of the default branch that drops one of
+  // its changes leaves the old chain the same, so the chain must start at the merge base of today.
+  // This comes before the stale check, so after such a merge the fix is one new review.
+  if (baseSha !== null) {
+    const mergeBase = repoGit.mergeBase(baseSha, headSha);
+    if (!mergeBase) return { ...base, state: "unknown-commit", reviewed: String(baseSha), baseMissing: true };
+    if (mergeBase !== chain[0].start) return { ...base, state: "partial", startsBefore: chain[0].start, mergeBase };
   }
   const last = chain[chain.length - 1].end;
   if (last !== headSha) {
@@ -293,6 +302,10 @@ export function localGit(dir = ".") {
       const r = git(dir, ["rev-list", "--count", `${a}..${b}`]);
       return r.ok ? Number(r.out.trim()) : null;
     },
+    mergeBase(a, b) {
+      const r = git(dir, ["merge-base", a, b]);
+      return r.ok && FULL_SHA.test(r.out.trim()) ? r.out.trim() : null;
+    },
   };
 }
 
@@ -303,6 +316,7 @@ export function simulatedGit(sim = {}) {
     isAncestor: () => sim.ancestor === true,
     changedPaths: () => sim.changedSinceReview ?? [],
     countCommits: (a, b) => ((sim.notForward ?? []).some(([x, y]) => x === a && y === b) ? null : sim.coversBranch === false ? 0 : Number.MAX_SAFE_INTEGER),
+    mergeBase: () => sim.mergeBase ?? null,
   };
 }
 
@@ -324,10 +338,10 @@ export const REVIEW_STATES = {
   "no-range": { blocks: true, what: () => "the review file has no Range line, or a Range line with no merge base or no end commit", fix: REVIEW_AGAIN },
   gap: { blocks: true, what: (rv) => `the review ranges do not make one chain: a range ends at ${quoteName(String(rv.gapAfter ?? "").slice(0, 12))} and the next one starts at ${quoteName(String(rv.gapBefore ?? "").slice(0, 12))}`, fix: "run one follow-up review that starts where the last review ended, add it to the review file, commit, push, and wait again" },
   "no-result": { blocks: true, what: () => 'the review file has no finding and no "No findings." line', fix: REVIEW_AGAIN },
-  "unknown-commit": { blocks: true, what: (rv) => `the commit ${quoteName(rv.reviewed ?? "")} of the review file is not in the local repo`, fix: REVIEW_AGAIN },
+  "unknown-commit": { blocks: true, what: (rv) => `the commit ${quoteName(rv.reviewed ?? "")} of ${rv.baseMissing ? "the base branch" : "the review file"} is not in the local repo`, fix: "run git fetch origin and run this check again. If the commit is still missing, load peer-review on the head commit, commit the review file, push, and wait again" },
   "not-ancestor": { blocks: true, what: (rv) => `the reviewed commit ${quoteName(rv.reviewed ?? "")} is not in the history of the head`, fix: REVIEW_AGAIN },
   stale: { blocks: true, what: (rv) => `the review is stale: ${(rv.changedAfter ?? []).length} file(s) changed after the reviewed commit ${quoteName(rv.reviewed ?? "")}`, fix: REVIEW_AGAIN },
-  partial: { blocks: true, what: (rv) => (rv.startsInPr ? `the first review range starts at a commit of the pull request (${quoteName(String(rv.startsInPr).slice(0, 12))}), so the commits before it have no review` : `the review range does not cover every commit of the pull request (${Number(rv.covered)} of ${Number(rv.prCommits)})`), fix: "load peer-review with the default branch as the base, and let it write a new review file in place of the old one. Commit it, push, and wait again" },
+  partial: { blocks: true, what: (rv) => (rv.startsInPr ? `the first review range starts at a commit of the pull request (${quoteName(String(rv.startsInPr).slice(0, 12))}), so the commits before it have no review` : rv.startsBefore ? `the first review range starts at ${quoteName(String(rv.startsBefore).slice(0, 12))}, but the pull request diff starts at the merge base ${quoteName(String(rv.mergeBase).slice(0, 12))}, so a merge of the default branch has no review` : `the review range does not cover every commit of the pull request (${Number(rv.covered)} of ${Number(rv.prCommits)})`), fix: "load peer-review with the default branch as the base, and let it write a new review file in place of the old one. Commit it, push, and wait again" },
   "open-findings": { blocks: true, what: (rv) => `the review has open findings that are not of severity low: ${ids(rv.blocking)}`, fix: "stop and list them. The user decides on each one: fix it and set its status to fixed, or set won't fix: <reason>" },
   unknown: { blocks: true, what: () => "the review state is not known", fix: REVIEW_AGAIN },
 };
@@ -655,6 +669,8 @@ function parseArgs(argv) {
 
 /** The shas of the commits of the pull request, as GitHub lists them. */
 const prShas = (state) => (Array.isArray(state.commits) ? state.commits.map((c) => c?.sha).filter((x) => typeof x === "string") : null);
+/** The base commit of the pull request on GitHub. GitHub always sends it. A state file can leave it out. */
+const baseSha = (state) => (FULL_SHA.test(String(state.pr?.base?.sha ?? "")) ? state.pr.base.sha : null);
 
 function readSmall(path) {
   try {
@@ -727,7 +743,7 @@ export function main(argv, { fetcher = ghFetcher(), out = (s) => process.stdout.
       if (!state || typeof state !== "object" || !FULL_SHA.test(String(state.pr?.head?.sha ?? "")) || !state.repo || typeof state.repo !== "object") throw new UsageError(msg(`${quoteName(o.input, 200)} has no pr.head.sha or repo`, "write the state in the shape that gather() returns"));
       const text = o.review ? readReviewText(o.review) : state.review?.text ?? null;
       const g = o.review ? (repoGit ?? localGit(cwd)) : simulatedGit(state.review ?? {});
-      review = reviewEvidence(text, state.pr.head.sha, g, { prCommits: state.pr.commits, prShas: prShas(state) });
+      review = reviewEvidence(text, state.pr.head.sha, g, { prCommits: state.pr.commits, prShas: prShas(state), baseSha: baseSha(state) });
     } else {
       const repo = o.repo ?? currentRepo(fetcher);
       state = gather(fetcher, { repo, number: Number(o.pr) });
@@ -736,7 +752,7 @@ export function main(argv, { fetcher = ghFetcher(), out = (s) => process.stdout.
         sleep(3000);
         state = gather(fetcher, { repo, number: Number(o.pr) });
       }
-      review = reviewEvidence(readReviewText(o.review), state.pr.head.sha, repoGit ?? localGit(cwd), { prCommits: state.pr.commits, prShas: prShas(state) });
+      review = reviewEvidence(readReviewText(o.review), state.pr.head.sha, repoGit ?? localGit(cwd), { prCommits: state.pr.commits, prShas: prShas(state), baseSha: baseSha(state) });
     }
     verdict = decide(state, { review, branch: o.branch ?? null, ownerApproved: o.ownerApproved, acceptance: acceptance ?? acceptanceResults(typeof state.evidenceIndex === "string" ? state.evidenceIndex : null) });
     if (verdict.exitCode === 0 && o.merge) {

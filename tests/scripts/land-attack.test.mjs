@@ -1277,6 +1277,49 @@ test("L11: commits merged in from main do not count as reviewed commits of the p
   }
 });
 
+test("L11: a merge of main that drops a change of main needs a review from the new merge base", { timeout: 120000 }, () => {
+  const dir = mkdtempSync(join(tmpdir(), "land-attack-dropped-"));
+  try {
+    const g = (...a) => {
+      const r = spawnSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "commit.gpgsign=false", ...a], { cwd: dir, encoding: "utf8" });
+      assert.equal(r.status, 0, `git ${a.join(" ")}: ${r.stderr}`);
+      return r.stdout.trim();
+    };
+    const commit = (file, text, message) => {
+      mkdirSync(dirname(join(dir, file)), { recursive: true });
+      writeFileSync(join(dir, file), text);
+      g("add", "-A");
+      g("commit", "-q", "-m", message);
+      return g("rev-parse", "HEAD");
+    };
+    g("init", "-q", "-b", "main");
+    const base = commit("src/b.js", "1\n2\n", "base");
+    g("switch", "-q", "-c", "agent/t");
+    const c1 = commit("src/a.js", "reviewed\n", "C1");
+    g("switch", "-q", "main");
+    const fix = commit("src/b.js", "1\n2 fixed on main\n", "main fix");
+    g("switch", "-q", "agent/t");
+    // The merge keeps the tree of the branch, so the pull request undoes the fix of main.
+    g("merge", "-q", "-s", "ours", "--no-edit", "main");
+    const head = g("rev-parse", "HEAD");
+    const prShas = g("rev-list", "main..HEAD").split("\n");
+    const opts = { prCommits: prShas.length, prShas, baseSha: fix };
+    const git = localGit(dir);
+    const old = reviewEvidence(chainText([[base, c1]]), head, git, opts);
+    assert.equal(old.state, "partial", "the old chain never shows the undone fix");
+    assert.equal(decide(stateWith({}), { review: old }).exitCode, EXIT.reviewStale);
+    assert.match(decide(stateWith({}), { review: old }).failures[0].message, /starts at .+, but the pull request diff starts at the merge base/);
+    // A review from the new merge base shows the undone fix, so it counts.
+    assert.equal(reviewEvidence(chainText([[fix, head]]), head, git, opts).state, "fresh");
+    // A base commit that the local repo does not have stops the gate and asks for a fetch.
+    const missing = reviewEvidence(chainText([[fix, head]]), head, git, { ...opts, baseSha: "e".repeat(40) });
+    assert.equal(missing.state, "unknown-commit");
+    assert.match(decide(stateWith({}), { review: missing }).failures[0].message, /Fix: run git fetch origin/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("evidence: a repo with no git identity gets the fixed identity of the stack for the evidence commit", { timeout: 120000 }, () => {
   const root = mkdtempSync(join(tmpdir(), "land-attack-ident-"));
   try {

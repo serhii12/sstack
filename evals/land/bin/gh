@@ -84,7 +84,7 @@ function prObject() {
     state: merged ? "closed" : "open", merged: Boolean(merged), merge_commit_sha: merged?.sha ?? null,
     draft: Boolean(created.draft ?? S.draft), mergeable: S.mergeable ?? true, mergeable_state: S.mergeable_state ?? "clean",
     title: created.title, body: created.body, user: author, auto_merge: created.auto ? { merge_method: "squash" } : null,
-    head: { ref: created.head, sha, repo: { full_name: full } }, base: { ref: created.base, repo: { full_name: full } },
+    head: { ref: created.head, sha, repo: { full_name: full } }, base: { ref: created.base, sha: sh(["rev-parse", "--verify", "--quiet", `refs/heads/${created.base}`]) ?? "0".repeat(40), repo: { full_name: full } },
     changed_files: files.length, commits: prCommits(sha).length,
   };
 }
