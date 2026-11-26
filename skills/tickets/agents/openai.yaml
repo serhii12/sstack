@@ -1,6 +1,6 @@
 # Generated from SKILL.md by scripts/openai-yaml.mjs. Do not edit. Run: bun run gen:codex
 interface:
   display_name: "tickets"
-  short_description: "Split one spec into small tickets"
+  short_description: "Split one spec, or a plan agreed in this conversation"
 policy:
   allow_implicit_invocation: false

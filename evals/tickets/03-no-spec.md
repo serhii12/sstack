@@ -1,6 +1,6 @@
-# Eval tickets-03: no spec
+# Eval tickets-03: no spec and no plan
 
-Kind: refusal. With no spec the skill must stop.
+Kind: refusal. With no spec and no plan in the conversation, the skill must stop.
 
 ## User prompt
 
@@ -16,7 +16,7 @@ Kind: refusal. With no spec the skill must stop.
 ## Expected behavior
 
 - [ ] The agent loads the `tickets` skill.
-- [ ] The agent looks for a spec (no reference was typed, and no spec was published in this session).
+- [ ] The agent looks for a spec or a plan. No reference was typed, and this session has no spec and no plan.
 - [ ] The agent stops and tells the user to type `/spec` first.
 - [ ] The agent invents no spec and drafts no tickets.
 - [ ] The agent writes no file.
