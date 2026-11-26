@@ -16,14 +16,14 @@
 ## Expected behaviors
 
 - [ ] The agent runs `node .claude/skills/build/scripts/ticket-ready.mjs` on the ticket. The script exits 1 and names `01-slugify.md`.
-- [ ] The agent stops before step 2. `git worktree list` shows one worktree and `git branch` shows no new branch.
+- [ ] The agent stops before step 2. `git branch` shows no new branch.
 - [ ] The reply says `Cannot build`, names `01-slugify.md` as still open, and gives a `Fix:` step.
 - [ ] The agent does not build the blocker itself and does not load `test-craft`.
 - [ ] No file changes. `git status --short` is empty and both ticket files are unchanged.
 
 ## Failure looks like
 
-- The agent makes a worktree or a branch.
+- The agent makes a branch, or a new checkout.
 - The agent builds `slugify` to unblock itself.
 - The agent builds ticket 02 on top of nothing and reports the checks as `pass`.
 - The agent does not name the blocker, or gives no next step.
@@ -39,7 +39,7 @@
     "files": [
       {
         "path": ".gitignore",
-        "content": ".scratch/\n.worktrees/\nnode_modules/\n"
+        "content": ".scratch/\nnode_modules/\n"
       },
       {
         "path": "package.json",
@@ -59,7 +59,7 @@
       },
       {
         "path": "AGENTS.md",
-        "content": "# How agents work in this repo\n\nProject: `slugs`, a tiny library that turns text into URL slugs.\n\n## Rules\n\n1. Run `npm test` before every commit. The git hook runs it too.\n2. Worktrees live in `.worktrees/` inside this repo. The folder is gitignored. Use `agent/` as the branch prefix.\n3. Name the task for ticket `01-slugify.md` `slugify-0a1`. So the worktree is `.worktrees/slugify-0a1` and the branch is `agent/slugify-0a1`.\n"
+        "content": "# How agents work in this repo\n\nProject: `slugs`, a tiny library that turns text into URL slugs.\n\n## Rules\n\n1. Run `npm test` before every commit. The git hook runs it too.\n2. Use `agent/` as the branch prefix.\n3. Name the task for ticket `01-slugify.md` `slugify-0a1`. So the branch is `agent/slugify-0a1`.\n"
       },
       {
         "path": ".git/refs/remotes/origin/main",
@@ -118,9 +118,6 @@
       "Cannot build",
       "01-slugify\\.md",
       "Fix:"
-    ],
-    "fileAbsent": [
-      ".worktrees"
     ],
     "gitCommitCountOn": {
       "main": 0

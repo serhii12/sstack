@@ -1,6 +1,6 @@
 ---
 name: build
-description: Build one ticket in its own worktree and branch, test first, then review, fix and report.
+description: Build one ticket on its own branch, test first, then review, fix and report.
 argument-hint: "[ticket reference]"
 disable-model-invocation: true
 ---
@@ -24,36 +24,30 @@ disable-model-invocation: true
 1. Read the text after `/build`. If there is no text and this conversation holds no plan, ask one question: "Which ticket?" If nobody can answer, stop. Report that no ticket was named. One run builds one ticket.
 2. Read the `AGENTS.md` of the project. Its rules apply to every step below.
 3. If the user passes a ticket reference, fetch it from the issue tracker. State its title before you start. If the reference is ambiguous, ask. If nobody can answer, stop and list the matches. `docs/agents/tracker.md` says where the tracker is. If that file does not exist, tell the user to type `/setup` or to paste the ticket text. If the plan lives only in this conversation, build from that.
-4. Read the whole ticket and its spec now. Keep the text. For a local ticket, note its absolute path. A local ticket under `.scratch/` is not in `origin/main`, so it is not in the new worktree.
+4. Read the whole ticket and its spec now. Keep the text. For a local ticket, note its absolute path. A local ticket under `.scratch/` is not in `origin/main`, so another checkout of the repo does not have it.
 5. Check the blockers. Read the `Blocked by:` line of the ticket. If it says `none`, go on. If not, follow [BLOCKERS.md](BLOCKERS.md). Every blocker must be closed before you go on, unless the user says to build anyway.
    Held by: skills/build/scripts/ticket-ready.mjs (local tickets only)
 6. Restate in two or three lines what you will build. Name the Acceptance checks that the work will meet. If the ticket will not fit in one context window, stop. Tell the user to split it with `/tickets`.
 
-## 2. Make the worktree and branch
+## 2. Check the checkout and the branch
 
-Inspect existing isolation first. Run `git worktree list` and `git status --short`. Read the current branch and the task assignment of the session. If the environment already made a worktree for this ticket, keep its path and branch. Then skip items 4 and 5 of the list below. Do not infer isolation from the editor name or a branch prefix alone.
+`build` works in the checkout that it gets. The user, the agent tool or a runner owns the isolation. `build` makes no new checkout. Held by: evals/build/06-tool-made-branch.md
 
-Never build in a checkout that another task uses. Two sessions in one checkout share one working directory, one index and one HEAD. One `git commit --amend` can land on the commit of the other session. Commits can land on the wrong branch. Uncommitted changes that you did not make are a sign of another task. A branch named for other work is another sign. So is a worktree that another session made. Do not switch, stash, reset or clean that checkout. If you cannot leave it for your own worktree, stop. Tell the user. No fence yet (planned: a worktree check script)
-Do not use `git stash`. Every worktree of a repo shares one stash, so another session can pop yours. No fence yet
+Never build in a checkout that another task uses. Two sessions in one checkout share one index and one HEAD, so commits can land on the wrong branch. Do not switch, stash, reset or clean that checkout. Never use `git stash`. All checkouts that share one `.git` folder share one stash. No fence yet
 
 1. Sync: `git fetch origin`.
-2. In-work check: from the project root, run `node .claude/skills/build/scripts/ticket-in-work.mjs <ticket path or task key>`. Item 4 says what the task key is. If it exits 1 and the user did not say "rebuild", stop now. Make no worktree. Start your reply with `Cannot build <ticket>. This ticket is already in work.` Print the message of the script. Tell the user to type `/build <ticket> rebuild` to build it again. If the user said "rebuild", say in one line that another session can still own that work. Print the branches and worktrees that the user can delete. Then go on with a new task name. Never reuse, change or delete the worktree or branch of another session. If it exits 2 or 3, say in the report that the check did not run. Held by: skills/build/scripts/ticket-in-work.mjs, tests/scripts/ticket-in-work.test.mjs
-3. Scope check: run `gh pr list`. Skim the changed files of the open pull requests with `gh pr diff <n> --name-only`. For shared files, read the overlapping diffs. Independent edits can go ahead in your own worktree. Ask for direction in three cases. The changes conflict in behavior. The changes need the unfinished work of another task. The changes have no clear owner. If nobody can answer, stop and report. If `gh` does not run or the host is not GitHub, use the pull request tools of that host. If there are none, report that the scope check did not run. Make the worktree anyway.
-4. Name the task: the task key, plus a short unique suffix with a digit, for example `user-auth-0816a`. The key of a local ticket is its file name with no number and no extension, for example `user-auth`. The key of a tracker ticket is `issue-<number>`. If `git worktree add` fails because the name exists, pick a new suffix. Another session can own that name. Never force or reuse.
-5. Create the worktree from the repo root. `--no-track` stops the new branch from using `origin/main` as its upstream:
-
-   ```bash
-   git worktree add --no-track -b <branch-prefix>/<task-name> <worktrees-dir>/<task-name> origin/main
-   ```
-
-   If the repo has conventions for worktrees, follow them. If not, use `agent/` as the branch prefix and `../<repo-folder>-worktrees` as the worktrees folder. A folder outside the checkout, or a gitignored folder inside it, keeps worktrees out of a commit.
-
-   Then push the new branch at once: `git -C <worktree> push -u origin <branch>`. The in-work check on another machine sees only pushed branches. If the repo has no `origin` remote, or the push fails, say so in the report and go on. No fence yet
-6. Enter the worktree and check it. `git -C <worktree> branch --show-current` must print your new branch. If it prints `main`, stop. The shell can forget its folder between commands. So run each later git command as `git -C <worktree> ...`, never after `cd`. For another command, use `cd <worktree> && <one command>`. Write the path in full. Put no shell variable, loop or heredoc in a command. To change a file, use the file edit tool. Make sure that the runtime version fits the repo. If the checks need dependencies, install them inside the worktree.
-
-In an existing checkout that no other task uses, `git switch -c <branch> origin/main` makes the branch. Never use `git checkout <branch>` to make or change a branch.
-
-If several agents work in one repo, or you must clean up, or a git command fails, read [WORKTREES.md](WORKTREES.md).
+2. In-work check: from the project root, run `node .claude/skills/build/scripts/ticket-in-work.mjs <ticket path or task key>`. Item 4 says what the task key is. If it exits 1 and the user did not say "rebuild", stop now. Make no branch. Start your reply with `Cannot build <ticket>. This ticket is already in work.` Print the message of the script. Tell the user the two ways on. To finish the work on its branch, switch a clean checkout to that branch and type `/build <ticket>` there. To start again, type `/build <ticket> rebuild`. If the user said "rebuild", say in one line that the new branch leaves the old commits behind. Print the branches that the user can delete. Then go on with a new task name. Never reuse, change or delete the branch of another session. If it exits 2 or 3, say in the report that the check did not run. Held by: skills/build/scripts/ticket-in-work.mjs, tests/scripts/ticket-in-work.test.mjs
+3. Scope check: run `gh pr list`. Skim the changed files of the open pull requests with `gh pr diff <n> --name-only`. For shared files, read the overlapping diffs. Independent edits can go ahead. Ask for direction in three cases. The changes conflict in behavior. The changes need the unfinished work of another task. The changes have no clear owner. If nobody can answer, stop and report. If `gh` does not run or the host is not GitHub, use the pull request tools of that host. If there are none, report that the scope check did not run. Then go on.
+4. Name the task: the task key, plus a short unique suffix with a digit, for example `user-auth-0816a`. The key of a local ticket is its file name with no number and no extension, for example `user-auth`. The key of a tracker ticket is `issue-<number>`. If item 5 keeps a branch, the task name is the last part of that branch. `peer-review`, `prove` and `land` find the same name.
+5. Read the checkout: run `git status --short`, `git branch --show-current` and `git rev-list --count origin/main..HEAD`. Do the first case that fits. No fence yet
+   - `git status --short` lists a change: the checkout holds work that is not yours. Stop as blocked.
+   - HEAD is on `main`, `master` or the default branch, or HEAD is detached: run `git switch --no-track -c agent/<task-name> origin/main`. If the name exists, pick a new suffix. Never force or reuse.
+   - The in-work check said that this checkout is on a branch of the ticket: keep the branch. Its commits are earlier work on this ticket.
+   - The count is 0: keep the branch. The agent tool or a runner made it for this session. Do not make a second branch.
+   - Any other branch holds the commits of another task. Stop as blocked.
+   To stop as blocked, start your reply with `Cannot build <ticket>. Blocked: <why>.` Name the checkout path, the branch and what you found. Change no file and no branch.
+6. Push the task branch once: `git push -u origin <branch>`. The in-work check on another machine sees only pushed branches. If the repo has no `origin` remote, or the push fails, say so in the report and go on. No fence yet
+7. `git branch --show-current` must print the task branch. If it prints `main`, stop. Never use `git checkout <branch>` to make or change a branch. Make sure that the runtime version fits the repo. If the checks need dependencies, install them in this checkout.
 
 ## 3. Write the failing test first
 
@@ -70,7 +64,7 @@ Then read `.claude/skills/code-craft/RULES.md`. If the ticket touches a file tha
 
 - Limit the changes to the ticket. Run typechecking regularly. Run single test files regularly. Run the full test suite once at the end.
 - If you see a shallow module or a missing module boundary outside the ticket, do not change it. Write it in the report under `Design notes:`. No fence yet
-- Worktrees do not isolate dev-server ports or shared databases. Before you trust what a port serves, make sure that your process answers on it (`lsof -i :<port>`). Do not run schema experiments against a shared database. No fence yet
+- A checkout of its own does not isolate dev-server ports or shared databases. Before you trust what a port serves, make sure that your process answers on it (`lsof -i :<port>`). Do not run schema experiments against a shared database. No fence yet
 - Resolve lockfile conflicts by regenerating the lockfile with the package manager. Never merge it by hand. No fence yet
 - If you cannot resolve a conflict with confidence, stop. Report the conflict. Do not guess. No fence yet
 
@@ -96,7 +90,7 @@ If it will not load, tell the user. Report the review as `not run`. Do not revie
 
 Act on every finding. Fix the finding. Set its status in the findings file to `fixed`, as `peer-review` says. If you think a finding is wrong or outside the ticket, ask the user. Mark it `won't fix: <reason>` only after the user agrees. Write the reason of the user. If nobody can answer, leave it `open`. List it in the report. Run the touched tests. Then run the full suite once. Make a new commit. If the repo does not ignore `.artifacts/`, include `.artifacts/<task-name>/review.md` in the commit. Do not amend the reviewed commit. Then the review still matches a commit that exists. No fence yet
 
-Then review the fix commits once, as a follow-up. Read the last `Range:` line of `.artifacts/<task-name>/review.md`. The reviewed commit is the sha after `to`. Run `node .claude/skills/peer-review/scripts/review-range.mjs --stat --base <that sha> <worktree>`. Exit 3 means that only `.artifacts/` changed, so skip the follow-up. Exit 0 lists the changed files. Put them on the `Changed after the review:` line. Load `peer-review` with that base, as a follow-up. Fix its findings as above, in a new commit. If the user asks for more reviews, run them. If not, stop here. When the user types `/land`, it reviews the last fix commits. Held by: skills/peer-review/scripts/review-range.mjs (exit 3 when only `.artifacts/` changed)
+Then review the fix commits once, as a follow-up. Read the last `Range:` line of `.artifacts/<task-name>/review.md`. The reviewed commit is the sha after `to`. Run `node .claude/skills/peer-review/scripts/review-range.mjs --stat --base <that sha>`. Exit 3 means that only `.artifacts/` changed, so skip the follow-up. Exit 0 lists the changed files. Put them on the `Changed after the review:` line. Load `peer-review` with that base, as a follow-up. Fix its findings as above, in a new commit. If the user asks for more reviews, run them. If not, stop here. When the user types `/land`, it reviews the last fix commits. Held by: skills/peer-review/scripts/review-range.mjs (exit 3 when only `.artifacts/` changed)
 
 If a problem outside the ticket will hit the next agent too, load the agent skill `friction`.
 
@@ -120,7 +114,7 @@ No fence yet
 Write the report in this exact form:
 ```markdown
 ## Build report: <ticket title>
-Worktree: <path>   Branch: <branch>
+Checkout: <path>   Branch: <branch>
 Commits: <short sha> <subject> (one per line)
 Failing test first: <test>. Failed with: <message>. Passes now: yes | no
 Boundary chosen by build: <interface> (or "none, the ticket named them")
@@ -136,14 +130,14 @@ Ticket: closed in <path> | issue #<n>, open, closes when the pull request merges
 
 ## 10. Next command
 
-Tell the user to type `/land` next, in this worktree. It pushes the branch and opens the pull request with the evidence. Then it waits for the checks and merges through the merge gate. If the user asked `build` for a pull request, say that `/land` opens it. `build` opens no pull request. Never push to `main`. Held by: hooks/guard-git.mjs
+Tell the user to type `/land` next, in this checkout. It pushes the branch and opens the pull request with the evidence. Then it waits for the checks and merges through the merge gate. If the user asked `build` for a pull request, say that `/land` opens it. `build` opens no pull request. Never push to `main`. Held by: hooks/guard-git.mjs
 
-After the merge, the user can type `/build <next ticket>` in a fresh session. If this session was harder than it needed to be, tell the user to type `/retro` first. A new session starts from `origin/main`. If the next ticket needs this work, it must merge first.
+After the merge, the user can type `/build <next ticket>` in a fresh session. If this session was harder than it needed to be, tell the user to type `/retro` first. The next task branch starts from `origin/main`. If the next ticket needs this work, it must merge first.
 
 `build` never runs another typed workflow. It tells the user the next command to type. No fence yet
 
 ## Provenance
 
-- `skills/engineering/implement/SKILL.md` from mattpocock-skills (github.com/mattpocock/skills), MIT, Copyright (c) 2026 Matt Pocock. Kept nearly word for word: fetch the ticket and state its title, ask when the reference is ambiguous, and the typecheck, single-file and full-suite rhythm. Changed: `tdd` became `test-craft` with a fallback and with agreed boundaries passed in. `code-review` became `peer-review`. The review now runs after the commit, and findings get action. The work goes on a new branch in a worktree, not on the current branch. Added a step that tells the user the next command, `/land`. Ideas in our words from `docs/engineering/implement.md` and `skills/engineering/implement-spec/SKILL.md`, same repo, license and holder: the corruption report from several sessions in one checkout, the shared stash, review before commit seeing nothing, self-review bias, one ticket per run, never reopen the plan, split a ticket that is too big, test boundaries that nobody agreed, the ticket staying open after the run, fix all review findings before the report, and the clash between `tdd` boundary confirmation and background runs.
-- `new-feature/SKILL.md` and `AGENTS.md` lines 54-72 from rstack (github.com/michaelshimeles/rstack), Michael Shimeles, no license file. Copied and adapted: the existing-isolation check, the sync, scope check, naming, create and check steps, the worktree location rule, the port rule, the lockfile rule, one worktree and branch for each agent, and stop instead of guessing. Changed: plain-English edits, no semicolons or dashes, `--no-track` and `git -C`, a default worktrees folder. Cleanup moved to WORKTREES.md.
-- New here: the refusal to build in a checkout that another task uses, the user's choice to skip a step after one line of warning, "rebuild" over an in-work branch, "build anyway" over an open blocker, the no-stash rule, the new commit after review, the background rule, the report format, the blocker check before the worktree, the blocker script (its `Blocked by:` line parser follows `skills/tickets/scripts/tickets-lint.mjs` in this repo), the in-work check script and the push right after the worktree, the prove step, closing a local ticket only when no high or medium finding is open, and the Held by and No fence yet lines.
+- `skills/engineering/implement/SKILL.md` from mattpocock-skills (github.com/mattpocock/skills), MIT, Copyright (c) 2026 Matt Pocock. Kept nearly word for word: fetch the ticket and state its title, ask when the reference is ambiguous, and the typecheck, single-file and full-suite rhythm. Changed: `tdd` became `test-craft` with a fallback and with agreed boundaries passed in. `code-review` became `peer-review`. The review now runs after the commit, and findings get action. The work goes on a task branch in the checkout that `build` gets. `build` makes a branch only when HEAD is on the default branch or detached. Added a step that tells the user the next command, `/land`. Ideas in our words from `docs/engineering/implement.md` and `skills/engineering/implement-spec/SKILL.md`, same repo, license and holder: the corruption report from several sessions in one checkout, the shared stash, review before commit seeing nothing, self-review bias, one ticket per run, never reopen the plan, split a ticket that is too big, test boundaries that nobody agreed, the ticket staying open after the run, fix all review findings before the report, and the clash between `tdd` boundary confirmation and background runs.
+- `new-feature/SKILL.md` and `AGENTS.md` lines 54-72 from rstack (github.com/michaelshimeles/rstack), Michael Shimeles, no license file. Copied and adapted: the sync, scope check, naming and check steps, the port rule, the lockfile rule, and stop instead of guessing. Changed: plain-English edits, no semicolons or dashes, `--no-track`. Removed: the worktree steps, the worktree location rule, the cleanup and WORKTREES.md (owner ruling: whatever starts the session owns isolation).
+- New here: the refusal to build in a checkout that another task uses, the user's choice to skip a step after one line of warning, "rebuild" over an in-work branch, "build anyway" over an open blocker, the no-stash rule, the new commit after review, the background rule, the report format, the blocker check before the branch, the blocker script (its `Blocked by:` line parser follows `skills/tickets/scripts/tickets-lint.mjs` in this repo), the in-work check script and the push right after the branch, the cases of the checkout check, finishing a ticket on its existing branch, the prove step, closing a local ticket only when no high or medium finding is open, and the Held by and No fence yet lines.

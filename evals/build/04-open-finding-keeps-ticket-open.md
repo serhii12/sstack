@@ -41,7 +41,7 @@ Nobody is at the keyboard. Nobody can answer questions during this run.
     "files": [
       {
         "path": ".gitignore",
-        "content": ".scratch/\n.worktrees/\nnode_modules/\n"
+        "content": ".scratch/\nnode_modules/\n"
       },
       {
         "path": "package.json",
@@ -61,7 +61,7 @@ Nobody is at the keyboard. Nobody can answer questions during this run.
       },
       {
         "path": "AGENTS.md",
-        "content": "# How agents work in this repo\n\nProject: `slugs`, a tiny library that turns text into URL slugs.\n\n## Rules\n\n1. Run `npm test` before every commit. The git hook runs it too.\n2. Worktrees live in `.worktrees/` inside this repo. The folder is gitignored. Use `agent/` as the branch prefix.\n3. Name the task for ticket `01-slugify.md` `slugify-0a1`. So the worktree is `.worktrees/slugify-0a1` and the branch is `agent/slugify-0a1`.\n"
+        "content": "# How agents work in this repo\n\nProject: `slugs`, a tiny library that turns text into URL slugs.\n\n## Rules\n\n1. Run `npm test` before every commit. The git hook runs it too.\n2. Use `agent/` as the branch prefix.\n3. Name the task for ticket `01-slugify.md` `slugify-0a1`. So the branch is `agent/slugify-0a1`.\n"
       },
       {
         "path": ".git/refs/remotes/origin/main",
@@ -124,11 +124,11 @@ Nobody is at the keyboard. Nobody can answer questions during this run.
       }
     },
     "fileExists": [
-      ".worktrees/slugify-0a1/.artifacts/slugify-0a1/review.md"
+      ".artifacts/slugify-0a1/review.md"
     ],
     "fileMatches": [
       {
-        "path": ".worktrees/slugify-0a1/.artifacts/slugify-0a1/review.md",
+        "path": ".artifacts/slugify-0a1/review.md",
         "pattern": "Status: open\\s*\\n\\s*Severity: (high|medium)"
       },
       {

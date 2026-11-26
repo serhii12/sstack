@@ -1,6 +1,6 @@
 # Generated from SKILL.md by scripts/openai-yaml.mjs. Do not edit. Run: bun run gen:codex
 interface:
   display_name: "build"
-  short_description: "Build one ticket in its own worktree and branch, test first"
+  short_description: "Build one ticket on its own branch, test first, then review, fix"
 policy:
   allow_implicit_invocation: false

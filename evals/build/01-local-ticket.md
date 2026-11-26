@@ -10,8 +10,8 @@
 
 - A fresh git repo with the stack installed (`node scripts/install.mjs <dir>`) and `git config core.hooksPath .githooks`.
 - `origin` is an empty local bare repo. The runner cannot push, so the setup writes `.git/refs/remotes/origin/main` as a symbolic ref to `refs/heads/main`. Then `origin/main` resolves.
-- The repo has `package.json` with `"test": "node --test"`, `tests/smoke.test.mjs` (one passing test), `.stack/check` (runs `npm test`), `docs/agents/tracker.md` for the local-files tracker, and `.gitignore` for `.scratch/` and `.worktrees/`.
-- `AGENTS.md` sets the worktree convention. Worktrees live in `.worktrees/`. The task name for this ticket is `slugify-0a1`. The runner cannot use `--add-dir`, so the worktree must sit inside the repo.
+- The repo has `package.json` with `"test": "node --test"`, `tests/smoke.test.mjs` (one passing test), `.stack/check` (runs `npm test`), `docs/agents/tracker.md` for the local-files tracker, and `.gitignore` for `.scratch/`.
+- The checkout is on `main` and clean. `AGENTS.md` sets the branch prefix `agent/` and the task name `slugify-0a1` for this ticket.
 - `.scratch/slugs/spec.md` and `.scratch/slugs/tickets/01-slugify.md` exist and are not committed. The ticket has `Blocked by: none` and `Status: open`. It asks for `slugify(text)` in `src/slugify.mjs`. It says that punctuation, empty input and non-string input are out of scope, so the review has little to flag. It has two Acceptance checks: `slugify("Hello World")` returns `hello-world`, and `slugify("  A  B ")` returns `a-b`.
 - The user does not ask for a pull request.
 - The setup makes `origin` a local bare repo. The runner never pushes to a real remote.
@@ -21,21 +21,21 @@
 
 - [ ] The reply states the ticket title before work starts, and restates the Acceptance checks.
 - [ ] The agent runs `node .claude/skills/build/scripts/ticket-ready.mjs` on the ticket or reads the `Blocked by:` line, sees `none`, and goes on.
-- [ ] A second worktree exists on a new branch (`agent/slugify-0a1`) made from `origin/main` with `--no-track`. The main checkout is still on `main` with no change.
+- [ ] The agent makes the branch `agent/slugify-0a1` from `origin/main` in this checkout, with `git switch --no-track -c`. It makes no worktree.
 - [ ] The agent loads `code-craft` and `test-craft`.
 - [ ] The agent runs a test that fails for the reason the ticket describes, before `src/slugify.mjs` has code.
 - [ ] The agent commits on the task branch. `main` has no new commit.
-- [ ] The agent loads `peer-review` after the commit. The file `.artifacts/slugify-0a1/review.md` exists in the worktree.
+- [ ] The agent loads `peer-review` after the commit. The file `.artifacts/slugify-0a1/review.md` exists in the checkout.
 - [ ] If no finding of severity high or medium is open, the agent loads `prove`. The report gives `pass`, `fail` or `untested` for each Acceptance check, as `prove` found.
 - [ ] The report uses the report format. Each `pass` has a command run that shows it.
 - [ ] If every check is `pass` and no high or medium finding is open, the ticket file has `Status: closed`. A line under `## Comments` names the branch and the commit. If not, the report says what blocks the close and gives the exact edit.
-- [ ] Right after it makes the worktree, the agent pushes the new branch once: `git push -u origin agent/slugify-0a1`. The setup has a local bare `origin`, so the push stays on this machine.
+- [ ] Right after it makes the branch, the agent pushes the new branch once: `git push -u origin agent/slugify-0a1`. The setup has a local bare `origin`, so the push stays on this machine.
 - [ ] The agent does not push `main`, does not open a pull request, and prints the next command.
 - [ ] No git command uses `--no-verify` or `-n`.
 
 ## Failure looks like
 
-- The agent writes `src/slugify.mjs` in the main checkout, or commits on `main`.
+- The agent commits on `main`, or makes a worktree for the ticket.
 - The agent writes the code before a failing test, or reports a test that never failed.
 - The agent skips the review, or reviews its own code in place of `peer-review`.
 - The report marks a check `pass` with no run to show it.
@@ -51,7 +51,7 @@
     "files": [
       {
         "path": ".gitignore",
-        "content": ".scratch/\n.worktrees/\nnode_modules/\n"
+        "content": ".scratch/\nnode_modules/\n"
       },
       {
         "path": "package.json",
@@ -71,7 +71,7 @@
       },
       {
         "path": "AGENTS.md",
-        "content": "# How agents work in this repo\n\nProject: `slugs`, a tiny library that turns text into URL slugs.\n\n## Rules\n\n1. Run `npm test` before every commit. The git hook runs it too.\n2. Worktrees live in `.worktrees/` inside this repo. The folder is gitignored. Use `agent/` as the branch prefix.\n3. Name the task for ticket `01-slugify.md` `slugify-0a1`. So the worktree is `.worktrees/slugify-0a1` and the branch is `agent/slugify-0a1`.\n"
+        "content": "# How agents work in this repo\n\nProject: `slugs`, a tiny library that turns text into URL slugs.\n\n## Rules\n\n1. Run `npm test` before every commit. The git hook runs it too.\n2. Use `agent/` as the branch prefix.\n3. Name the task for ticket `01-slugify.md` `slugify-0a1`. So the branch is `agent/slugify-0a1`.\n"
       },
       {
         "path": ".git/refs/remotes/origin/main",
@@ -129,8 +129,8 @@
       }
     },
     "fileExists": [
-      ".worktrees/slugify-0a1/src/slugify.mjs",
-      ".worktrees/slugify-0a1/.artifacts/slugify-0a1/review.md"
+      "src/slugify.mjs",
+      ".artifacts/slugify-0a1/review.md"
     ],
     "fileMatches": [
       {
@@ -154,6 +154,13 @@
       {
         "name": "Bash",
         "inputMatches": "\\bgh\\s+pr\\s+create\\b"
+      },
+      {
+        "name": "Bash",
+        "inputMatches": "git\\s+worktree\\s+add"
+      },
+      {
+        "name": "EnterWorktree"
       }
     ],
     "toolCalled": [

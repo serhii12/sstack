@@ -289,6 +289,7 @@ test("exit 1: a closed blocker whose built commit is not in origin/main is not d
     assert.equal(r.code, 1);
     assert.match(r.err, new RegExp(`Blocker 01-one\\.md is built on branch agent/one-1a at commit ${sha}, but that commit is not in \`origin/main\``));
     assert.match(r.err, /Fix: merge agent\/one-1a into main, run `git fetch origin`/);
+    assert.match(r.err, /So its work is not in the base of a new task branch\./);
     assertMessageForm(r.err);
   });
 });

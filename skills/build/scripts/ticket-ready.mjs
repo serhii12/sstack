@@ -203,7 +203,7 @@ export function checkTicket(ticketArg) {
         closed++;
         continue;
       }
-      open.push(`Blocker ${name} is built on branch ${built.branch} at commit ${built.commit}, but ${m.why}. So its work is not in the base of a new worktree. Fix: merge ${built.branch} into main, run \`git fetch origin\`, then run this check again. After a squash merge, add a line \`Merged in <sha>.\` under \`## Comments\` of ${name}.`);
+      open.push(`Blocker ${name} is built on branch ${built.branch} at commit ${built.commit}, but ${m.why}. So its work is not in the base of a new task branch. Fix: merge ${built.branch} into main, run \`git fetch origin\`, then run this check again. After a squash merge, add a line \`Merged in <sha>.\` under \`## Comments\` of ${name}.`);
       continue;
     }
     const seen = status === null ? "it has no `Status:` line" : `its \`Status:\` line says \`${status}\``;
