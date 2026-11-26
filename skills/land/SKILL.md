@@ -109,13 +109,13 @@ node .claude/skills/land/scripts/land-check.mjs --pr <n> --review .artifacts/<ta
 
 - Exit 0: GitHub shows the merge. The script deleted the head branch. Close the ticket as below. Go to step 9.
 - Exit 12: the branch has conflicts with the default branch, or is behind it. Run `git fetch origin` and `git merge origin/<default branch>`. Resolve each conflict. Run the tests. Commit. Push with a plain `git push`. Go to step 6. The merge makes the review stale.
-- Exit 20: the review is stale or has open findings. Load `peer-review` once for the new commits. Commit the review file, push, and go to step 6.
+- Exit 20: if the review is stale or has a gap, load `peer-review` once, as a follow-up for the new commits. Commit the review file, push, and go to step 6. If the review has open findings, stop and list them. The user decides on each one.
 - Exit 21: the risk is high and no person approved. Do the hand-off below.
 - Any other exit: stop. Report the message. [REFERENCE.md](REFERENCE.md) lists every exit code and every state.
 
 Hand-off: leave the pull request open with auto-merge off. Write the risk report: "Pull request #<n> is high risk (rule <rule> on <path>). It needs an approval on commit <sha> by a person who is not <author>, or your word here to merge it." Then end. No fence yet
 
-Close the ticket only after `MERGED`. For a local ticket file, run `node .claude/skills/land/scripts/land-check.mjs close-ticket <ticket file> --pr <n>`. It sets `Status: closed` only when GitHub shows the merge. For a tracker ticket, make sure that the issue is closed. If it is open, close it as `docs/agents/tracker.md` says. Held by: scripts/land-check.mjs (the local ticket only)
+Close the ticket only after `MERGED`. For a local ticket file, run `node .claude/skills/land/scripts/land-check.mjs close-ticket <ticket file> --pr <n>`, also when the ticket already says `Status: closed`. It sets `Status: closed` only when GitHub shows the merge. It adds the `Merged` line that the blocker check of `build` needs after a squash merge. For a tracker ticket, make sure that the issue is closed. If it is open, close it as `docs/agents/tracker.md` says. Held by: scripts/land-check.mjs (the local ticket only)
 
 When the user then types a clear instruction to merge that pull request, for example `/land <n> merge it`, run steps 1, 6 and 8 again. Add `--owner-approved <sha>` to the command of step 8, with the sha of the risk report. The script skips only the approval gate, posts a note on the pull request, and merges. If the head is no longer that sha, it exits 21. Then write the risk report for the new head and end. If the instruction is not clear, ask. No fence yet
 

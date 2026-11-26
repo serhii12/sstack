@@ -94,17 +94,17 @@ If it will not load, tell the user. Report the review as `not run`. Do not revie
 
 ## 7. Fix the findings and commit again
 
-Act on every finding. Fix the finding. Set its status in the findings file to `fixed`, as `peer-review` says. If you think a finding is wrong or outside the ticket, ask the user. Mark it `won't fix` only after the user agrees. If nobody can answer, leave it `open`. List it in the report. Run the touched tests. Then run the full suite once. Make a new commit. If the repo does not ignore `.artifacts/`, include `.artifacts/<task-name>/review.md` in the commit. Do not amend the reviewed commit. Then the review still matches a commit that exists. If the user asks, run the review a second time. If not, run it once. No fence yet
+Act on every finding. Fix the finding. Set its status in the findings file to `fixed`, as `peer-review` says. If you think a finding is wrong or outside the ticket, ask the user. Mark it `won't fix: <reason>` only after the user agrees. Write the reason of the user. If nobody can answer, leave it `open`. List it in the report. Run the touched tests. Then run the full suite once. Make a new commit. If the repo does not ignore `.artifacts/`, include `.artifacts/<task-name>/review.md` in the commit. Do not amend the reviewed commit. Then the review still matches a commit that exists. No fence yet
+
+Then review the fix commits once, as a follow-up. Read the last `Range:` line of `.artifacts/<task-name>/review.md`. The reviewed commit is the sha after `to`. Run `node .claude/skills/peer-review/scripts/review-range.mjs --stat --base <that sha> <worktree>`. Exit 3 means that only `.artifacts/` changed, so skip the follow-up. Exit 0 lists the changed files. Put them on the `Changed after the review:` line. Load `peer-review` with that base, as a follow-up. Fix its findings as above, in a new commit. If the user asks for more reviews, run them. If not, stop here. When the user types `/land`, it reviews the last fix commits. Held by: skills/peer-review/scripts/review-range.mjs (exit 3 when only `.artifacts/` changed)
 
 If a problem outside the ticket will hit the next agent too, load the agent skill `friction`.
 
 ## 8. Prove the checks
 
-Load the agent skill `prove`, also when a finding is still `open`. An open `high` or `medium` finding keeps the ticket open in step 9, but the proof is done in this run. Give `prove` the task name from step 2, the full text of the ticket, and the head commit. Put its result for each Acceptance check in the report: `pass`, `fail` or `untested`. If it will not load, tell the user. Mark every check `untested`. `prove` keeps its evidence under `.artifacts/<task-name>/evidence/`. Never commit that folder to the task branch. The installed `.gitignore` keeps its media out of `git status`. `/land` pushes the media to `evidence/<task-name>`. No fence yet
+After the last commit of step 7, load the agent skill `prove`, also when a finding is still `open`. An open `high` or `medium` finding keeps the ticket open in step 9, but the proof is done in this run. Give `prove` the task name from step 2, the full text of the ticket, and the head commit. Put its result for each Acceptance check in the report: `pass`, `fail` or `untested`. If it will not load, tell the user. Mark every check `untested`. `prove` keeps its evidence under `.artifacts/<task-name>/evidence/`. Never commit that folder to the task branch. The installed `.gitignore` keeps its media out of `git status`. `/land` pushes the media to `evidence/<task-name>`. No fence yet
 
 ## 9. Close a local ticket and report
-
-Before you close the ticket, check what changed after the review. Read the commit at the end of the `Range:` line of `.artifacts/<task-name>/review.md`. Run `node .claude/skills/peer-review/scripts/review-range.mjs --stat --base <that commit> <worktree>`. Exit 3 means that only `.artifacts/` changed. Exit 0 lists the changed files. Put them on the `Changed after the review:` line. If product files changed, load `peer-review` once more with that base, as a follow-up. Fix its findings as in step 7. Do this once. Held by: skills/peer-review/scripts/review-range.mjs (exit 3 when only `.artifacts/` changed)
 
 A local ticket has no pull request, so nothing else closes it. An open ticket blocks every ticket that names it. So close it here when the work is done:
 
