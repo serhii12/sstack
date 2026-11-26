@@ -7,7 +7,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as evidence from "../../skills/prove/scripts/evidence-check.mjs";
@@ -225,6 +225,31 @@ test("T10: the blocker line of the ticket template reads as no blocker in every 
   assert.deepEqual(problems, [], `${TRIAGE} refuses "${line}" of skills/tickets/TICKET-FORMAT.md in a local report`);
 });
 
+test("T10: every text that tells the agent how to write no blocker in triage gives the form that tickets use", () => {
+  const form = "None (can start immediately)";
+  const bare = /\b(?:says|with|add|write)\s+`(?:Blocked by: )?none`/i;
+  for (const file of ["skills/triage/TRACKERS.md", TRIAGE]) {
+    const hit = read(file).split("\n").find((l) => bare.test(l));
+    assert.equal(hit, undefined, `${file} tells the agent to write a bare \`none\`. Write \`${form}\`, the form of skills/tickets/TICKET-FORMAT.md: ${hit}`);
+  }
+  const line = read("skills/triage/TRACKERS.md").split("\n").find((l) => l.startsWith("- `ready-for-agent`:"));
+  assert.ok(line?.includes(`\`${form}\``), `skills/triage/TRACKERS.md: the ready-for-agent line must name \`${form}\``);
+});
+
+test("T9: the Status words of local reports, tickets and the local tracker are the REPORT_STATUSES of triage-check.mjs", () => {
+  const trackers = read("skills/triage/TRACKERS.md");
+  const rule = trackers.split("\n").find((l) => l.startsWith("The `Status:` line says only"));
+  assert.ok(rule, "skills/triage/TRACKERS.md has no line \"The `Status:` line says only ...\"");
+  sameNames(ticks(rule.split(/\.\s/)[0]).filter((t) => t !== "Status:"), triage.REPORT_STATUSES, "skills/triage/TRACKERS.md (Status rule)", `REPORT_STATUSES in ${TRIAGE}`);
+  const values = [
+    ["skills/triage/TRACKERS.md (report template)", firstFence(section(trackers, "## Local files", "skills/triage/TRACKERS.md"), "skills/triage/TRACKERS.md")],
+    ["skills/tickets/TICKET-FORMAT.md (local template)", ticketTemplate()],
+  ].flatMap(([where, text]) => [...text.matchAll(/^Status: (\S+)$/gm)].map((m) => [where, m[1]]));
+  for (const t of proseTicks(read("skills/setup/tracker/local.md")).filter((x) => /^Status: \S+$/.test(x))) values.push(["skills/setup/tracker/local.md", t.slice("Status: ".length)]);
+  assert.ok(values.length >= 3, "the test found fewer than three Status lines to check");
+  for (const [where, v] of values) assert.ok(triage.REPORT_STATUSES.includes(v), `${where} writes "Status: ${v}", and REPORT_STATUSES in ${TRIAGE} has no "${v}"`);
+});
+
 test("T11: the close line of build and the text of close-ticket read back as built, closed and merged", () => {
   const build = read("skills/build/SKILL.md");
   const close = proseTicks(build).find((t) => t.startsWith("Built on branch"));
@@ -411,6 +436,24 @@ test("T18: spec reads the two status lines that grill writes", () => {
     assert.ok(grill.includes(`Status: ${value}`), `skills/grill/SKILL.md does not write "Status: ${value}"`);
     assert.ok(spec.includes(value), `skills/spec/SKILL.md does not read "${value}", the status that skills/grill/SKILL.md writes`);
   }
+});
+
+test("T20: a planned fence names a path that the installer can copy: inside the skill folder, or a test of this repo", () => {
+  const skills = readdirSync(join(ROOT, "skills"), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
+  let seen = 0;
+  for (const name of skills) {
+    for (const e of readdirSync(join(ROOT, "skills", name), { withFileTypes: true, recursive: true })) {
+      if (!e.isFile() || !e.name.endsWith(".md")) continue;
+      const file = join(e.parentPath, e.name).slice(ROOT.length + 1);
+      for (const m of read(file).matchAll(/No fence yet \(planned: ([^)]+)\)/g)) {
+        const target = m[1].trim();
+        if (!/^[\w.-]+(?:\/[\w.-]+)+$/.test(target)) continue;
+        seen++;
+        assert.ok(target.startsWith(`skills/${name}/`) || target.startsWith("tests/"), `${file} plans the fence ${target}. The installer copies only skill folders, so plan it under skills/${name}/ or tests/`);
+      }
+    }
+  }
+  assert.ok(seen > 0, "the test found no planned fence with a path");
 });
 
 test("T19: the three files that list the forms of a decision record status agree", () => {

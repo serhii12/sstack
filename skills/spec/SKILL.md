@@ -21,7 +21,7 @@ No fence yet
 
 ## Never mark it ready
 
-The status of the spec is `draft`. Add no label, such as `ready-for-agent`. Set no other status. Only the user marks a spec ready, by hand. An agent that polls for ready work will try to build the whole spec in one run.
+The status of the spec is `draft`. Add no label, such as `ready-for-agent`. Set no other status. Only the user marks a spec ready, by hand, when the user types `/tickets` or adds a tracker label. An agent that polls for ready work will try to build the whole spec in one run.
 Held by: skills/spec/scripts/spec-lint.mjs
 
 ## The spec is a snapshot

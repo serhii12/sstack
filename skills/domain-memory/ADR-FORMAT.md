@@ -46,12 +46,12 @@ Every record has one status line with a bold label. Use exactly one of these:
 | `**Status:** superseded by NNNN` | Record NNNN replaces this one. Record NNNN must exist. |
 
 Do not write status as a plain `Status:` line, a `## Status` heading or frontmatter. A tool that reads the status looks for the one form above and misses the others. To retire a decision with no replacement, write a short new record that says so. Then supersede the old record with the new record.
-No fence yet (planned: scripts/adr-lint.mjs)
+No fence yet (planned: skills/domain-memory/scripts/adr-lint.mjs)
 
 ## Revisit if
 
 Every record has a `## Revisit if` section. List concrete conditions, such as "we pass 10,000 orders a day" or "the partner drops the XML API". Do not write vague conditions such as "if needs change".
-No fence yet (planned: scripts/adr-lint.mjs)
+No fence yet (planned: skills/domain-memory/scripts/adr-lint.mjs)
 
 ## Optional sections
 
@@ -63,12 +63,12 @@ If a section adds no real value, leave it out. Most records do not need these se
 ## Numbering
 
 Find the highest number in `docs/adr/` and add one. Two agents that work in parallel can pick the same number. Before you commit, make sure that no other record has the same number. If there is a clash, renumber your record.
-No fence yet (planned: scripts/adr-lint.mjs)
+No fence yet (planned: skills/domain-memory/scripts/adr-lint.mjs)
 
 ## Changing a decision
 
 Records are history. Do not rewrite an accepted record. Write a new record. Then set the status line of the old record to `**Status:** superseded by NNNN`. That line is the only edit to the old record.
-No fence yet (planned: scripts/adr-lint.mjs)
+No fence yet (planned: skills/domain-memory/scripts/adr-lint.mjs)
 
 ## What qualifies
 

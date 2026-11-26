@@ -22,7 +22,7 @@ Turn 2: `Yes, apply it. Priority P2.`
 - [ ] Turn 1: the agent reads the report and the code, and runs the demo to check the claim.
 - [ ] Turn 1: the reply has the recommendation block with `Category: bug` and `State: ready-for-agent`, and asks "Apply this?".
 - [ ] Turn 1: the agent changes no file.
-- [ ] Turn 2: the agent sets `Labels: bug, ready-for-agent, P2`, adds `Blocked by: none`, and appends an Agent Brief with the AI line and acceptance checks.
+- [ ] Turn 2: the agent sets `Labels: bug, ready-for-agent, P2`, adds `Blocked by: None (can start immediately)` (the older `Blocked by: none` also passes), and appends an Agent Brief with the AI line and acceptance checks.
 - [ ] Turn 2: the agent runs the triage check and names `/build` as the next command.
 - [ ] The second report is not touched.
 

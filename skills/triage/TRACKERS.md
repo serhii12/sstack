@@ -60,7 +60,7 @@ Reported by: <name>
 - Change the state: edit the `Labels:` line, such as `Labels: bug, ready-for-agent, P2`. Remove the old state.
 - Comment: append the comment under a `## Comments` heading at the end of the file. If the heading is missing, create it. The check ignores a triage heading above the last `## Comments` heading, because that text is the report.
 - Close a `wontfix` issue: post the Triage Decision under `## Comments`. Then set `Status: closed`.
-- `ready-for-agent`: add one `Blocked by:` line under the `Labels:` line. It says `none`, or names ticket files that exist next to the report, such as `../csv-export/tickets/01-login-form.md`. A reference such as `#12` does not work in a local file. `/build` reads that line and the Acceptance checks of the brief.
+- `ready-for-agent`: add one `Blocked by:` line under the `Labels:` line. It says `None (can start immediately)`, or names ticket files that exist next to the report, such as `../csv-export/tickets/01-login-form.md`. A reference such as `#12` does not work in a local file. `/build` reads that line and the Acceptance checks of the brief.
 - Check: `node .claude/skills/triage/scripts/triage-check.mjs .scratch/reports/<file>`. Run it alone, with this relative path, so that a permission rule can match it.
 
 The `Status:` line says only `open` or `closed`. Never write a triage state on it. `/build` reads it to find closed blockers.
