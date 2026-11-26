@@ -20,9 +20,9 @@ npm test fails in this repo and I do not know why. Diagnose it, then fix it.
 
 - [ ] The agent loads the `diagnose` skill.
 - [ ] The agent runs `npm test` or `node --test` before any edit and prints `Red command:`.
-- [ ] Before the first edit, the agent prints `Ranked causes:` with 3 to 5 causes. The `replaceAll` call can be the top cause.
-- [ ] After that fix, the red command still fails with a new symptom. The agent prints a new `Ranked causes:` list with 3 to 5 causes. Each cause has a prediction of the form "If X is the cause, then changing Y ...".
-- [ ] The new list comes before the next edit.
+- [ ] Before the first edit, the agent writes `Ranked causes:` with 3 to 5 causes in the notebook. Each cause has a prediction. The `replaceAll` call can be the top cause.
+- [ ] After that fix, the red command still fails with a new symptom. The agent writes a new `Ranked causes:` list in the notebook.
+- [ ] The new list comes before the edit of `src/clean.mjs`.
 - [ ] The agent changes one thing per experiment.
 - [ ] The agent names the second cause: the character class `a-y` drops `z`.
 - [ ] At the end, `npm test` passes and the test file still expects `"hello-lazy-world"`.
@@ -93,12 +93,27 @@ npm test fails in this repo and I do not know why. Diagnose it, then fix it.
           "inputMatches": "npm test|node --test"
         },
         "after": "Edit"
+      },
+      {
+        "before": {
+          "name": "Write",
+          "inputMatches": "/diagnose-[^\"]*\\.md[\\s\\S]*Ranked causes(?:(?!\\\\n).)*(?:\\\\n)*?(\\\\n\\s*[1-5][.)](?:(?!\\\\n\\s*[1-5][.)]|\\\\n\\\\n|\\\\n#).)*?\\b(?:if|prediction)\\b(?:(?!\\\\n\\s*[1-5][.)]|\\\\n\\\\n|\\\\n#).)*){3}/i"
+        },
+        "after": "Edit"
+      },
+      {
+        "before": {
+          "name": "Edit",
+          "inputMatches": "/\"file_path\":\"[^\"]*diagnose-[^\"]*\\.md\"[\\s\\S]*Ranked causes/i"
+        },
+        "after": {
+          "name": "Edit",
+          "inputMatches": "\"file_path\":\"[^\"]*src/clean\\.mjs\""
+        }
       }
     ],
     "outputMatches": [
       "Red command:",
-      "Ranked causes:[\\s\\S]*Ranked causes:",
-      "(If [^\\n]{1,200}? is the cause,? then[\\s\\S]*){3}",
       "/a-y|\\[\\^a-z|\\bz\\b|letter z|`z`|'z'|\"z\"/i"
     ],
     "fileMatches": [
@@ -119,6 +134,12 @@ npm test fails in this repo and I do not know why. Diagnose it, then fix it.
 }
 ```
 
-This eval is in the `capability` set. On 25 Nov 2026 no run printed the ranked list after the first fix. That was 0 of 8 runs, before and after one fix round of the skill text. So that rule in the skill says `No fence yet`. Since then the skill prints a first list before any test, so the check now asks for two lists.
+This eval is in the `capability` set. On 25 Nov 2026 no run printed a ranked list in the reply: 0 of 8 runs, in three wordings. Since then the skill puts each list in the notebook, and the checks read the notebook tool calls:
 
-Not machine-checked: the first list comes before the first edit. The second list comes after the first fix and before the second edit. `npm test` passes at the end. The runner cannot order text against tool calls or run a command after the agent stops.
+- The first `toolOrder` check finds the first notebook `Write` that holds `Ranked causes` and three numbered causes, each with "if" or "prediction". It must come before the first `Edit`.
+- The second `toolOrder` check finds the first notebook `Edit` that holds `Ranked causes`. It must come before the edit of `src/clean.mjs`. A second list that the agent writes with `Write` does not count.
+- A tool call counts also when the tool refused it, for example a `Write` to a notebook path that holds an older file.
+
+On 25 Nov 2026 the skill had the notebook rule. The first list came before the first edit in 3 of 3 Opus runs and 2 of 3 Sonnet runs. The second list came before the second edit in 3 of 3 Opus runs and 0 of 3 Sonnet runs. All three Sonnet runs had put the `z` cause in the first list. So the rule for the second list says `No fence yet`.
+
+Not machine-checked: the second list comes after the first fix. `npm test` passes at the end. The runner cannot run a command after the agent stops.
