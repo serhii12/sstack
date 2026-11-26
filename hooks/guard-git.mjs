@@ -16,6 +16,9 @@
 // Confirm in Claude Code: stdin shape, exit code 2 semantics and the settings wiring
 // (docs: https://code.claude.com/docs/en/hooks). See templates/claude-settings.json.
 // Codex: templates/codex-hooks.json. Codex runs a project hook only after the user trusts it in /hooks.
+//
+// Adapted with hooks/git-policy.mjs from scripts/vcs-command-policy.js in joelhooks/rat-stack
+// (MIT, Copyright (c) 2026 Joel Hooks). See NOTICE.
 
 import { execFileSync } from "node:child_process";
 import { writeSync } from "node:fs";
