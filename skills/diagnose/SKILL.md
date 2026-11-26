@@ -11,16 +11,15 @@ This skill finds the cause of a bug before it changes any code. A "red" run fail
 
 Follow these rules in this order. Print each line in backticks as plain text in your reply. A person or a script can search your reply for them.
 
-1. Before you form any theory, run one command that goes red on the exact symptom. Then print `Red command: <command>`.
-2. You can test your first cause at once. Change one thing for that test.
-3. If the first cause is wrong, stop. If the red command still fails after the first fix, stop too. A new symptom also counts.
+1. Before you form any theory, run one command that goes red on the exact symptom. Then print `Red command: <command>`. Held by: evals/diagnose/01-failing-test-planted-bug.md
+2. You can test your first cause at once. Change one thing for that test. No fence yet
+3. If the first cause is wrong, stop. If the red command still fails after the first fix, stop too. A new symptom also counts. No fence yet
 4. After a stop in item 3, start your next reply text with `Ranked causes:`. List 3 to 5 causes, each with a prediction. Phase 3 has the format.
    Print the list before the next probe, edit or fix. If the next cause looks obvious, print the list too. No fence yet
-5. Before you fix the cause, write a failing regression test. Load `test-craft` to choose its boundary. If an existing failing test is the regression test, load it too.
-6. Test one cause at a time. Change one thing per experiment.
-7. Write every result in the notebook, including each disproved cause. A first cause that was right also gets an entry.
-8. Before you show anything, write `<REDACTED>` in place of every secret.
-Held by: evals/diagnose/01-failing-test-planted-bug.md
+5. Before you fix the cause, write a failing regression test. Load `test-craft` to choose its boundary. If an existing failing test is the regression test, load it too. Held by: evals/diagnose/01-failing-test-planted-bug.md (the load of `test-craft` only)
+6. Test one cause at a time. Change one thing per experiment. No fence yet
+7. Write every result in the notebook, including each disproved cause. A first cause that was right also gets an entry. Held by: evals/diagnose/01-failing-test-planted-bug.md (the notebook file only)
+8. Before you show anything, write `<REDACTED>` in place of every secret. No fence yet
 
 ## When this skill fits
 
