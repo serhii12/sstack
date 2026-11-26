@@ -92,17 +92,15 @@ function scanLines(text, bodyStart) {
   const raw = text.split(/\r?\n/);
   if (raw.length && raw[raw.length - 1] === "") raw.pop();
   let inFence = false;
-  let inProvenance = false;
   return raw.map((t, i) => {
     const n = i + 1;
     if (n <= bodyStart) return { n, t, fence: false, inFrontmatter: true };
-    if (!inFence && /^##\s/.test(t)) inProvenance = /^##\s+Provenance\s*$/.test(t);
     const trimmed = t.trim();
     if (/^(```|~~~)/.test(trimmed)) {
       inFence = !inFence;
-      return { n, t, fence: true, inFrontmatter: false, inProvenance };
+      return { n, t, fence: true, inFrontmatter: false };
     }
-    return { n, t, fence: inFence, inFrontmatter: false, inProvenance };
+    return { n, t, fence: inFence, inFrontmatter: false };
   });
 }
 
@@ -142,8 +140,8 @@ export function lint(rootArg) {
       if (l.fence || l.inFrontmatter) continue;
       if (/(?:^|[\s`*_.])No fence yet(?:\s*\(planned:[^)]*\))?[`*_.]*\s*$/.test(l.t)) noFenceYet++;
       const m = l.t.match(/Held by:\s*(.*)$/);
-      // A quote in the Provenance section, or an example in inline code, is not a rule.
-      if (!m || l.inProvenance || !stripInlineCode(l.t).includes("Held by:")) continue;
+      // An example in inline code is not a rule.
+      if (!m || !stripInlineCode(l.t).includes("Held by:")) continue;
       const value = m[1].trim().replace(/^`+|`+$/g, "").trim();
       if (/^planned\b/i.test(value)) {
         add(file, l.n, "held-by-planned", "`Held by:` names a planned item", "write `No fence yet (planned: ...)` until the script or test exists.");
@@ -262,8 +260,7 @@ export function lint(rootArg) {
       }
     };
     for (const l of lines) {
-      // Provenance names files in the source repos, not in this repo.
-      if (l.inFrontmatter || l.inProvenance) continue;
+      if (l.inFrontmatter) continue;
       if (!l.fence) {
         for (const m of stripInlineCode(l.t).matchAll(/\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
           const href = m[1];
@@ -328,7 +325,7 @@ export function lint(rootArg) {
       const lines = scanLines(text, 0);
       checkHeldBy(file, lines);
       for (const l of lines) {
-        if (l.fence || l.inProvenance) continue;
+        if (l.fence) continue;
         for (const m of stripInlineCode(l.t).matchAll(/\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
           const href = m[1];
           if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith("#") || href.startsWith("/")) continue;

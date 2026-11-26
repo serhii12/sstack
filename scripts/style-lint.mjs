@@ -13,8 +13,7 @@
 // with the same patterns and flags, run on the whole file. Like that checker, they skip only
 // inline code and fenced code (``` and also ~~~). So a file that passes these checks also passes
 // slop_check.py. Two lint-only house checks are added: "not X but Y" and "it is worth noting".
-// The STE checks also skip frontmatter keys, the `## Provenance` section, HTML comments, URLs and
-// double-quoted text. The spelling check (STE 1.14) does run in the `## Provenance` section.
+// The STE checks also skip frontmatter keys, HTML comments, URLs and double-quoted text.
 //
 // Usage: node scripts/style-lint.mjs [root] [--json] [--max-warn N]
 // Exit 0 clean (or only warnings within --max-warn), 1 errors or too many warnings, 2 usage error.
@@ -409,12 +408,11 @@ export function checkText(text, path = "file.md") {
   }
 
   // Pass 1: decide per line what to check, and produce cleaned text.
-  const lines = []; // { n, text, desc, heading, prov }
+  const lines = []; // { n, text, desc, heading }
   let fmEnd = -1;
   if (rawLines[0] === "---") fmEnd = rawLines.indexOf("---", 1);
   let inFence = false;
   let fenceMark = "";
-  let inProvenance = false;
   let inRouter = false;
   const state = { inComment: false };
 
@@ -449,12 +447,10 @@ export function checkText(text, path = "file.md") {
       lines.push({ n, text: stripMarkup(c.text), desc: true });
       continue;
     }
-    if (/^#{1,6}\s/.test(raw)) inProvenance = /^#{1,6}\s+Provenance\s*$/.test(trimmed);
     if (TABLE_SEPARATOR.test(raw) && raw.includes("-") && raw.includes("|")) continue;
     const c = cleanLine(raw, state);
     if (c.skipped) continue;
-    // The Provenance section quotes sources, so only the spelling rule reads it.
-    lines.push({ n, text: c.text, heading: /^#{1,6}\s/.test(raw), prov: inProvenance });
+    lines.push({ n, text: c.text, heading: /^#{1,6}\s/.test(raw) });
   }
 
   const suppressed = (nums, rule) => nums.some((n) => escapesByLine.get(n)?.has(rule));
@@ -479,7 +475,6 @@ export function checkText(text, path = "file.md") {
     for (const s of britishSpellings(bare)) {
       add(at, "spelling", `British spelling \`${s.match}\``, `write \`${s.american}\`. Keep code, paths and quoted source text as they are.`);
     }
-    if (l.prov) continue;
     prose.push({ n: l.n, text: bare });
 
     for (const m of bare.matchAll(/\b(should|may|might|could|would|shall|ought)\b/gi)) {
@@ -510,7 +505,7 @@ export function checkText(text, path = "file.md") {
     cur = null;
   };
   for (const l of lines) {
-    if (l.heading || l.prov) {
+    if (l.heading) {
       flush();
       continue;
     }

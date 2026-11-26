@@ -115,15 +115,15 @@ test("spelling: American words and look-alikes pass", () => {
   }
 });
 
-test("spelling also runs in the Provenance section, but skips code and quoted text", () => {
-  assert.ok(has("## Provenance\n\nMIT licence.\n", "spelling"));
-  assert.ok(!has("## Provenance\n\nFrom `test-behaviour/SKILL.md`. It says \"keep the behaviour\".\n", "spelling"));
+test("spelling skips code and quoted text", () => {
+  assert.ok(has("MIT licence.\n", "spelling"));
+  assert.ok(!has("From `test-behaviour/SKILL.md`. It says \"keep the behaviour\".\n", "spelling"));
 });
 
 test("house checks skip inline code and fences like slop_check.py, and read everything else", () => {
   assert.deepEqual(houseScan("Use `seam` and `a; b`.\n```\nseam; harness\n```\n"), []);
   assert.deepEqual(houseScan("~~~\nseam\n~~~\n"), []);
-  const hits = houseScan('Print "a; b".\n\n## Provenance\n\nThe source calls it a seam.\n<!-- harness -->\n');
+  const hits = houseScan('Print "a; b".\n\n## Notes\n\nThe source calls it a seam.\n<!-- harness -->\n');
   assert.deepEqual(hits.map((h) => [h.line, h.rule]).sort(), [[1, "semicolon"], [5, "slop-word"], [6, "slop-word"]]);
 });
 
@@ -213,12 +213,6 @@ test("skip: table separator rows, and cells are checked one by one", () => {
 
 test("skip: URLs for the STE rules", () => {
   assert.deepEqual(rulesOf("See https://example.com/should-read?x=1&y=2 and [the docs](https://x.dev/dont) now."), []);
-});
-
-test("skip: Provenance section skips the STE rules until the next heading, and the house rules still run", () => {
-  const text = "## Provenance\n\nCopied from the repo. It doesn't matter, so it should stay. Leverage it.\n\n## Next\n\nThe agent should stop.\n";
-  const f = checkText(text).findings;
-  assert.deepEqual(f.map((x) => [x.line, x.rule]), [[3, "slop-word"], [7, "banned-modal"]]);
 });
 
 test("skip: HTML comments for the STE rules, single line and multi-line", () => {

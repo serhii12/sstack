@@ -10,7 +10,7 @@ import { openaiYaml } from "../../scripts/openai-yaml.mjs";
 
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "scripts", "skill-lint.mjs");
 
-function skillText({ name, description = "Does a thing.", typed = false, body = "", provenance = true }) {
+function skillText({ name, description = "Does a thing.", typed = false, body = "" }) {
   return [
     "---",
     `name: ${name}`,
@@ -21,7 +21,6 @@ function skillText({ name, description = "Does a thing.", typed = false, body = 
     `# ${name}`,
     "",
     body,
-    ...(provenance ? ["", "## Provenance", "", "- Source file, repo, MIT, Someone. Changed: plain English."] : []),
     "",
   ].join("\n");
 }
@@ -81,14 +80,14 @@ test("clean fixture has no problems and counts No fence yet", () => {
 // ---- rule 1: frontmatter ----
 
 test("frontmatter: missing description fails", () => {
-  const r = run({ "skills/helper/SKILL.md": "---\nname: helper\n---\n# h\n\n## Provenance\n" });
+  const r = run({ "skills/helper/SKILL.md": "---\nname: helper\n---\n# h\n" });
   const hits = rules(r, "frontmatter");
   assert.equal(hits.length, 1);
   assert.match(hits[0].message, /description/);
 });
 
 test("frontmatter: unparseable value fails clearly", () => {
-  const r = run({ "skills/helper/SKILL.md": "---\nname: helper\ndescription: ok\ntags:\n  - a\n---\n# h\n\n## Provenance\n" });
+  const r = run({ "skills/helper/SKILL.md": "---\nname: helper\ndescription: ok\ntags:\n  - a\n---\n# h\n" });
   const hits = rules(r, "frontmatter");
   assert.equal(hits.length, 1);
   assert.match(hits[0].message, /cannot parse/);
@@ -101,7 +100,7 @@ test("frontmatter: unquoted colon and quoted colon", () => {
 });
 
 test("frontmatter: no frontmatter block fails", () => {
-  const r = run({ "skills/helper/SKILL.md": "# no frontmatter\n\n## Provenance\n" });
+  const r = run({ "skills/helper/SKILL.md": "# no frontmatter\n" });
   assert.equal(rules(r, "frontmatter").length, 1);
 });
 
@@ -156,13 +155,6 @@ test("pointers: missing link, missing backticked repo path, missing sibling fail
   assert.deepEqual(hits.map((h) => h.message.match(/`([^`]+)`/)[1]).sort(), ["MISSING.md", "NOTES.md", "hooks/gone.mjs", "scripts/nope.mjs"]);
 });
 
-test("pointers: source paths named in the Provenance section are not checked", () => {
-  const r = run({
-    "skills/helper/SKILL.md": skillText({ name: "helper", body: "x" }).replace("- Source file", "- `skills/engineering/other/SKILL.md` from another repo. Source file"),
-  });
-  assert.deepEqual(rules(r, "pointer"), []);
-});
-
 // ---- rule 3: Held by ----
 
 test("held-by: existing path passes", () => {
@@ -204,9 +196,9 @@ test("held-by: a reference file in a subfolder of the skill is checked and count
   assert.deepEqual(rules(r, "pointer"), []);
 });
 
-test("held-by: an example in inline code and a quote in the Provenance section are not rules", () => {
+test("held-by: an example in inline code is not a rule", () => {
   const r = run({
-    "skills/helper/SKILL.md": skillText({ name: "helper", body: "End each rule with `Held by: <path>`." }).replace("- Source file", "- Kept the source line Held by: scripts/none.mjs"),
+    "skills/helper/SKILL.md": skillText({ name: "helper", body: "End each rule with `Held by: <path>`." }),
   });
   assert.deepEqual(rules(r, "held-by"), []);
   const real = run({ "skills/helper/SKILL.md": skillText({ name: "helper", body: "Rule. Held by: `tests/hooks/none.test.mjs`" }) });
