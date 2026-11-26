@@ -32,7 +32,7 @@ flowchart TD
   TK --> B
 
   subgraph P3["3. Build one ticket"]
-    B["/build<br/>own worktree and branch"] --> TC["test-craft<br/>failing test first"]
+    B["/build<br/>own branch"] --> TC["test-craft<br/>failing test first"]
     TC --> CODE["Write the code"]
     CODE --> CM["Commit<br/>the git guard checks the command"]
     CM --> PR["peer-review<br/>two fresh reviewers"]
@@ -87,7 +87,7 @@ You type a typed skill as a command. The agent loads an agent skill when it need
 | `skills/setup` | typed | Finds the tracker (GitHub, GitLab, local files, or another tracker as free text), sets up the triage labels, and writes the files in `docs/agents/` after you confirm. It creates missing labels after you confirm. |
 | `skills/spec` | typed | Turns this conversation, usually a confirmed grill summary, into one draft spec. It asks nothing new, and it lists the gaps that it finds. |
 | `skills/tickets` | typed | Splits one spec into small tickets with acceptance checks and named blockers. It has no cap on the number of tickets. |
-| `skills/build` | typed | Builds one ticket in its own worktree and branch: test first, then review, fix and report. The user can skip a step, and the report names it. |
+| `skills/build` | typed | Builds one ticket on its own branch: test first, then review, fix and report. The user can skip a step, and the report names it. |
 | `skills/test-craft` | agent | Picks the kind of test and the test boundary, writes the test first, and plants a bug in each new check. |
 | `skills/peer-review` | agent | Reviews a change with two fresh reviewers, one for repo standards and one for the spec. |
 | `skills/diagnose` | agent | Finds the cause of a failure from a command that fails, then fixes it with a regression test. |
@@ -109,7 +109,7 @@ You type a typed skill as a command. The agent loads an agent skill when it need
 | `skills/tickets/scripts/tickets-lint.mjs` | lint | Checks local ticket files: names, blockers and no cycles. A project can set a cap with `--max <n>`. There is no default cap. |
 | `skills/build/scripts/ticket-ready.mjs` | script | Checks that every blocker of a local ticket is closed. |
 | `skills/land/scripts/land-check.mjs`, `land-risk.mjs`, `land-wait.mjs`, `land-evidence.mjs` | script | The merge gate, the risk level from the changed files, the watcher of the checks, and the push of evidence media to the branch `evidence/<task>`. |
-| `skills/build/scripts/ticket-in-work.mjs` | script | Checks that no other worktree, local branch or pushed branch already builds the ticket. |
+| `skills/build/scripts/ticket-in-work.mjs` | script | Checks that no other checkout, local branch or pushed branch already builds the ticket. |
 | `skills/peer-review/scripts/review-range.mjs` | script | Prints the diff for a review, with commits, staged and unstaged changes, and new files. |
 | `skills/prove/scripts/evidence-check.mjs` | script | Checks the evidence index of a task against its acceptance checks and the evidence files. |
 | `skills/prove/scripts/run-playwright.mjs` | script | Runs a capture script with Playwright installed in a temp folder outside the project, and says what it installed and where. |
@@ -152,7 +152,7 @@ After the install, the installer prints the next steps. It prints only the steps
 2. If the installer did not set `core.hooksPath`, turn on the git hooks as the installer says. Until then, no commit runs `.stack/check`.
 3. Put the check command of your project in `.stack/check`. The agent cannot edit that file. Until you do, no commit runs a check, and every commit gets a warning. On an empty repo, the first ticket adds the check command. Put it in `.stack/check` after that ticket.
 4. Type `/setup` once to choose the issue tracker.
-5. Commit the new files and get them into `origin/main`, with a pull request or a push by a person. `/build` makes every worktree from `origin/main`. If the stack is not there, the build has no `AGENTS.md`, no skills, no git hook and no check.
+5. Commit the new files and get them into `origin/main`, with a pull request or a push by a person. `/build` makes each task branch from `origin/main`. If the stack is not there, the build has no `AGENTS.md`, no skills, no git hook and no check.
 6. Type `/start` and say what you want done.
 
 ## Check the stack
