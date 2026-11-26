@@ -996,6 +996,8 @@ test("permissions: the allow list is printed with where to paste it, and no sett
     assert.ok(out.some((l) => l.includes("the first /build stops for permission many times")));
     const { allow, deny } = printedRules(out);
     for (const [rule] of ALLOW_RULES) assert.ok(allow.includes(rule), rule);
+    // /land step 7 reads the output of a failed check with these two read-only commands.
+    for (const rule of ["Bash(gh pr checks:*)", "Bash(gh run view:*)"]) assert.ok(allow.includes(rule), rule);
     const settings = JSON.parse(readFileSync(join(target, ".claude", "settings.json"), "utf8"));
     assert.equal(settings.permissions?.allow, undefined, "settings.json must hold no allow rule");
     assert.equal(present(join(target, ".claude", "settings.local.json")), false, "settings.local.json is never written");
