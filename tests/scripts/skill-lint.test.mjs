@@ -185,6 +185,15 @@ test("held-by: a reference file beside SKILL.md is checked and counted too", () 
   assert.equal(r.noFenceYet, 3);
 });
 
+test("held-by: a reference file in a subfolder of the skill is checked and counted too", () => {
+  const r = run({ "skills/helper/tracker/github.md": "# GitHub\n\n- Rule. Held by: tests/hooks/none.test.mjs\n- Rule. No fence yet\n\nSee [the skill](../SKILL.md).\n" });
+  const hits = rules(r, "held-by");
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].path, "skills/helper/tracker/github.md");
+  assert.equal(r.noFenceYet, 3);
+  assert.deepEqual(rules(r, "pointer"), []);
+});
+
 test("held-by: `planned:` target is an error, `No fence yet (planned: ...)` is allowed and counted", () => {
   const bad = run({ "skills/helper/SKILL.md": skillText({ name: "helper", body: "Rule. Held by: planned: tests/x.test.mjs" }) });
   assert.equal(rules(bad, "held-by-planned").length, 1);
