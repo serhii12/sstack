@@ -59,7 +59,7 @@ The frontmatter of a skill is the one source of truth for the facts about that s
 
 ## Reuse rules
 
-- Copy and adapt from any of the four source repos, rstack included. Take only the pieces we need.
+- Copy and adapt from any of the five source repos, rstack included. `NOTICE` lists them. Take only the pieces we need.
 - Record every source in the `## Provenance` section of the skill and in `NOTICE`. Give the repo, the path, the author, and the license that the file carries (or "no license file").
 - If a source file ships a license notice (MIT files, `rstack/before-and-after`), keep that notice in `NOTICE`.
 - Remove everything that belongs to the setup of one author. This means Kody, Greptile, Effect, XState, Alchemy, Cloudflare, rat-stack file paths, site links.
