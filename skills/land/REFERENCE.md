@@ -22,7 +22,7 @@ Every failure prints as `FAIL <code>: <what failed>. Fix: <what to do>.` When se
 | 16 | A check is still running. | wait | Wait with `land-wait.mjs`. |
 | 18 | The latest review of a reviewer requests changes. | needs-person | Stop. A person decides. |
 | 19 | A review thread is unresolved. | needs-person | Stop. A person resolves it. |
-| 20 | The review file is missing or stale, or its ranges have a gap or do not cover the branch. An open finding that is not of severity low gives 20 too. | fix | Load `peer-review` once for the new commits. |
+| 20 | The review file is missing or stale, or its ranges have a gap or do not cover the branch. A chain that does not start at the merge base of the head and the base of the pull request does not cover it. An open finding that is not of severity low gives 20 too. | fix | Do what step 8 of `SKILL.md` says for exit 20. |
 | 28 | An acceptance check has the status `fail` in the evidence index. `untested` does not block. | fix | Fix the change and run `prove` again. |
 | 23 | Evidence images or video under `.artifacts/` are in the pull request. Text files there are allowed. | fix | Remove the media from the task branch. Run `land-evidence.mjs <task>`. |
 | 21 | The risk is high and no person approved the head. | needs-person | Hand off. Stop. |

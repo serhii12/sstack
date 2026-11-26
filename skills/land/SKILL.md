@@ -104,12 +104,13 @@ A fix makes the review stale. Step 8 then exits 20.
 ## 8. Run the merge check
 
 ```bash
+git fetch origin
 node .claude/skills/land/scripts/land-check.mjs --pr <n> --review .artifacts/<task>/review.md --branch <branch> --merge
 ```
 
 - Exit 0: GitHub shows the merge. The script deleted the head branch. Close the ticket as below. Go to step 9.
-- Exit 12: the branch has conflicts with the default branch, or is behind it. Run `git fetch origin` and `git merge origin/<default branch>`. Resolve each conflict. Run the tests. Commit. Push with a plain `git push`. Go to step 6. The merge makes the review stale.
-- Exit 20: if the review is stale or has a gap, load `peer-review` once, as a follow-up for the new commits. Commit the review file, push, and go to step 6. If the review has open findings, stop and list them. The user decides on each one.
+- Exit 12: the branch has conflicts with the default branch, or is behind it. Run `git fetch origin` and `git merge origin/<default branch>`. Resolve each conflict. Run the tests. Commit. Push with a plain `git push`. Go to step 6. The merge moves the merge base, so step 8 then exits 20 with a review that does not cover the pull request.
+- Exit 20: if the review is stale or has a gap, load `peer-review` once, as a follow-up for the new commits. If the review does not cover every commit, or starts before the merge base, load `peer-review` with the default branch as the base. Let it write a new review file. Commit the review file, push, and go to step 6. If the review has open findings, stop and list them. The user decides on each one.
 - Exit 21: the risk is high and no person approved. Do the hand-off below.
 - Any other exit: stop. Report the message. [REFERENCE.md](REFERENCE.md) lists every exit code and every state.
 
