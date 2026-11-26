@@ -39,7 +39,9 @@ No fence yet
 ### Challenge clashing terms at once
 
 When the user uses a term that clashes with `GLOSSARY.md`, say so at once. "The glossary defines 'cancellation' as X, but you seem to mean Y. Which is it?"
-No fence yet
+
+A word on an `_Avoid_` line is a clash too. Before you change or remove an existing term or its `_Avoid_` line, ask the user. Write the change after the answer.
+Held by: evals/domain-memory/05-avoid-word-clash.md
 
 ### Sharpen vague words
 
@@ -96,7 +98,7 @@ No fence yet
 
 ## Provenance
 
-- `skills/engineering/domain-modeling/SKILL.md` from [mattpocock/skills](https://github.com/mattpocock/skills), MIT license, Copyright (c) 2026 Matt Pocock. The base of this skill. We kept the file layout and lazy file creation. We kept the four moves during the talk and glossary updates at once. We kept no code detail in the glossary and the three-test rule for records. We rewrote it in plain English and renamed it. We changed these parts. Records are written only after the user agrees. Each glossary change is shown to the user. We added placeholder handling for the starter glossary, the status rules and the `proposed` to `accepted` step, and Held by / No fence yet lines.
+- `skills/engineering/domain-modeling/SKILL.md` from [mattpocock/skills](https://github.com/mattpocock/skills), MIT license, Copyright (c) 2026 Matt Pocock. The base of this skill. We kept the file layout and lazy file creation. We kept the four moves during the talk and glossary updates at once. We kept no code detail in the glossary and the three-test rule for records. We rewrote it in plain English and renamed it. We changed these parts. Records are written only after the user agrees. Each glossary change is shown to the user. His "conflicts with the existing language" now names a word on an `_Avoid_` line, and the agent asks before it changes an existing term. A live run changed such a term with no question. We added placeholder handling for the starter glossary, the status rules and the `proposed` to `accepted` step, and Held by / No fence yet lines.
 - `skills/engineering/domain-modeling/ADR-FORMAT.md` and `GLOSSARY-FORMAT.md`, same repo, license and holder. Adapted into the sibling files of the same names. Each file says what changed.
 - `skills/autopilot/references/templates.md` lines 177-199 (the decision record template and its index rules) from [kentcdodds/kcd-skills](https://github.com/kentcdodds/kcd-skills), MIT license, Copyright (c) 2026 Kent C. Dodds. We took the `NNNN:` title, the Date line, the "Revisit if" section, "phrase the decision as what not to do", half a page, supersede instead of editing, and the number-clash warning. We changed the status line from plain `Status:` to `**Status:**`. The reason is that the checker of kcd (`skills/visual-recap/scripts/primitives-map.mjs`) reads only the bold form or a heading. We dropped the per-primitive `adrs` list, which belongs to Kent's setup.
 - `docs/engineering/domain-modeling.md` from mattpocock/skills, same license and holder. Ideas in our words: "show the user each glossary change" and the guard against glossary bloat. Two sentences on splitting a glossary in GLOSSARY-FORMAT.md stay close to his wording.
