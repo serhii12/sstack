@@ -334,11 +334,13 @@ function fileHas(p, text) {
  * build ran with no AGENTS.md, no hook and no .stack/check). /setup comes before the commit, so its file
  * goes into the same commit.
  */
-export function nextSteps(tgt, { checkIsPlaceholder = false, agentsHasPlaceholder = false } = {}) {
+export function nextSteps(tgt, { checkIsPlaceholder = false, agentsHasPlaceholder = false, hooksOff = false } = {}) {
   const lines = ["Next steps, before the first /build:"];
   let n = 0;
   const step = (text) => lines.push(`${++n}. ${text}`);
   if (agentsHasPlaceholder) step("Fill in the Project line and the check commands in AGENTS.md.");
+  // hooksOff: the installer did not set core.hooksPath (kept, worktree, other, no-git), so the copied hook is off.
+  if (hooksOff) step("Turn on the copied git hooks, as the core.hooksPath lines above say. Until then, no commit runs .stack/check.");
   if (checkIsPlaceholder) {
     if (MANIFESTS.some((m) => existsSync(join(tgt, m)))) {
       step("Put the check command of this repo in .stack/check, for example npm test. The agent cannot edit that file. Until you do, no commit runs a check.");
@@ -602,6 +604,7 @@ export function install({ source = DEFAULT_SOURCE, target, dryRun = false, repla
   const steps = nextSteps(tgt, {
     checkIsPlaceholder: planned(join(".stack", "check")) || fileHas(join(tgt, ".stack", "check"), CHECK_PLACEHOLDER_MARK),
     agentsHasPlaceholder: (planned("AGENTS.md") && fileHas(join(src, "templates", "AGENTS.md"), AGENTS_PLACEHOLDER_MARK)) || fileHas(join(tgt, "AGENTS.md"), AGENTS_PLACEHOLDER_MARK),
+    hooksOff: ["kept", "worktree", "other", "no-git"].includes(hooksPath),
   });
   log("");
   for (const l of steps) log(l);

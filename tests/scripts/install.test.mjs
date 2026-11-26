@@ -940,6 +940,29 @@ test("next steps: a repo that already has a tracker doc and a real check is not 
   });
 });
 
+test("next steps: when the project hooks are kept, the steps say to turn on the copied hooks, also in a dry run", () => {
+  withGitTarget((source, target) => {
+    write(target, "package.json", "{}\n");
+    write(target, ".git/hooks/pre-commit", "#!/bin/sh\nexit 0\n", 0o755);
+    assert.equal(gitOut(target, "remote", "add", "origin", "https://example.invalid/r.git").status, 0);
+    for (const dryRun of [true, false]) {
+      const r = install({ source, target, dryRun, log: quiet, claudeVersion: () => null });
+      assert.equal(r.hooksPath, "kept");
+      const text = r.nextSteps.join("\n");
+      assert.match(text, /^1\. Turn on the copied git hooks, as the core\.hooksPath lines above say\. Until then, no commit runs \.stack\/check\.$/m);
+      assert.ok(text.indexOf("Turn on the copied git hooks") < text.indexOf("Commit the new files"), "the hooks come before the first commit");
+    }
+  });
+});
+
+test("next steps: when core.hooksPath is set, the steps do not mention the hooks", () => {
+  withGitTarget((source, target) => {
+    const r = install({ source, target, log: quiet, claudeVersion: () => null });
+    assert.equal(r.hooksPath, "set");
+    assert.doesNotMatch(r.nextSteps.join("\n"), /git hooks/);
+  });
+});
+
 test("next steps: a dry run prints the same steps and writes nothing", () => {
   withGitTarget((source, target) => {
     const steps = install({ source, target, dryRun: true, log: quiet, claudeVersion: () => null }).nextSteps.join("\n");
