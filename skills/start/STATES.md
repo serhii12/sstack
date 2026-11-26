@@ -4,7 +4,7 @@ This file lists each thing in the stack that moves through named states. Read it
 
 Contents: Words with one meaning. Task stage. Plan. Build. Ship. Side entrances, guards and stack tools.
 
-In the States column, a word in backticks is stored in a file, a label or a line of output. A plain word is a state that a reader works out from other marks. A path starts in the skills folder, except a path that starts with `scripts/`. The host is GitHub, CI or Codex. Codex users type `$<name>` in place of `/<name>`. In the Travels column, "one machine" means that a new session on another machine does not see it. `.scratch/` stays on one machine until the user commits it.
+In the States column, a word in backticks is stored in a file, a label or a line of output. A plain word is a state that a reader works out from other marks. A path starts in the skills folder, except a path that starts with `scripts/`. The host is GitHub or CI. In the Read by column, `NAME` in `<script>` is the list of names in the script that reads or works out the state. In the Travels column, "one machine" means that a new session on another machine does not see it. `.scratch/` stays on one machine until the user commits it.
 
 ## Words with one meaning
 
@@ -24,7 +24,7 @@ stateDiagram-v2
   [*] --> sorted: user types /start
   sorted --> agreed: /grill, user confirms
   agreed --> specified: /spec, same session
-  specified --> agreed: an essential is missing
+  specified --> agreed: /grill, an essential is missing
   specified --> ticketed: /tickets, user approves
   ticketed --> in_work: /build one ticket
   in_work --> built: build step 9
@@ -57,7 +57,7 @@ A `ready-for-agent` issue of `/triage` enters at in work. A hand-made change goe
 | Finding severity | `high`, `medium`, `low` | The `Severity:` line of each finding | The reviewer | `SEVERITIES` in `land/scripts/land-check.mjs` | Yes, in git |
 | Review mode | `parallel subagents`, `same context (weaker)` | The `Mode:` line of the review file | The agent | No script. The pull request body shows it. | Yes, in git |
 | Review file at the head | `fresh`, `missing`, `too-large`, `no-range`, `gap`, `no-result`, `unknown-commit`, `not-ancestor`, `stale`, `partial`, `open-findings`, `unknown` | Not stored. The gate works it out on each run. | A script | `REVIEW_STATES` in `land/scripts/land-check.mjs` | Not stored |
-| Acceptance check | `pass`, `fail`, `untested` | `.artifacts/<task>/evidence/index.json`. It is never committed. | The agent. A person judges what an image shows. | `STATUSES` in `prove/scripts/evidence-check.mjs` | No. One machine. The pull request body shows the results. |
+| Acceptance check | `pass`, `fail`, `untested` | `.artifacts/<task>/evidence/index.json`. It is never committed. | The agent. A visual `pass` needs the verdict `matches` of the image reviewer. | `STATUSES` in `prove/scripts/evidence-check.mjs` | No. One machine. The pull request body shows the results. |
 | Image verdict | `matches`, `does-not-match`, `cannot-tell` | The evidence index and the saved reply | A fresh reviewer | `VERDICTS` in `prove/scripts/evidence-check.mjs` | No. One machine. |
 | Image reviewer | `fresh-subagent`, `same-context` | The evidence index | The agent | `REVIEWERS` in `prove/scripts/evidence-check.mjs` | No. One machine. |
 | Prototype | open, verdict given, back on the base | The branch `prototype/<name>` and the `Verdict:` line | The user gives the verdict | `prototype/scripts/prototype-check.mjs` | Only if the user pushes the branch |
@@ -90,7 +90,6 @@ A `ready-for-agent` issue of `/triage` enters at in work. A hand-made change goe
 | Improve-codebase rank | `Strong`, `Worth a look`, `Speculative` | `.artifacts/improve-codebase/report.md` | The agent | `RANKS` in `improve-codebase/scripts/survey-lint.mjs` | No. One machine. |
 | Git guard | allow, block | The exit code of the hook: 0 or 2 | A script | The agent tool | Not stored |
 | Commit check | passed, failed, refused, warned | The exit code of `.githooks/prepare-commit-msg` | A script | git | Not stored |
-| Codex hook trust | not trusted, trusted | The Codex config of the user. Until a person trusts it, Codex skips the guard. | A person, in `/hooks` | Codex | No. One user on one machine. |
 | Rule fence | held, no fence yet, planned | The last line of each rule | A developer of the stack | `scripts/skill-lint.mjs` | Yes, in git |
 | Install tool | `claude`, `codex`, `both` | The `--tool` flag of one install run | The user | `TOOLS` in `scripts/install.mjs` | No. One run. |
 | Eval set | `regression`, `capability` | The `set` key of an eval | A developer of the stack | `EVAL_SETS` in `scripts/eval-run.mjs` | Yes, in git |

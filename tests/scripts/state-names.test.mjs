@@ -121,8 +121,6 @@ const stateWords = (cell) => cell.replace(/\([^)]*\)/g, "").split(",").map((x) =
 // ---------------------------------------------------------------------------
 
 const MAP = "skills/start/STATES.md";
-/** Hosts and agent tools have their own commands. They are not skills. */
-const HOST_COMMANDS = ["hooks"];
 /** A path in the map starts in the skills folder, except a path that starts with `scripts/`. */
 const mapPath = (p) => join(ROOT, p.startsWith("scripts/") ? p : join("skills", p));
 
@@ -151,12 +149,12 @@ test("T1: each row of the map that names an export lists the same states as that
   assert.ok(checked >= 20, `${MAP}: the test checked only ${checked} rows against an export`);
 });
 
-test("T2: each command that the map names is a skill folder or a host command", () => {
+test("T2: each command that the map names is a skill folder, and each script that it names exists", () => {
   const text = read(MAP);
   const names = [...text.matchAll(/(?:^|[\s`(])\/([a-z][a-z-]*)\b/gm)].map((m) => m[1]);
   assert.ok(names.length > 0, `${MAP} names no command`);
   const folders = readdirSync(join(ROOT, "skills"));
-  for (const n of names) assert.ok(folders.includes(n) || HOST_COMMANDS.includes(n), `${MAP} names the command /${n}, and skills/${n}/ does not exist`);
+  for (const n of names) assert.ok(folders.includes(n), `${MAP} names the command /${n}, and skills/${n}/ does not exist`);
   for (const m of text.matchAll(/`([^`]+\/[^`]+\.mjs)`/g)) {
     if (/[<>]/.test(m[1]) || !/^[\w.-]+\/scripts\/|^scripts\//.test(m[1])) continue;
     assert.ok(readdirSync(dirname(mapPath(m[1]))).includes(m[1].split("/").pop()), `${MAP} names ${m[1]}, and that file does not exist`);
