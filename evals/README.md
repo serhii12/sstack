@@ -224,7 +224,7 @@ For each run, the runner makes a fresh temp folder outside every git repo and pr
 | `--baseline` | Also run each eval that has a `baseline` field with that skill off. |
 | `--gate` | Exit 1 only when a `regression` eval is below `--min-pass-rate`. |
 | `--keep` | Keep the temp repo of each run and print its path. The default is to delete it. |
-| `--dry-run` | Print the plan, the binary that the runner will use, and the total budget cap. Run nothing. |
+| `--dry-run` | Print the plan, the binary that the runner will use, and the total budget cap. Mark each eval that needs `--allow-network`. Run nothing. |
 
 ### Which binary the runner uses
 

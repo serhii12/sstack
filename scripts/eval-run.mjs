@@ -1691,8 +1691,8 @@ export async function main(argv, { stackRoot = STACK_ROOT, stdout = (s) => proce
   }
   if (bad) return 2;
 
-  // Refuse network tools.
-  if (!opts.allowNetwork) {
+  // Refuse network tools. A dry run starts no agent, so it only marks those evals in the plan.
+  if (!opts.allowNetwork && !opts.dryRun) {
     for (const e of evals) {
       if (e.manual) continue;
       const net = networkWritingTools(e.checks.allowedTools);
@@ -1712,6 +1712,7 @@ export async function main(argv, { stackRoot = STACK_ROOT, stdout = (s) => proce
       it.turnCount > 1 ? `${it.turnCount} turns, the budget is for each turn` : "",
       it.baselineRuns ? `${it.baselineRuns} extra baseline run(s) without skill ${it.checks.baseline.skill}` : "",
       it.set !== DEFAULT_SET ? `set ${it.set}` : "",
+      !opts.allowNetwork && networkWritingTools(it.checks.allowedTools).length ? "needs --allow-network" : "",
     ].filter(Boolean);
     stdout(`  ${it.rel}: ${it.runCount} run(s), budget ${it.budget} USD each${notes.length ? ` (${notes.join(", ")})` : ""}`);
   }
