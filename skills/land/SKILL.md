@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 `land` is a typed skill. It runs only when the user types `/land`. It takes one finished ticket branch to a merged pull request. The loop calls this stage Ship. The skill name is `land` because some agent tools have their own `/ship` command.
 
-The input is what the build step leaves: commits on a task branch, the review file of `peer-review` and the evidence of `prove`. `land` writes no new code. It changes code only to fix a failed check.
+The input is what the build step leaves: commits on a task branch, the review file of `peer-review` and the evidence of `prove`. `land` writes no new code. It changes code only to fix a failed CI check.
 
 ## Important
 
@@ -110,7 +110,7 @@ node .claude/skills/land/scripts/land-check.mjs --pr <n> --review .artifacts/<ta
 - Exit 12: the branch has conflicts with the default branch, or is behind it. Run `git fetch origin` and `git merge origin/<default branch>`. Resolve each conflict. Run the tests. Commit. Push with a plain `git push`. Go to step 6. The merge moves the merge base, so step 8 then exits 20 with a review that does not cover the pull request.
 - Exit 20: if the review is stale or has a gap, load `peer-review` once, as a follow-up for the new commits. If the review does not cover every commit, or starts before the merge base, load `peer-review` with the default branch as the base. Let it write a new review file. Commit the review file, push, and go to step 6. If the review has open findings, stop and list them. The user decides on each one.
 - Exit 21: the risk is high and no person approved. Do the hand-off below.
-- Any other exit: stop. Report the message. [REFERENCE.md](REFERENCE.md) lists every exit code and every state.
+- Any other exit: do what its row in [REFERENCE.md](REFERENCE.md) says. If the row says stop, report the message. That file lists every exit code and every state.
 
 Hand-off: leave the pull request open with auto-merge off. Write the risk report: "Pull request #<n> is high risk (rule <rule> on <path>). It needs an approval on commit <sha> by a person who is not <author>, or your word here to merge it." Then end. No fence yet
 

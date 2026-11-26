@@ -353,16 +353,19 @@ export const FINDING_STATES = { open: ["fixed", "won't fix: <reason>"], fixed: [
  * The state of one run of the gate, from its exit code. The skill reads this, never the text.
  *   pass          every gate passed and nothing was merged (no --merge)
  *   merged        GitHub shows the merge
- *   needs-person  only a person can go on: approval (21), changes requested (18), threads (19)
+ *   needs-person  only a person can go on: approval (21), changes requested (18), threads (19), and
+ *                 open findings (20 with the review state `open-findings`: the user decides on each one)
  *   wait          the checks are not done (15, 16)
- *   fix           the agent can act: conflicts or behind (12), a failed check (17), a stale review (20),
- *                 media in the branch (23), a failed acceptance check (28)
- *   stopped       every other code. Report it and stop
+ *   fix           the agent can act: conflicts or behind (12), a failed CI check (17), a stale review or
+ *                 a gap (20), media in the branch (23)
+ *   stopped       every other code, such as a failed acceptance check (28). `land` writes no new code for
+ *                 it. Report it and stop
  */
 export const GATE_STATES = ["pass", "merged", "needs-person", "wait", "fix", "stopped"];
-const STATE_OF_EXIT = { 21: "needs-person", 18: "needs-person", 19: "needs-person", 15: "wait", 16: "wait", 12: "fix", 17: "fix", 20: "fix", 23: "fix", 28: "fix" };
-export function gateState(exitCode, merged = false) {
+const STATE_OF_EXIT = { 21: "needs-person", 18: "needs-person", 19: "needs-person", 15: "wait", 16: "wait", 12: "fix", 17: "fix", 20: "fix", 23: "fix" };
+export function gateState(exitCode, merged = false, reviewState = null) {
   if (exitCode === 0) return merged ? "merged" : "pass";
+  if (exitCode === EXIT.reviewStale && reviewState === "open-findings") return "needs-person";
   return STATE_OF_EXIT[exitCode] ?? "stopped";
 }
 
@@ -501,7 +504,7 @@ export function decide(state, { review = { state: "missing" }, branch = null, ow
   const row = REVIEW_STATES[rv.state] ?? REVIEW_STATES.unknown;
   if (row.blocks) fail(EXIT.reviewStale, row.what(rv), row.fix);
   // 28: a failed acceptance check blocks. An untested one does not: the body and the report list it.
-  if (acceptance?.fail?.length) fail(EXIT.acceptanceFailed, `${acceptance.fail.length} acceptance check(s) have the status fail in the evidence index: ${acceptance.fail.slice(0, 5).map((c) => quoteName(c, 80)).join(", ")}`, "fix the change and run prove again. If the user tells you to merge with a failed check, the user merges by hand on GitHub");
+  if (acceptance?.fail?.length) fail(EXIT.acceptanceFailed, `${acceptance.fail.length} acceptance check(s) have the status fail in the evidence index: ${acceptance.fail.slice(0, 5).map((c) => quoteName(c, 80)).join(", ")}`, "stop and report it. land writes no new code for it. The user can type /build to fix the change, and prove runs again there. If the user tells you to merge with a failed check, the user merges by hand on GitHub");
   // 23: media in the PR.
   const media = prPaths(state.files).filter((p) => p.startsWith(".artifacts/") && MEDIA.test(p));
   if (media.length) fail(EXIT.evidenceMedia, `the pull request adds evidence media (${media.slice(0, 3).map((p) => quoteName(p)).join(", ")}${media.length > 3 ? ", more" : ""})`, "remove the images and video from the task branch. Run land-evidence.mjs <task>, which puts them on the branch evidence/<task>");
@@ -771,7 +774,7 @@ export function main(argv, { fetcher = ghFetcher(), out = (s) => process.stdout.
     err(`land-check: FAIL 3: ${what}`);
     return EXIT.data;
   }
-  const gate = gateState(verdict.exitCode, Boolean(merged));
+  const gate = gateState(verdict.exitCode, Boolean(merged), verdict.review?.state);
   if (o.json) {
     out(JSON.stringify({ state: gate, ...verdict, merged }, null, 2));
     return verdict.exitCode;

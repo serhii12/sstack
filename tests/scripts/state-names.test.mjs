@@ -234,6 +234,10 @@ test("T11: the close line of build and the text of close-ticket read back as bui
   const merged = landCheck.closeTicketText(ticketTemplate(), { pr: 7, sha: "f".repeat(40) });
   assert.equal(ticketReady.parseStatus(merged), "closed", "the text of land-check.mjs close-ticket does not read as closed in ticket-ready.mjs");
   assert.equal(ticketReady.saysMerged(merged), true, "the text of land-check.mjs close-ticket has no `Merged` line that ticket-ready.mjs reads");
+  const byHand = section(read("skills/land/REFERENCE.md"), "## Without gh", "skills/land/REFERENCE.md");
+  const line = proseTicks(byHand).find((t) => /^Merged\b/.test(t));
+  assert.ok(line, "skills/land/REFERENCE.md (Without gh) gives no `Merged ...` line for a local ticket");
+  assert.equal(ticketReady.saysMerged(`## Comments\n${line}\n`), true, `skills/build/scripts/ticket-ready.mjs does not read "${line}" of skills/land/REFERENCE.md as merged`);
 });
 
 // ---------------------------------------------------------------------------
@@ -287,6 +291,14 @@ test("T13: the land-check exit table of REFERENCE.md has one row per EXIT value,
   sameNames(seen.map(String), Object.values(landCheck.EXIT).map(String), `${LAND_REF} (Exit codes of land-check.mjs)`, `EXIT in ${LAND_CHECK}`);
   const step8 = section(read(LAND_SKILL), "## 8.", LAND_SKILL);
   for (const m of step8.matchAll(/^- Exit (\d+):/gm)) assert.ok(Object.values(landCheck.EXIT).includes(Number(m[1])), `${LAND_SKILL} (step 8) names exit ${m[1]}, and EXIT in ${LAND_CHECK} has no such code`);
+});
+
+test("T13: the gate state says who acts next: the user for open findings, and nobody in land for a failed acceptance check", () => {
+  assert.equal(landCheck.gateState(landCheck.EXIT.reviewStale, false, "open-findings"), "needs-person");
+  for (const rs of REVIEW_STATE_NAMES.filter((x) => x !== "open-findings" && x !== "fresh")) assert.equal(landCheck.gateState(landCheck.EXIT.reviewStale, false, rs), "fix", rs);
+  assert.equal(landCheck.gateState(landCheck.EXIT.reviewStale), "fix");
+  assert.equal(landCheck.gateState(landCheck.EXIT.acceptanceFailed), "stopped");
+  assert.equal(landCheck.gateState(landCheck.EXIT.checkFailed), "fix");
 });
 
 test("T14: the watcher exit tables name the codes, names and kept flags of OUTCOMES in land-wait.mjs", () => {
