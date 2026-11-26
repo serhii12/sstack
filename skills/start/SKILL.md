@@ -31,7 +31,7 @@ decide | agent | List options with effort and undo cost, recommend one, then wai
 setup | typed | Record which issue tracker the repo uses
 spec | typed | Write the spec (the PRD) from the plan that the user confirmed
 tickets | typed | Split one spec into small tickets with blocking links
-build | typed | Work one ticket in its own worktree: failing test, code, commit, review
+build | typed | Work one ticket on its own branch: failing test, code, commit, review
 test-craft | agent | Pick the test, write it failing first, and plant a bug in each new check
 peer-review | agent | Review a change with two fresh reviewers, Standards and Spec
 diagnose | agent | Find the cause of a failure, starting from a command that fails
@@ -71,11 +71,11 @@ land | typed | Push a finished ticket branch, open its pull request, wait for ch
 
 What each type needs:
 
-- Read-only: use no worktree, branch, commit or PR. If edits follow, the user runs `/start` again for them.
-- Docs-only: use its own worktree and branch, like any change. Run content and link checks. Do not make up runtime proof. The diff must touch only doc files. No fence yet
-- Code change: use its own worktree and branch. Run the repo's checks. Show proof that the changed behavior works.
+- Read-only: use no branch, commit or PR. If edits follow, the user runs `/start` again for them.
+- Docs-only: use its own branch, like any change. Run content and link checks. Do not make up runtime proof. The diff must touch only doc files. No fence yet
+- Code change: use its own branch. Run the repo's checks. Show proof that the changed behavior works.
 - Bug: do everything that a code change needs. Before you fix anything, get a command that fails on this bug.
-- Report from someone else: use no worktree and no branch. A triage change is a tracker write. The maintainer approves each change.
+- Report from someone else: use no branch. A triage change is a tracker write. The maintainer approves each change.
 - Design question: use a `prototype/<name>` branch and the folder `prototypes/<name>/`. Never merge the branch into `main`. The verdict goes to `/grill`.
 - Ship request: sort a task as this type only when the user asks for one. A plan, a review or a throwaway experiment is not a ship request.
 
@@ -95,7 +95,7 @@ At every level, `untested` is a valid result. Report it. Never report a pass tha
 
 ## Handoff note
 
-Save the note with the Write tool in the OS temp folder, outside the repo, at `$TMPDIR/sstack/start-<short-task-name>.md`. To find the folder, run `echo $TMPDIR` as a command of its own. If the output is empty, use `/tmp`. A note there travels to a new worktree or session. Nobody commits it by mistake.
+Save the note with the Write tool in the OS temp folder, outside the repo, at `$TMPDIR/sstack/start-<short-task-name>.md`. To find the folder, run `echo $TMPDIR` as a command of its own. If the output is empty, use `/tmp`. A note there travels to a new checkout or session. Nobody commits it by mistake.
 
 Use this template. It is strict: keep every field name.
 

@@ -74,9 +74,8 @@ Example of one filled item:
 
 ## Writing an approved check
 
-1. Make a new branch in its own worktree from `origin/main`, as rule 1 of `AGENTS.md` says. Run `git fetch origin`. Then run `git worktree add --no-track -b agent/<name> <folder> origin/main`.
-2. Start each later command with `cd <folder> &&`. Write every file below inside that worktree.
-3. Call the Skill tool with "test-craft". It teaches how to prove a new check with a planted bug. If it will not load, tell the user and follow the steps below.
+1. Make a new branch, as rule 1 of `AGENTS.md` says. Run `git fetch origin`. If the checkout is clean and on the default branch, run `git switch --no-track -c agent/<name> origin/main`. If the checkout holds other work, stop and tell the user.
+2. Call the Skill tool with "test-craft". It teaches how to prove a new check with a planted bug. If it will not load, tell the user and follow the steps below.
 
 Then do these steps for each approved check:
 

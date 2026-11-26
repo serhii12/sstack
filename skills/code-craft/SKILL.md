@@ -10,7 +10,7 @@ description: "Gives the shared terms and rules for the shape of code: module, in
 ## Important
 
 - This skill is a reference. Load it, read what you need, and go back to the task that you were doing. No fence yet
-- This skill drives no work. If the user tells you to use it to redesign, restructure or scan a project, change no file. Start no subagent, no branch and no worktree. Tell the user to type `/improve-codebase` for a ranked report. No fence yet
+- This skill drives no work. If the user tells you to use it to redesign, restructure or scan a project, change no file. Start no subagent and no branch. Tell the user to type `/improve-codebase` for a ranked report. No fence yet
 - Before you answer or write code, read the reference files that fit the task. The list is in "Which file to read" below. No fence yet
 - If a file in the question or the task ends in `.ts`, `.tsx`, `.mts` or `.cts`, read [TYPESCRIPT.md](TYPESCRIPT.md) first. For any other language, do not read it. No fence yet
 - If the user asks a design question, answer it. Change no file. No fence yet

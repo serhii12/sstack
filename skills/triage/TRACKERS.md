@@ -44,7 +44,7 @@ These `glab` commands were not run. The `setup` skill checks the flags of `glab`
 
 ## Local files
 
-Reports from other people are files in `.scratch/reports/`, one file for each report. Edit them in the current checkout. A triage change needs no worktree, no branch and no commit. The name is `NN-title.md`: a number from `01`, a dash and lowercase words joined by dashes. A new report looks like this:
+Reports from other people are files in `.scratch/reports/`, one file for each report. Edit them in the current checkout. A triage change needs no branch and no commit. The name is `NN-title.md`: a number from `01`, a dash and lowercase words joined by dashes. A new report looks like this:
 
 ```markdown
 # <title of the report>

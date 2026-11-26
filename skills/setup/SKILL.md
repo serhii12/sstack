@@ -75,7 +75,7 @@ The user can also ask for branch protection, the git hooks or the risk settings.
    No fence yet
 8. **Create the labels.** Skip this step for local files and for Other. On GitHub or GitLab, list the labels that exist (`gh label list --limit 200` or `glab label list`). Create each label of the label mapping that the tracker lacks, with `gh label create "<name>"` or `glab label create --name "<name>"`. The confirm of step 7 is the yes for this step. If a create fails, say which label and go on.
    No fence yet
-9. **Report.** Reply with the tracker and the file paths. Add one line for each action that the file maps, and the labels that you created. Tell the user to commit the files in `docs/agents/` and get them into `origin/main` before the first `/build`. If the install files are not there yet, they go in the same commit. `/build` makes every worktree from `origin/main`, so a file that is only in this checkout is not in the build. Name the next command. Type `/grill` to plan a change. If a grill summary is already confirmed in this session, type `/spec`.
+9. **Report.** Reply with the tracker and the file paths. Add one line for each action that the file maps, and the labels that you created. Tell the user to commit the files in `docs/agents/` and get them into `origin/main` before the first `/build`. If the install files are not there yet, they go in the same commit. `/build` branches from `origin/main`, so a file that is only in this checkout is not in the build. Name the next command. Type `/grill` to plan a change. If a grill summary is already confirmed in this session, type `/spec`.
 
 ## Provenance
 
