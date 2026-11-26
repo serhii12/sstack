@@ -189,10 +189,10 @@ const sameCommit = (a, b) => typeof a === "string" && typeof b === "string" && M
  * isAncestor(a, b), changedPaths(a, b) and countCommits(a, b).
  * The ranges of the file must make one chain with no gap: each range starts at the commit where the
  * range before it ends. The chain must start at or before the first commit of the pull request
- * (`prCommits` is the number of its commits). It must end at the head, or at an ancestor of the head
- * after which only text files under `.artifacts/` changed.
+ * (`prCommits` is the number of its commits, `prShas` their shas). It must end at the head, or at an
+ * ancestor of the head after which only text files under `.artifacts/` changed.
  */
-export function reviewEvidence(text, headSha, repoGit, { prCommits = null } = {}) {
+export function reviewEvidence(text, headSha, repoGit, { prCommits = null, prShas = null } = {}) {
   if (text === null || text === undefined) return { state: "missing" };
   if (text.length > REVIEW_MAX_BYTES) return { state: "too-large" };
   const r = parseReview(text);
@@ -227,6 +227,9 @@ export function reviewEvidence(text, headSha, repoGit, { prCommits = null } = {}
   // is at or before the first commit of the pull request.
   const covered = repoGit.countCommits(chain[0].start, headSha);
   if (covered === null || (Number.isInteger(prCommits) && covered < prCommits)) return { ...base, state: "partial", covered, prCommits };
+  // The count above also holds commits that a merge of the default branch brought in. So a chain that
+  // starts at a commit of the pull request can reach the count and still leave earlier commits out.
+  if (Array.isArray(prShas) && prShas.some((s) => sameCommit(String(s ?? "").toLowerCase(), chain[0].start))) return { ...base, state: "partial", startsInPr: chain[0].start };
   if (blocking.length) return { ...base, state: "open-findings" };
   return { ...base, state: "fresh" };
 }
@@ -322,7 +325,7 @@ export const REVIEW_STATES = {
   "unknown-commit": { blocks: true, what: (rv) => `the commit ${quoteName(rv.reviewed ?? "")} of the review file is not in the local repo`, fix: REVIEW_AGAIN },
   "not-ancestor": { blocks: true, what: (rv) => `the reviewed commit ${quoteName(rv.reviewed ?? "")} is not in the history of the head`, fix: REVIEW_AGAIN },
   stale: { blocks: true, what: (rv) => `the review is stale: ${(rv.changedAfter ?? []).length} file(s) changed after the reviewed commit ${quoteName(rv.reviewed ?? "")}`, fix: REVIEW_AGAIN },
-  partial: { blocks: true, what: (rv) => `the review range does not cover every commit of the pull request (${Number(rv.covered)} of ${Number(rv.prCommits)})`, fix: "load peer-review with the default branch as the base, commit the review file, push, and wait again" },
+  partial: { blocks: true, what: (rv) => (rv.startsInPr ? `the first review range starts at a commit of the pull request (${quoteName(String(rv.startsInPr).slice(0, 12))}), so the commits before it have no review` : `the review range does not cover every commit of the pull request (${Number(rv.covered)} of ${Number(rv.prCommits)})`), fix: "load peer-review with the default branch as the base, and let it write a new review file in place of the old one. Commit it, push, and wait again" },
   "open-findings": { blocks: true, what: (rv) => `the review has open findings that are not of severity low: ${ids(rv.blocking)}`, fix: "fix each finding and set its status to fixed, or stop and ask a person" },
   unknown: { blocks: true, what: () => "the review state is not known", fix: REVIEW_AGAIN },
 };
@@ -640,6 +643,9 @@ function parseArgs(argv) {
   return o;
 }
 
+/** The shas of the commits of the pull request, as GitHub lists them. */
+const prShas = (state) => (Array.isArray(state.commits) ? state.commits.map((c) => c?.sha).filter((x) => typeof x === "string") : null);
+
 function readSmall(path) {
   try {
     return statSync(path).size > 4 * REVIEW_MAX_BYTES ? null : readFileSync(path, "utf8");
@@ -711,7 +717,7 @@ export function main(argv, { fetcher = ghFetcher(), out = (s) => process.stdout.
       if (!state || typeof state !== "object" || !FULL_SHA.test(String(state.pr?.head?.sha ?? "")) || !state.repo || typeof state.repo !== "object") throw new UsageError(msg(`${quoteName(o.input, 200)} has no pr.head.sha or repo`, "write the state in the shape that gather() returns"));
       const text = o.review ? readReviewText(o.review) : state.review?.text ?? null;
       const g = o.review ? (repoGit ?? localGit(cwd)) : simulatedGit(state.review ?? {});
-      review = reviewEvidence(text, state.pr.head.sha, g, { prCommits: state.pr.commits });
+      review = reviewEvidence(text, state.pr.head.sha, g, { prCommits: state.pr.commits, prShas: prShas(state) });
     } else {
       const repo = o.repo ?? currentRepo(fetcher);
       state = gather(fetcher, { repo, number: Number(o.pr) });
@@ -720,7 +726,7 @@ export function main(argv, { fetcher = ghFetcher(), out = (s) => process.stdout.
         sleep(3000);
         state = gather(fetcher, { repo, number: Number(o.pr) });
       }
-      review = reviewEvidence(readReviewText(o.review), state.pr.head.sha, repoGit ?? localGit(cwd), { prCommits: state.pr.commits });
+      review = reviewEvidence(readReviewText(o.review), state.pr.head.sha, repoGit ?? localGit(cwd), { prCommits: state.pr.commits, prShas: prShas(state) });
     }
     verdict = decide(state, { review, branch: o.branch ?? null, ownerApproved: o.ownerApproved, acceptance: acceptance ?? acceptanceResults(typeof state.evidenceIndex === "string" ? state.evidenceIndex : null) });
     if (verdict.exitCode === 0 && o.merge) {

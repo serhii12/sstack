@@ -1234,6 +1234,47 @@ test("L11: a chain of ranges with real git: fresh, then a gap, then a product ch
   }
 });
 
+test("L11: commits merged in from main do not count as reviewed commits of the pull request", { timeout: 120000 }, () => {
+  const dir = mkdtempSync(join(tmpdir(), "land-attack-merged-"));
+  try {
+    const g = (...a) => {
+      const r = spawnSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "commit.gpgsign=false", ...a], { cwd: dir, encoding: "utf8" });
+      assert.equal(r.status, 0, `git ${a.join(" ")}: ${r.stderr}`);
+      return r.stdout.trim();
+    };
+    const commit = (file, text, message) => {
+      mkdirSync(dirname(join(dir, file)), { recursive: true });
+      writeFileSync(join(dir, file), text);
+      g("add", "-A");
+      g("commit", "-q", "-m", message);
+      return g("rev-parse", "HEAD");
+    };
+    g("init", "-q", "-b", "main");
+    const base = commit("a.txt", "a\n", "base");
+    g("switch", "-q", "-c", "agent/t");
+    const c1 = commit("src/a.js", "never reviewed\n", "C1");
+    const c2 = commit("src/b.js", "1\n", "C2");
+    g("switch", "-q", "main");
+    for (const i of [1, 2, 3]) commit(`docs/m${i}.md`, `${i}\n`, `main ${i}`);
+    g("switch", "-q", "agent/t");
+    g("merge", "-q", "--no-edit", "main");
+    const merge = g("rev-parse", "HEAD");
+    const head = commit(".artifacts/t/review.md", "review\n", "review file");
+    // The commits of the pull request, as GitHub lists them: C1, C2, the merge and the review file.
+    const prShas = g("rev-list", "main..HEAD").split("\n");
+    const opts = { prCommits: prShas.length, prShas };
+    const git = localGit(dir);
+    // A re-review replaced the file: its chain starts at C1, so C1 itself has no review.
+    const late = reviewEvidence(chainText([[c1, c2], [c2, merge]]), head, git, opts);
+    assert.equal(late.state, "partial", "the main commits must not fill the count");
+    assert.equal(decide(stateWith({}), { review: late }).exitCode, EXIT.reviewStale);
+    assert.match(decide(stateWith({}), { review: late }).failures[0].message, /first review range starts at a commit of the pull request/);
+    assert.equal(reviewEvidence(chainText([[base, c2], [c2, merge]]), head, git, opts).state, "fresh");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("evidence: a repo with no git identity gets the fixed identity of the stack for the evidence commit", { timeout: 120000 }, () => {
   const root = mkdtempSync(join(tmpdir(), "land-attack-ident-"));
   try {
