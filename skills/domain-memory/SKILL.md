@@ -91,7 +91,7 @@ Use [ADR-FORMAT.md](ADR-FORMAT.md). If the project has `docs/adr/0000-template.m
 - If the user named a condition that changes the answer, add a `## Revisit if` section with it. Otherwise write no such section. Invent no condition.
 - Write half a page at most.
 - To change a decision, write a new record. Then set the status of the old record to `superseded by NNNN`. Change nothing else in the old record. NNNN must name a record that exists.
-No fence yet (planned: scripts/adr-lint.mjs)
+No fence yet (planned: skills/domain-memory/scripts/adr-lint.mjs)
 
 During a grill, write new records as `proposed`. When the user confirms the grill summary, change them to `accepted`. When the user states a decision as final outside a grill, write it as `accepted`.
 No fence yet

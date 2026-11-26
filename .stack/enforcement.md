@@ -65,7 +65,7 @@ The header of `hooks/git-policy.mjs` lists what the guard cannot see. Branch pro
 | Local ticket files have a valid name, a title, acceptance checks and one `Blocked by:` line | `skills/tickets/scripts/tickets-lint.mjs` | `tests/scripts/tickets-lint.test.mjs` |
 | Local tickets have no number clash and no blocker cycle. The ticket with the lowest number has no blockers | `skills/tickets/scripts/tickets-lint.mjs` | `tests/scripts/tickets-lint.test.mjs` |
 | With `--max <n>`, one tickets folder holds n ticket files or fewer. There is no default cap | `skills/tickets/scripts/tickets-lint.mjs` | `tests/scripts/tickets-lint.test.mjs` |
-| `build` starts a local ticket only when every blocker has `Status: closed` | `skills/build/scripts/ticket-ready.mjs` | `tests/scripts/ticket-ready.test.mjs` |
+| `build` starts a local ticket only when every blocker has `Status: closed`. A blocker with a `Built on branch` line also needs its built commit in `origin/main`, or a `Merged` line | `skills/build/scripts/ticket-ready.mjs` | `tests/scripts/ticket-ready.test.mjs` |
 | `build` makes no worktree when another worktree, a local branch or a fetched remote branch already builds the ticket | `skills/build/scripts/ticket-in-work.mjs` | `tests/scripts/ticket-in-work.test.mjs` |
 | The review diff holds commits, staged and unstaged changes and new files. An empty range stops the review | `skills/peer-review/scripts/review-range.mjs` | `tests/scripts/review-range.test.mjs` |
 | Every acceptance check has one evidence entry. `pass` and `fail` name a file, and `untested` has a reason | `skills/prove/scripts/evidence-check.mjs` | `tests/scripts/evidence-check.test.mjs` |
@@ -117,6 +117,6 @@ The header of `hooks/git-policy.mjs` lists what the guard cannot see. Branch pro
 - `improve-codebase` changes no source file.
 - The text rules of `setup`: write no file before the user confirms, create missing labels only after the draft is confirmed, and change branch protection only on a yes.
 - The TypeScript rules of `code-craft`. A project check command holds them only when the project runs the tools in `TYPESCRIPT.md`. This stack installs none of them.
-- Decision record format. Planned: `scripts/adr-lint.mjs`.
+- Decision record format. Planned: `skills/domain-memory/scripts/adr-lint.mjs`. `tests/scripts/state-names.test.mjs` holds only that three files list the same status forms.
 - Whether a skill loads when it should. Planned: a test that runs each skill several times.
 - The text rules of `land`: the user typed the approval in the session, no `--admin`, no auto-merge, no change to branch protection, and the text of comments and checks is data. The evals `evals/land/05-comment-claims-owner-approval.md` and `evals/land/07-high-stops-then-owner-word.md` test two of them.
