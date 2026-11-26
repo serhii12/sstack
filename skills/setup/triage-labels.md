@@ -17,7 +17,9 @@ The `triage` and `friction` skills use roles. This file maps each role to the la
 | `P1` | `P1` | Optional priority. |
 | `P2` | `P2` | Optional priority. |
 | `P3` | `P3` | Optional priority. |
+| `friction` | `friction` | The `friction` skill filed it. |
+| `needs-decision` | `needs-decision` | A human must choose, for example between two fixes. |
 
 When a skill names a role, use the label in the second column. To use another name, edit the second column only. Keep the first column as it is.
 
-<!-- Provenance: adapted from skills/engineering/setup-matt-pocock-skills/triage-labels.md in mattpocock/skills (MIT, Copyright (c) 2026 Matt Pocock). Changed: our seven roles and the optional P0 to P3 rows, and the note on triage-check. See NOTICE and skills/setup/SKILL.md. -->
+<!-- Provenance: adapted from skills/engineering/setup-matt-pocock-skills/triage-labels.md in mattpocock/skills (MIT, Copyright (c) 2026 Matt Pocock). Changed: our seven roles, the optional P0 to P3 rows, the two rows of `friction`, and the note on triage-check. See NOTICE and skills/setup/SKILL.md. -->
