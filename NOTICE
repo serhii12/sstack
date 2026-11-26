@@ -222,7 +222,8 @@ skills/gardener/SKILL.md
 skills/uncomplect/SKILL.md (line 63)
     -> skills/retro/SKILL.md, skills/retro/REFERENCE.md. Idea only: the No fence yet label.
 
-The rat-stack router credits pstack by Lauren Tan (MIT). We copied nothing from pstack.
+The rat-stack router and separate-writers-verify-readers.md credit pstack by Lauren Tan
+(MIT). We copied nothing from pstack.
 
 
 4. michaelshimeles/rstack (no top-level license file, Michael Shimeles)
@@ -269,6 +270,8 @@ engineering-protocol/SKILL.md and rules/*.md
        statistics are not copied.
     -> skills/code-craft/RESTRUCTURE.md. Idea only (rules/abstraction.md): a test fake is
        a second adapter only at a system boundary.
+    -> skills/code-craft/TYPESCRIPT.md. Idea only (rules/concurrency.md): Promise.all waits
+       for a measurement.
 typescript-engineering/SKILL.md and rules/*.md
     -> skills/code-craft/RULES.md, skills/code-craft/TYPESCRIPT.md. Adapted. Size numbers
        kept only as signs. The error statistics, the quotes and the type tutorial are not
