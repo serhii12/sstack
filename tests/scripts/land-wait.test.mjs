@@ -261,6 +261,18 @@ test("exit 19: a failure on a third head after 2 fix rounds", { timeout: 120000 
   }
 });
 
+test("a failed head that a CI rerun turns green is not a fix round", { timeout: 120000 }, () => {
+  const state = newState(0, { repo: "acme/cart", number: 7 });
+  const at = (sha, conclusion, id) => snap({ pr: pr({ head: { sha, ref: "agent/t" } }), checkRuns: [runOf(conclusion, { head_sha: sha, id })] });
+  const codes = [];
+  let now = 0;
+  for (const [sha, conclusion, id] of [["a", "failure", 1], ["a", "success", 2], ["b", "failure", 3], ["b", "success", 4], ["d", "failure", 5]]) {
+    codes.push(poll(state, at(sha.repeat(40), conclusion, id), ctx({ now: (now += 60000) })).map((e) => e.code));
+  }
+  assert.deepEqual(codes, [[EXIT.checkFailed], [], [EXIT.checkFailed], [], [EXIT.checkFailed]]);
+  assert.deepEqual(state.failedHeads, ["d".repeat(40)]);
+});
+
 test("exit 3: gh fails for good; a transient failure is tried again", { timeout: 120000 }, async () => {
   const hard = await go([new FetchError("gh: Bad credentials (HTTP 401). Fix: log in.", { status: 401 })]);
   assert.equal(hard.code, EXIT.data);
