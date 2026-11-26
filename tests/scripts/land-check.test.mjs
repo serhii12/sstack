@@ -56,9 +56,18 @@ test("exit 0: high risk passes with one human approval on the head", { timeout: 
 });
 
 test("exit 0: high risk passes with --owner-approved, and the verdict says that the flag was used", { timeout: 120000 }, () => {
-  const v = verdict(stateWith(high), { ownerApproved: true });
+  const v = verdict(stateWith(high), { ownerApproved: HEAD });
   assert.equal(v.exitCode, 0, JSON.stringify(v.failures));
   assert.equal(v.ownerApprovalUsed, true);
+  assert.equal(verdict(stateWith(high), { ownerApproved: HEAD.slice(0, 7) }).exitCode, 0, "a short sha of the head counts");
+});
+
+test("exit 21: --owner-approved for a commit that is not the head does not count", { timeout: 120000 }, () => {
+  const v = verdict(stateWith(high), { ownerApproved: OLD });
+  assert.equal(v.exitCode, EXIT.approvalMissing);
+  assert.equal(v.ownerApprovalUsed, false);
+  assert.match(v.failures[0].message, /the user approved commit "bbbbbbb", but the head is now c0ffee0\. Fix: write the risk report for the head again/);
+  for (const bad of [true, "yes", ""]) assert.equal(verdict(stateWith(high), { ownerApproved: bad }).exitCode, EXIT.approvalMissing, String(bad));
 });
 
 // ---------------------------------------------------------------- one exit code per gate
@@ -388,6 +397,11 @@ test("CLI usage errors: exit 2, no --admin, no --risk, --merge needs --pr and --
   assert.equal(runCli(["--pr", "7", "--merge"]).code, 2);
   assert.equal(runCli(["--pr", "abc"]).code, 2);
   assert.match(runCli(["--pr", "7", "--admin"]).err, /\. Fix: .+\./);
+  // --owner-approved takes the head sha of the risk report.
+  assert.equal(runCli(["--pr", "7", "--review", "r.md", "--owner-approved"]).code, 2);
+  const sha = runCli(["--pr", "7", "--review", "r.md", "--owner-approved", "yes"]);
+  assert.equal(sha.code, 2);
+  assert.match(sha.err, /--owner-approved needs the head sha/);
 });
 
 test("CLI: a broken state file is exit 3", { timeout: 120000 }, () => {

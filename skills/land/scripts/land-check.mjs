@@ -36,7 +36,8 @@
 //        risk is high and a person approved: a review APPROVED on the head sha, latest for that person,
 //        by an account of type User that is not a bot, not the PR author, not the gh user, not the author
 //        of a commit of the pull request, not in `notHuman`, and that has write access. Or the caller
-//        passed --owner-approved, which skips this gate only
+//        passed --owner-approved <sha> with the sha of the head, which skips this gate only. The sha
+//        ties the word of the user to the commit of the risk report. A push after it needs a new word
 // With --merge, after exit 0 on fresh data:
 //   [24] the repo allows the merge method of the config (default squash)
 //   [27] with --owner-approved in use: the note on the pull request could not be posted, so no merge
@@ -53,8 +54,8 @@
 //
 // Usage (from the project root, or the worktree of the task):
 //   node .claude/skills/land/scripts/land-check.mjs preflight [--base <ref>]
-//   node .claude/skills/land/scripts/land-check.mjs --pr <n> --review <file> [--branch <name>] [--repo owner/name] [--merge] [--owner-approved] [--json]
-//   node .claude/skills/land/scripts/land-check.mjs --input <state.json> [--review <file>] [--owner-approved] [--json]
+//   node .claude/skills/land/scripts/land-check.mjs --pr <n> --review <file> [--branch <name>] [--repo owner/name] [--merge] [--owner-approved <head sha>] [--json]
+//   node .claude/skills/land/scripts/land-check.mjs --input <state.json> [--review <file>] [--owner-approved <head sha>] [--json]
 //   node .claude/skills/land/scripts/land-check.mjs close-ticket <ticket file> --pr <n> [--repo owner/name]
 // `close-ticket` sets `Status: closed` in a local ticket file, only when GitHub shows the pull request
 // as merged [29 if not]. The evidence index is read from `evidence/index.json` beside the review file.
@@ -70,8 +71,8 @@ import {
 
 const USAGE = [
   "Usage: node .claude/skills/land/scripts/land-check.mjs preflight [--base <ref>]",
-  "       node .claude/skills/land/scripts/land-check.mjs --pr <n> --review <file> [--branch <name>] [--repo owner/name] [--merge] [--owner-approved] [--json]",
-  "       node .claude/skills/land/scripts/land-check.mjs --input <state.json> [--review <file>] [--owner-approved] [--json]",
+  "       node .claude/skills/land/scripts/land-check.mjs --pr <n> --review <file> [--branch <name>] [--repo owner/name] [--merge] [--owner-approved <head sha>] [--json]",
+  "       node .claude/skills/land/scripts/land-check.mjs --input <state.json> [--review <file>] [--owner-approved <head sha>] [--json]",
   "       node .claude/skills/land/scripts/land-check.mjs close-ticket <ticket file> --pr <n> [--repo owner/name]",
 ].join("\n");
 
@@ -430,8 +431,9 @@ export function humanApprovals(state, config) {
 
 /**
  * The gate. `state` is the gathered state. `review` is the result of reviewEvidence. `branch` is the
- * local branch name when known. `ownerApproved` skips the approval gate only. Returns the exit code,
- * every failure, the risk and the approvals.
+ * local branch name when known. `ownerApproved` is the sha that the user approved. It skips the
+ * approval gate only, and only when it names the head. Returns the exit code, every failure, the risk
+ * and the approvals.
  */
 export function decide(state, { review = { state: "missing" }, branch = null, ownerApproved = false, acceptance = null } = {}) {
   const fails = [];
@@ -495,14 +497,18 @@ export function decide(state, { review = { state: "missing" }, branch = null, ow
   const risk = computeRisk(prPaths(files), config, { incomplete });
   const approvals = humanApprovals(state, config);
   const needsPerson = risk.level === "high" && approvals.length === 0;
-  if (needsPerson && !ownerApproved) {
+  const ownerSha = typeof ownerApproved === "string" ? ownerApproved.toLowerCase() : "";
+  const ownerOk = sameCommit(ownerSha, head);
+  if (needsPerson && ownerSha && !ownerOk) {
+    fail(EXIT.approvalMissing, `the user approved commit ${quoteName(ownerSha.slice(0, 7))}, but the head is now ${head.slice(0, 7)}`, "write the risk report for the head again, and ask the user again. Do not reuse the old word");
+  } else if (needsPerson && !ownerOk) {
     fail(EXIT.approvalMissing, `the risk is high (rule ${risk.rule}${risk.path ? ` on ${quoteName(risk.path)}` : ""}) and no person approved the head commit ${head.slice(0, 7)}`, "stop with the pull request open and report the risk. A person other than the author approves it on GitHub, or the user says in this session to merge it");
   }
   fails.sort((a, b) => ORDER.indexOf(a.code) - ORDER.indexOf(b.code));
   return {
     exitCode: fails.length ? fails[0].code : EXIT.ok,
     pr: n, head, risk: { level: risk.level, rule: risk.rule, path: risk.path },
-    approvedBy: approvals.map((a) => a.user.login), ownerApprovalUsed: needsPerson && ownerApproved === true,
+    approvedBy: approvals.map((a) => a.user.login), ownerApprovalUsed: needsPerson && ownerOk,
     review: rv, acceptance: acceptance ? { pass: acceptance.pass, fail: acceptance.fail.length, untested: acceptance.untested.length } : null,
     failures: fails, mergeMethod: config.mergeMethod, checksMode: checks.mode, noChecks: checks.none,
     configFound: cfg.found, configErrors: cfg.errors,
@@ -603,7 +609,7 @@ export function preflight(dir = ".", baseArg) {
 // ---------------------------------------------------------------------------
 
 function parseArgs(argv) {
-  const o = { merge: false, json: false, ownerApproved: false };
+  const o = { merge: false, json: false, ownerApproved: null };
   if (argv[0] === "preflight") {
     o.cmd = "preflight";
     argv = argv.slice(1);
@@ -626,7 +632,10 @@ function parseArgs(argv) {
     else if (a === "--input") o.input = val();
     else if (a === "--base") o.base = val();
     else if (a === "--merge") o.merge = true;
-    else if (a === "--owner-approved") o.ownerApproved = true;
+    else if (a === "--owner-approved") {
+      o.ownerApproved = argv[++i];
+      if (!/^[0-9a-f]{7,40}$/i.test(o.ownerApproved ?? "")) throw new UsageError(msg("--owner-approved needs the head sha from the risk report", "pass --owner-approved <sha>, with the sha that the user saw"));
+    }
     else if (a === "--json") o.json = true;
     else if (a === "-h" || a === "--help") o.help = true;
     else throw new UsageError(msg(`unknown argument ${quoteName(a)}`, "use only the arguments in the usage lines. There is no --admin and no --risk"));
@@ -756,7 +765,7 @@ export function main(argv, { fetcher = ghFetcher(), out = (s) => process.stdout.
   out(`Risk: ${verdict.risk.level} (rule ${quoteName(verdict.risk.rule, 200)}${verdict.risk.path ? `, path ${quoteName(verdict.risk.path)}` : ""}). Computed from the default branch config.`);
   out(`Checks: ${verdict.checksMode === "named" ? "the required checks of the config" : verdict.noChecks ? "none on the head" : "every check on the head (the config names no required check)"}.`);
   out(`Human approval on the head: ${verdict.approvedBy.length ? verdict.approvedBy.map((a) => quoteName(a)).join(", ") : "none"}`);
-  if (o.ownerApproved) out(verdict.ownerApprovalUsed ? "Owner approval: the caller passed --owner-approved. The approval gate was skipped. Every other gate ran." : "Owner approval: --owner-approved was passed and not used. The risk is not high, or a person approved on GitHub.");
+  if (o.ownerApproved) out(verdict.ownerApprovalUsed ? "Owner approval: the caller passed --owner-approved. The approval gate was skipped. Every other gate ran." : "Owner approval: --owner-approved was passed and not used. The risk is not high, a person approved on GitHub, or the sha is not the head.");
   out(`Review file: ${verdict.review.state}${verdict.review.openLow?.length ? `, open low findings: ${verdict.review.openLow.slice(0, 20).map((id) => quoteName(id, 40)).join(", ")}` : ""}`);
   if (verdict.acceptance) out(`Acceptance checks in the evidence index: ${verdict.acceptance.pass} pass, ${verdict.acceptance.fail} fail, ${verdict.acceptance.untested} untested.`);
   else out("Acceptance checks: no evidence index was found beside the review file. Report every check as untested.");

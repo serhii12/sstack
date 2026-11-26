@@ -68,7 +68,7 @@ test("control: a high change with an approval by a person with write access pass
   assert.equal(v.ownerApprovalUsed, false);
 });
 test("ruling: --owner-approved skips the approval gate and no other gate", { timeout: 120000 }, () => {
-  let v = gate(CI_FILE, { ownerApproved: true });
+  let v = gate(CI_FILE, { ownerApproved: HEAD });
   assert.equal(v.exitCode, 0, JSON.stringify(v.failures));
   assert.equal(v.ownerApprovalUsed, true);
   for (const [patch, code] of [
@@ -77,12 +77,12 @@ test("ruling: --owner-approved skips the approval gate and no other gate", { tim
     [{ reviews: [approval({ state: "CHANGES_REQUESTED" })] }, 18], [{ pr: { changed_files: 1, base: { ref: "release" } } }, 13], [{ pr: { changed_files: 1, state: "closed" } }, 10],
     [{ files: [{ filename: ".github/workflows/ci.yml", status: "modified" }, { filename: ".artifacts/t/evidence/a.png", status: "added" }], pr: { changed_files: 2 } }, 23],
   ]) {
-    v = gate({ ...CI_FILE, ...patch }, { ownerApproved: true });
+    v = gate({ ...CI_FILE, ...patch }, { ownerApproved: HEAD });
     assert.equal(v.exitCode, code, `${JSON.stringify(patch)}: ${JSON.stringify(v.failures.map((f) => f.code))}`);
   }
   // The flag is not used when the risk is not high, or when a person approved on GitHub.
-  assert.equal(gate({}, { ownerApproved: true }).ownerApprovalUsed, false);
-  assert.equal(gate(high(), { ownerApproved: true }).ownerApprovalUsed, false);
+  assert.equal(gate({}, { ownerApproved: HEAD }).ownerApprovalUsed, false);
+  assert.equal(gate(high(), { ownerApproved: HEAD }).ownerApprovalUsed, false);
 });
 
 // ---------------------------------------------------------------------------
@@ -871,7 +871,7 @@ test("owner approval: the note is posted before the merge call, with the risk an
   assert.equal(stop.code, 21);
   assert.ok(!stop.calls.some((c) => c.method === "POST" || c.method === "PUT"));
   assert.match(stop.out, /STATE needs-person: exit 21\./);
-  const r = runMain(s, extra, [...mainArgs, "--owner-approved"]);
+  const r = runMain(s, extra, [...mainArgs, "--owner-approved", HEAD]);
   assert.equal(r.code, 0, r.err);
   const writes = r.calls.filter((c) => c.method && c.method !== "GET");
   assert.deepEqual(writes.map((c) => c.method), ["POST", "PUT", "DELETE"]);
@@ -883,7 +883,7 @@ test("owner approval: the note is posted before the merge call, with the risk an
 test("owner approval: no note and a plain merge when the flag is not needed", { timeout: 120000 }, () => {
   const s = stateWith({});
   let merged = false;
-  const r = runMain(s, { "GET repos/acme/cart/pulls/7": () => (merged ? mergedPr(s) : s.pr), "PUT repos/acme/cart/pulls/7/merge": () => { merged = true; return { merged: true }; }, "DELETE repos/acme/cart/git/refs/heads/agent/total-fix-1a2": null }, [...mainArgs, "--owner-approved"]);
+  const r = runMain(s, { "GET repos/acme/cart/pulls/7": () => (merged ? mergedPr(s) : s.pr), "PUT repos/acme/cart/pulls/7/merge": () => { merged = true; return { merged: true }; }, "DELETE repos/acme/cart/git/refs/heads/agent/total-fix-1a2": null }, [...mainArgs, "--owner-approved", HEAD]);
   assert.equal(r.code, 0, r.err);
   assert.ok(!r.calls.some((c) => c.method === "POST"));
   assert.match(r.out, /--owner-approved was passed and not used/);
@@ -892,7 +892,7 @@ test("owner approval: no note and a plain merge when the flag is not needed", { 
 test("owner approval: a note that does not post stops the merge with exit 27", { timeout: 120000 }, () => {
   const s = stateWith(CI_FILE);
   for (const answer of [new FetchError("gh: Forbidden (HTTP 403). Fix: x.", { status: 403 }), null, { message: "no id" }]) {
-    const r = runMain(s, { "POST repos/acme/cart/issues/7/comments": answer, ...MERGE_OK(s) }, [...mainArgs, "--owner-approved"]);
+    const r = runMain(s, { "POST repos/acme/cart/issues/7/comments": answer, ...MERGE_OK(s) }, [...mainArgs, "--owner-approved", HEAD]);
     assert.equal(r.code, 27, r.out + r.err);
     assert.ok(!r.calls.some((c) => c.method === "PUT"), "no merge call");
     assert.ok(!/^MERGED/m.test(r.out));
@@ -901,7 +901,7 @@ test("owner approval: a note that does not post stops the merge with exit 27", {
 
 test("the gate never sends --admin, never turns on auto-merge and never approves", { timeout: 120000 }, () => {
   const s = stateWith(CI_FILE);
-  const r = runMain(s, { "POST repos/acme/cart/issues/7/comments": { id: 1 }, ...MERGE_OK(s) }, [...mainArgs, "--owner-approved"]);
+  const r = runMain(s, { "POST repos/acme/cart/issues/7/comments": { id: 1 }, ...MERGE_OK(s) }, [...mainArgs, "--owner-approved", HEAD]);
   const all = JSON.stringify(r.calls);
   assert.ok(!/admin|auto[-_]?merge|enablePullRequestAutoMerge|\/reviews"|APPROVE|rulesets|protection/i.test(all.replace(/"api":"repos\/acme\/cart\/pulls\/7\/reviews\?[^"]*"/g, "")), all);
 });
@@ -953,7 +953,7 @@ test("L9: an acceptance check with the status fail blocks (exit 28). An untested
   assert.equal(r.code, 0);
   assert.match(r.out, /no evidence index was found beside the review file\. Report every check as untested\./);
   // The owner approval skips the approval gate only.
-  r = runMain(stateWith(CI_FILE), { "POST repos/acme/cart/issues/7/comments": { id: 1 }, ...MERGE_OK(s) }, [...mainArgs, "--owner-approved"], { index: index(["fail"]) });
+  r = runMain(stateWith(CI_FILE), { "POST repos/acme/cart/issues/7/comments": { id: 1 }, ...MERGE_OK(s) }, [...mainArgs, "--owner-approved", HEAD], { index: index(["fail"]) });
   assert.equal(r.code, 28);
 });
 

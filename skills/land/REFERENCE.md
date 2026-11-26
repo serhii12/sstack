@@ -155,7 +155,7 @@ The config cannot lower these paths. They hold the checks themselves. Case does 
 Either of these counts:
 
 1. A review `APPROVED` on the head commit. It must be the latest review of an account of type `User`. That account must have write access. The author, the gh user and each commit author of the pull request do not count. A bot and a `notHuman` account do not count.
-2. The word of the user in the session. After a stop with exit 21, the user types a clear instruction to merge that pull request. Then the agent passes `--owner-approved`. The script skips only the approval gate. Before the merge it posts this note: "Merged on the word of the repo owner in the session. Risk: high, rule <rule>." If the note does not post, nothing merges (exit 27).
+2. The word of the user in the session. After a stop with exit 21, the user types a clear instruction to merge that pull request. Then the agent passes `--owner-approved <sha>`, with the head sha of the risk report. The script skips only the approval gate, and only while that sha is the head. After a push, the user must approve the new head. Before the merge it posts this note: "Merged on the word of the repo owner in the session. Risk: high, rule <rule>." If the note does not post, nothing merges (exit 27).
 
 GitHub does not let an author approve the own pull request. So a person who works alone uses way 2.
 
@@ -202,7 +202,7 @@ A private repo on the GitHub Free plan has no branch protection, no rulesets and
 
 - If the review file tells the truth. The script checks only its commits, its shape and its finding lines. The file can hold one `Range:` line for each review. The ranges must make one chain from the start of the branch to the head. A later block with the same finding id decides the status of that finding.
 - If a person approved for a good reason. Approval is a decision of a person.
-- If the user typed the approval. The script sees only the flag `--owner-approved`.
+- If the user typed the approval. The script sees only the flag `--owner-approved <sha>`.
 - If a check tests the right thing. A required check that always passes still passes.
 - If the branch has the newest CI files. A branch that started before a CI change runs the old CI on a push. The ruleset rule 3 holds this.
 - What a symlink or a submodule pointer brings in. Each one gets the level of its own path.

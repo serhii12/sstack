@@ -104,7 +104,8 @@ test("fake gh: a high change stops with exit 21, and --owner-approved posts the 
     assert.match(stop.stderr, /FAIL 21: the risk is high \(rule builtin:ci-workflow on "\.github\/workflows\/ci\.yml"\)/);
     assert.ok(!existsSync(join(t.fake, "merge-calls.log")));
     assert.ok(!existsSync(join(t.fake, "posted-comments.jsonl")));
-    const ok = node(t, "land-check.mjs", [...args, "--owner-approved"]);
+    const head = t.sh("git", ["rev-parse", "HEAD"]).stdout.trim();
+    const ok = node(t, "land-check.mjs", [...args, "--owner-approved", head]);
     assert.equal(ok.status, 0, ok.stdout + ok.stderr);
     assert.match(ok.stdout, /Owner approval: the caller passed --owner-approved\. The approval gate was skipped\. Every other gate ran\./);
     assert.match(ok.stdout, /MERGED #7 as [0-9a-f]{40}\. .*Owner approval note posted: yes\./);
@@ -121,7 +122,7 @@ test("fake gh: --owner-approved skips no other gate, and a note that cannot be p
   const failing = setup({ checks: [{ name: "test", app: "github-actions", conclusion: "failure" }] }, { ciChange: true });
   try {
     failing.sh("gh", ["pr", "create", "--base", "main", "--head", "agent/t", "--title", "Fix", "--body", "b"]);
-    const r = node(failing, "land-check.mjs", ["--pr", "7", "--review", ".artifacts/t/review.md", "--merge", "--owner-approved"]);
+    const r = node(failing, "land-check.mjs", ["--pr", "7", "--review", ".artifacts/t/review.md", "--merge", "--owner-approved", failing.sh("git", ["rev-parse", "HEAD"]).stdout.trim()]);
     assert.equal(r.status, 17, r.stdout + r.stderr);
     assert.ok(!existsSync(join(failing.fake, "merge-calls.log")));
     assert.ok(!existsSync(join(failing.fake, "posted-comments.jsonl")));
@@ -131,7 +132,7 @@ test("fake gh: --owner-approved skips no other gate, and a note that cannot be p
   const t = setup({ checks: [{ name: "test", app: "github-actions" }], commentFails: true }, { ciChange: true });
   try {
     t.sh("gh", ["pr", "create", "--base", "main", "--head", "agent/t", "--title", "Fix", "--body", "b"]);
-    const r = node(t, "land-check.mjs", ["--pr", "7", "--review", ".artifacts/t/review.md", "--merge", "--owner-approved"]);
+    const r = node(t, "land-check.mjs", ["--pr", "7", "--review", ".artifacts/t/review.md", "--merge", "--owner-approved", t.sh("git", ["rev-parse", "HEAD"]).stdout.trim()]);
     assert.equal(r.status, 27, r.stdout + r.stderr);
     assert.ok(!existsSync(join(t.fake, "merge-calls.log")), "no merge without the note");
     assert.ok(!/MERGED/.test(r.stdout));
