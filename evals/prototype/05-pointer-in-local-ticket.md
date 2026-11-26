@@ -105,12 +105,12 @@ Turn 2: `Verdict: yes. A partial refund works if we refund per shipment. Record 
     "toolNotCalled": [
       {
         "name": "Write",
-        "inputMatches": "01-partial-refund",
+        "inputMatches": "\"file_path\":\"[^\"]*01-partial-refund",
         "turn": 1
       },
       {
         "name": "Edit",
-        "inputMatches": "01-partial-refund",
+        "inputMatches": "\"file_path\":\"[^\"]*01-partial-refund",
         "turn": 1
       },
       {
@@ -122,7 +122,9 @@ Turn 2: `Verdict: yes. A partial refund works if we refund per shipment. Record 
       {
         "skill": "prototype",
         "script": "prototype-check",
-        "file": "refund-states"
+        "args": [
+          "refund-states"
+        ]
       }
     ],
     "outputMatches": [
