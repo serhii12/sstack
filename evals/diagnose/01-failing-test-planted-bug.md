@@ -18,7 +18,7 @@ npm test fails in this repo and I do not know why. Diagnose it, then fix it.
 
 - [ ] The agent loads the `diagnose` skill (a `Skill` tool call with `diagnose`), or its first actions follow the skill.
 - [ ] The first command that the agent runs is `npm test` or `node --test`, and it goes red on `slugify("Hello big World")`. This happens before the agent states any theory and before any edit. The reply prints `Red command:`.
-- [ ] Before the first probe, edit or fix, the agent prints `Ranked causes:` with 3 to 5 causes. Each cause has a prediction of the form "If X is the cause, then changing Y ...". The agent does not wait for an answer.
+- [ ] Before the first probe, edit or fix, the agent writes `Ranked causes:` with 3 to 5 causes in the notebook. Each cause has a prediction. The agent does not wait for an answer.
 - [ ] The agent changes one thing per experiment. No experiment edits two files at once.
 - [ ] The agent writes a notebook file (`diagnose-*.md` under `$TMPDIR/sstack/` or `/tmp`). The file has at least one entry with the cause tested, the command, the result and a verdict.
 - [ ] The agent names the cause: `replace(" ", "-")` replaces only the first space.
@@ -29,7 +29,7 @@ npm test fails in this repo and I do not know why. Diagnose it, then fix it.
 ## Failure looks like
 
 - The agent reads `src/slug.mjs`, says "the bug is the replace call" and edits it before it runs any test.
-- The agent tests one guess and prints no `Ranked causes:` list.
+- The agent tests one guess, or writes the `Ranked causes:` list only after the fix.
 - The agent edits several things in one step and cannot say which one fixed the bug.
 - The agent keeps no notebook.
 - The agent never loads the skill and answers in free form.
@@ -93,6 +93,13 @@ npm test fails in this repo and I do not know why. Diagnose it, then fix it.
           "inputMatches": "npm test|node --test"
         },
         "after": "Edit"
+      },
+      {
+        "before": {
+          "name": "Write",
+          "inputMatches": "/diagnose-[^\"]*\\.md[\\s\\S]*Ranked causes(?:(?!\\\\n).)*(?:\\\\n)*?(\\\\n\\s*[1-5][.)](?:(?!\\\\n\\s*[1-5][.)]|\\\\n\\\\n|\\\\n#).)*?\\b(?:if|prediction)\\b(?:(?!\\\\n\\s*[1-5][.)]|\\\\n\\\\n|\\\\n#).)*){3}/i"
+        },
+        "after": "Edit"
       }
     ],
     "outputMatches": [
@@ -118,8 +125,10 @@ Not machine-checked:
 - `npm test` is the first command. The check sees only that it comes before the first edit.
 - Each experiment changes one thing.
 - The notebook entry has all fields.
-- The `Ranked causes:` list. On 25 Nov 2026 no run printed it in the reply: 0 of 6 runs, 3 on Opus and 3 on Sonnet. So the rule says `No fence yet`, and eval 04 measures the list in the `capability` set.
+- The ranked list comes before the first probe. The check sees only that it comes before the first `Edit`.
 - The regression test comes before the fix.
 - `npm test` passes at the end.
+
+The second `toolOrder` check finds the first notebook `Write` that holds `Ranked causes` and three numbered causes, each with "if" or "prediction". It must come before the first `Edit`. A `Write` that the tool refused also counts. On 25 Nov 2026 no run printed the list in the reply: 0 of 6 runs, 3 on Opus and 3 on Sonnet. With the list in the notebook, 4 of 4 Opus runs and 3 of 4 Sonnet runs wrote it before the first edit.
 
 The runner cannot order text against tool calls, count calls or run a command after the agent stops. Eval 04 checks the second ranked list for the case where the first fix leaves a new symptom.

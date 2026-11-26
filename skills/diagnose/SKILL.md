@@ -9,12 +9,12 @@ This skill finds the cause of a bug before it changes any code. A "red" run fail
 
 ## Important
 
-Follow these rules in this order. Print each line in backticks as plain text in your reply. A person or a script can search your reply for them.
+Follow these rules in this order. Print the `Red command:` line as plain text in your reply. A person or a script can search your reply for it.
 
 1. Before you form any theory, run one command that goes red on the exact symptom. Then print `Red command: <command>`.
-2. Before the first probe, edit or fix, print `Ranked causes:` with 3 to 5 causes. Give each cause a prediction. Phase 3 has the format.
-3. If one cause looks obvious, print the list too. Do not wait for an answer. Test the top cause next. No fence yet
-4. If a fix leaves a new symptom, print a new `Ranked causes:` list before the next change. No fence yet
+2. Before the first probe, edit or fix, write `Ranked causes:` with 3 to 5 causes in the notebook. Give each cause a prediction. Phase 3 has the format. Held by: evals/diagnose/01-failing-test-planted-bug.md
+3. If one cause looks obvious, write the list too. Do not wait for an answer. Test the top cause next. No fence yet
+4. If a fix leaves a new symptom, write a new `Ranked causes:` list in the notebook before the next change. No fence yet
 5. Before you fix the cause, write a failing regression test. Load `test-craft` to choose its boundary. If an existing failing test is the regression test, load it too.
 6. Test one cause at a time. Change one thing per experiment.
 7. Write every result in the notebook, including each disproved cause. A first cause that was right also gets an entry.
@@ -73,17 +73,16 @@ No fence yet
 
 Before you test any cause, do these steps. If one cause looks obvious, or you already read its code, do them too. One guess holds you to the first idea that fits.
 
-1. Write `Ranked causes:` in your reply.
+1. Write `Ranked causes:` in the notebook with the Write tool. Do this before the first probe, edit or fix.
 2. Write 3 to 5 causes under it, most likely first. Give each cause one line with its prediction.
-3. Copy the list into the notebook.
 
 Use this form for each prediction:
 
 > If <X> is the cause, then <changing Y> makes the bug go away and <changing Z> makes it worse.
 
-If you cannot state the prediction, sharpen the cause or drop it. The user can know of a recent change, or of a cause that is already ruled out. Do not wait for an answer. Test the top cause next. If the user ranks the list again, follow the new order.
+If you cannot state the prediction, sharpen the cause or drop it. The user can read the list in the notebook. The user can know of a recent change, or of a cause that is already ruled out. Do not wait for an answer. Test the top cause next. If the user ranks the list again, follow the new order.
 
-If a fix leaves a new symptom, write a new `Ranked causes:` list before the next change.
+If a fix leaves a new symptom, write a new `Ranked causes:` list in the notebook before the next change.
 No fence yet
 
 ## Phase 4: Test one cause at a time
@@ -110,7 +109,7 @@ If the existing failing test already is the regression test, say so. Then do the
 1. Turn the shrunk case into a failing test at the boundary.
 2. Watch the test fail on the symptom. If you forced the red with a change to code or a fixture, diff it against a clean copy. The diff must show the change.
 3. Apply the fix. Watch the test pass.
-4. Run the Phase 1 command again on the original case. If it is still red, go back to Phase 3 and print `Ranked causes:` first. For a flaky bug, show the new rate as counts, for example "0 of 1,000 runs".
+4. Run the Phase 1 command again on the original case. If it is still red, go back to Phase 3 and write a new `Ranked causes:` list first. For a flaky bug, show the new rate as counts, for example "0 of 1,000 runs".
 No fence yet
 
 ## Phase 6: Clean up and report
@@ -136,6 +135,6 @@ No fence yet
 
 Both sources are MIT. See NOTICE.
 
-- `skills/engineering/diagnosing-bugs/SKILL.md` from [mattpocock/skills](https://github.com/mattpocock/skills), MIT, Copyright (c) 2026 Matt Pocock. The base of this skill. Kept: the six phases, the redact section, the Phase 1 gate and its four checks, "no theories until the command exists", shrinking, 3 to 5 ranked causes with predictions, shown to the user before the first test with no wait for an answer, one change per experiment, tagged logs, the performance branch, the shallow-boundary finding, the diff against a clean copy after a forced red, and the cleanup list with the proven cause in the commit or pull request message. Rewritten in plain English, with his word for a test join point replaced by "boundary". Changes: a new ranked list when a fix leaves a new symptom, a tighter description, a "When this skill fits" section, an Important section with exact lines to print, a `test-craft` load with a fallback, shorter phases, and pointers to the rebuild and probe notes. Removed the path to his `hitl-loop` script. Did not take the script or `agents/openai.yaml`.
+- `skills/engineering/diagnosing-bugs/SKILL.md` from [mattpocock/skills](https://github.com/mattpocock/skills), MIT, Copyright (c) 2026 Matt Pocock. The base of this skill. Kept: the six phases, the redact section, the Phase 1 gate and its four checks, "no theories until the command exists", shrinking, 3 to 5 ranked causes with predictions before the first test with no wait for an answer, one change per experiment, tagged logs, the performance branch, the shallow-boundary finding, the diff against a clean copy after a forced red, and the cleanup list with the proven cause in the commit or pull request message. Rewritten in plain English, with his word for a test join point replaced by "boundary". Changes: his "show the ranked list to the user" became a notebook entry that the user can read. In live runs no model printed the list in its reply, but most runs wrote it to the notebook before the first edit. Also a new ranked list when a fix leaves a new symptom, a tighter description, a "When this skill fits" section, an Important section with exact lines to print, a `test-craft` load with a fallback, shorter phases, and pointers to the rebuild and probe notes. Removed the path to his `hitl-loop` script. Did not take the script or `agents/openai.yaml`.
 - `docs/engineering/diagnosing-bugs.md` from the same repo: the over-loading report and the "slow on purpose, wrong tool for a quick question" wording. Ideas only.
 - `skills/investigate-a-failure/SKILL.md` from [joelhooks/rat-stack](https://github.com/joelhooks/rat-stack), MIT, Copyright (c) 2026 Joel Hooks. Kept: the notebook and its entry fields, the rate as counts, the disproved cause as a result, asynchronous errors, the workaround label, the rate before and after, and sending upstream as an outward action. Removed: frontmatter `plain` and `diagram`, links to rat-stack principle files and its durability page, and the file path in its example.
