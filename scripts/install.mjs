@@ -446,7 +446,7 @@ function realOrSame(p) {
 
 /**
  * The rules for this machine: the static list, plus the temp folder of the /start note and the
- * diagnose notebook. Skills make no worktree, so no rule names a folder next to the repo. The
+ * diagnose notebook. No rule names a folder next to the repo, because no skill writes there. The
  * settings template already denies edits to the guard files in each checkout. Returns { allow }.
  */
 export function permissionRules(tgt, tmp = tmpdir()) {

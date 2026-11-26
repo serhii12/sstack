@@ -72,7 +72,7 @@ Two side entrances join the loop. `/triage` takes a report that another person f
 
 After a task, `/retro` turns a mistake from the session into a script, a lint rule or a test.
 
-`/build` works in the checkout that it gets and makes no worktree. To build several tickets at the same time, read [docs/parallel-work.md](docs/parallel-work.md).
+`/build` works in the checkout that it gets. To build several tickets at the same time, read [docs/parallel-work.md](docs/parallel-work.md).
 
 `/improve-codebase` is outside the loop. A person types it when needed. It writes a ranked report of places where the shape of the code can improve, and it changes no code.
 

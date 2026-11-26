@@ -170,7 +170,7 @@ Each check is deterministic. The runner also adds one check to every run, `runCo
 | `gitWorktreeExists` | `true` or list of branch names | The repo has a second worktree, or a linked worktree for each listed branch. The main checkout does not count. |
 | `scriptPasses` | list of `{ "skill", "script", "file", "args" }` | `node <script> <file> <args>`, run in the repo, exits with 0. Without `skill`, the script is `scripts/<script>.mjs` of the stack. With `skill`, it is `.claude/skills/<skill>/scripts/<script>.mjs` in the temp repo, which the installer copied. That copy must be equal to the copy in the stack and stay inside its skill folder. `skill` and `script` are names with no `/` and no `..`. `skill` and `file` are optional. `eval-run` is not allowed. |
 
-Globs: `*` and `?` stay in one path part, `**` crosses folders, `{a,b}` is a choice. A path with `*`, `?` or `{` is a glob. If a name is not known before the run, use a glob. Examples are the name of a notebook and of a worktree folder.
+Globs: `*` and `?` stay in one path part, `**` crosses folders, `{a,b}` is a choice. A path with `*`, `?` or `{` is a glob. If a name is not known before the run, use a glob. Examples are the name of a notebook and of a task folder under `.artifacts/`.
 
 The asserts `skillLoaded`, `skillNotLoaded`, `toolCalled`, `toolNotCalled`, `toolCount`, `outputMatches`, `outputNotMatches`, `firstTextMatches` and `toolOrder` accept `"turn": n`. A string entry is the same as an entry with no `turn`.
 
