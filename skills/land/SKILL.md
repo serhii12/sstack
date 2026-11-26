@@ -43,7 +43,7 @@ If the exit code is 0, go on. If it is 30 to 34, stop and print the message. Exi
 
 1. Find the task name. It is the last part of the branch name, for example `user-auth-0816a` in `agent/user-auth-0816a`.
 2. Read the ticket. Use the text after `/land`, or the ticket that the build report names. `docs/agents/tracker.md` says where the tracker is.
-3. Find the review file `.artifacts/<task>/review.md`. If it does not exist, stop. Tell the user that the review did not run. The user can type `/build` again.
+3. Find the review file `.artifacts/<task>/review.md`. If it does not exist, stop. Tell the user that the review did not run. The user can type `/peer-review` and commit its review file, or type `/build` again for a ticket.
 4. Print the evidence table: `node .claude/skills/prove/scripts/evidence-check.mjs report <task>`. If it fails, mark every Acceptance check `untested`.
 5. A check with the result `fail` stops the merge (exit 28). A check with the result `untested` does not. List each one in the body and the report. Held by: scripts/land-check.mjs
 6. Never commit evidence images or video to the task branch. The gate refuses media in the pull request. Text files under `.artifacts/` can be in it. Held by: scripts/land-check.mjs
