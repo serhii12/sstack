@@ -27,6 +27,7 @@ Rules for a brief:
 - Describe behavior. Say what the system must do. Do not give steps such as "open this file and add a field". The agent reads the code fresh and makes its own choices.
 - Give acceptance checks that can fail. Each check names what to observe and where. Each check fails before the work and passes after it. "Triage works correctly" is not a check.
 - Name what is out of scope. This stops the agent from adding things nobody asked for.
+- For a pull request, say what is left to do on the diff: finish it, close gaps, or answer review points. The agent does not build it again.
 - For `ready-for-human`, add the `Why a human:` line. Name the judgment, the access or the manual test that an agent cannot do.
 
 Template:
@@ -131,4 +132,4 @@ For a rejected bug, explain the reason politely.
 
 ## Provenance
 
-Adapted from `skills/engineering/triage/AGENT-BRIEF.md` and the needs-info template in `skills/engineering/triage/SKILL.md` of [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock). Kept: the brief as the contract, durability over precision, behavior over steps, complete acceptance checks, explicit scope, the template sections, the good and bad examples (shortened, with a new bug example), and the needs-info template with its rule against vague questions. Changed: "Acceptance criteria" became "Acceptance checks", as in our ticket format, and each check must fail before the work. The bold labels became plain `Key:` lines that the check script can read. Added the `Why a human:` line and the Triage Decision template. Removed the PR example.
+Adapted from `skills/engineering/triage/AGENT-BRIEF.md` and the needs-info template in `skills/engineering/triage/SKILL.md` of [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock). Kept: the brief as the contract, durability over precision, behavior over steps, complete acceptance checks, explicit scope, the template sections, the good and bad examples (shortened, with a new bug example), and the needs-info template with its rule against vague questions. Changed: "Acceptance criteria" became "Acceptance checks", as in our ticket format, and each check must fail before the work. The bold labels became plain `Key:` lines that the check script can read. Added the `Why a human:` line and the Triage Decision template. Kept his note that a brief for a pull request covers what is left to do on the diff. Removed the PR example.

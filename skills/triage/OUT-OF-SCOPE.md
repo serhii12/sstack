@@ -40,7 +40,7 @@ In step 1, read every file in `.out-of-scope/`. Match by idea, not by words: "ni
 
 ## When to write a record
 
-If the maintainer rejects an enhancement as `wontfix`, write a record. Write one in no other case. Do not write one for a bug. Do not write one for a feature that exists already. That feature is built, not rejected, and a record of it gives false matches later. For that case, the Triage Decision points to the place where the feature lives.
+If the maintainer rejects an enhancement as `wontfix`, write a record. This applies to an enhancement pull request too, so the same request does not come back as new code. Write one in no other case. Do not write one for a bug. Do not write one for a feature that exists already. That feature is built, not rejected, and a record of it gives false matches later. For that case, the Triage Decision points to the place where the feature lives.
 
 The steps:
 
@@ -54,4 +54,4 @@ If the maintainer changes a decision later, delete the file. Do not open the old
 
 ## Provenance
 
-Adapted from `skills/engineering/triage/OUT-OF-SCOPE.md` of [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock). Kept: the two purposes, one file for each idea, the dash names, the short design note with a reason that lasts, matching by idea, the three choices of the maintainer, no record for a bug or for a feature that exists, the write steps and the delete rule. Changed: the example is shorter, the decision goes in a Triage Decision comment, and the PR rule is removed.
+Adapted from `skills/engineering/triage/OUT-OF-SCOPE.md` of [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock). Kept: the two purposes, one file for each idea, the dash names, the short design note with a reason that lasts, matching by idea, the three choices of the maintainer, no record for a bug or for a feature that exists, the write steps and the delete rule. Kept also: a rejected enhancement pull request gets a record too. Changed: the example is shorter, and the decision goes in a Triage Decision comment.
