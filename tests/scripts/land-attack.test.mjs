@@ -1064,6 +1064,8 @@ test("preflight: an evidence branch is refused, and evidence files that git does
     writeFileSync(join(dir, ".artifacts/t/evidence/screenshots/a b.png"), "x");
     writeFileSync(join(dir, ".artifacts/t/evidence/index.json"), "{}");
     assert.equal(preflight(dir).code, 0, "evidence that git does not track stays local");
+    writeFileSync(join(dir, ".artifacts/t/evidence/capture.mjs"), "x");
+    assert.equal(preflight(dir).code, 0, "the capture script of prove sits in evidence/ (CAPTURE.md)");
     writeFileSync(join(dir, ".artifacts/t/notes.txt"), "x");
     assert.equal(preflight(dir).code, 33, "another file that git does not track is a change");
     rmSync(join(dir, ".artifacts/t/notes.txt"));
