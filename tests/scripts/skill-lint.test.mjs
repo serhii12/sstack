@@ -194,6 +194,15 @@ test("held-by: a reference file in a subfolder of the skill is checked and count
   assert.deepEqual(rules(r, "pointer"), []);
 });
 
+test("held-by: an example in inline code and a quote in the Provenance section are not rules", () => {
+  const r = run({
+    "skills/helper/SKILL.md": skillText({ name: "helper", body: "End each rule with `Held by: <path>`." }).replace("- Source file", "- Kept the source line Held by: scripts/none.mjs"),
+  });
+  assert.deepEqual(rules(r, "held-by"), []);
+  const real = run({ "skills/helper/SKILL.md": skillText({ name: "helper", body: "Rule. Held by: `tests/hooks/none.test.mjs`" }) });
+  assert.equal(rules(real, "held-by").length, 1);
+});
+
 test("held-by: `planned:` target is an error, `No fence yet (planned: ...)` is allowed and counted", () => {
   const bad = run({ "skills/helper/SKILL.md": skillText({ name: "helper", body: "Rule. Held by: planned: tests/x.test.mjs" }) });
   assert.equal(rules(bad, "held-by-planned").length, 1);

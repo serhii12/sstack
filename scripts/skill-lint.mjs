@@ -142,7 +142,8 @@ export function lint(rootArg) {
       if (l.fence || l.inFrontmatter) continue;
       if (/(?:^|[\s`*_.])No fence yet(?:\s*\(planned:[^)]*\))?[`*_.]*\s*$/.test(l.t)) noFenceYet++;
       const m = l.t.match(/Held by:\s*(.*)$/);
-      if (!m) continue;
+      // A quote in the Provenance section, or an example in inline code, is not a rule.
+      if (!m || l.inProvenance || !stripInlineCode(l.t).includes("Held by:")) continue;
       const value = m[1].trim().replace(/^`+|`+$/g, "").trim();
       if (/^planned\b/i.test(value)) {
         add(file, l.n, "held-by-planned", "`Held by:` names a planned item", "write `No fence yet (planned: ...)` until the script or test exists.");
