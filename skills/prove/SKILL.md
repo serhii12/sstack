@@ -17,7 +17,8 @@ description: Gathers proof that a change works and marks each acceptance check p
 - Evidence files stay in `.artifacts/<task>/evidence/`. Never commit them to the ticket branch. The installer adds `.gitignore` rules for the media types. Held by: scripts/install.mjs (media files only)
 - Everyone who can read the repo can see the evidence. So use test data. If a check needs real client data on the screen, such as names, emails or tokens, mark it `untested`. No fence yet
 - Never edit an evidence file after you index it. Held by: skills/prove/scripts/evidence-check.mjs
-- Add no dependency to the project. If the project has no browser test tool, `scripts/run-playwright.mjs` installs Playwright outside the project. Say in the report what it installed and where. Held by: skills/prove/scripts/run-playwright.mjs, tests/scripts/run-playwright.test.mjs
+- Add no dependency to the project. No fence yet
+- If the project has no browser test tool, `.claude/skills/prove/scripts/run-playwright.mjs` installs Playwright outside the project. Say in the report what it installed and where. Held by: skills/prove/scripts/run-playwright.mjs, tests/scripts/run-playwright.test.mjs
 - Do not invent runtime evidence for a docs-only change. No fence yet
 - The script cannot prove that an image shows what you say it shows. Only the fresh reviewer, and then a person, can check that. Say so in the report. No fence yet
 
@@ -63,7 +64,7 @@ Read [CAPTURE.md](CAPTURE.md) for the commands. The rules are these:
 
 - Use the test tool that the project already has: Playwright, Cypress, Puppeteer or Storybook. Look in the dependency list and the config files of the project.
 - If the project has none, look for a browser that is already installed. It can take screenshots with its own flags. It cannot record video, click or switch to dark.
-- If there is no browser, or a check needs video, clicks or dark, run the capture with `scripts/run-playwright.mjs`. It installs Playwright in a temp folder outside the project. Do not wait for a yes. If the install fails, mark the visual checks `untested` with the reason.
+- If there is no browser, or a check needs video, clicks or dark, run the capture with `.claude/skills/prove/scripts/run-playwright.mjs`. It installs Playwright in a temp folder outside the project. Do not wait for a yes. If the install fails, mark the visual checks `untested` with the reason.
 - Capture a phone width (375 px) and a desktop width (1280 px) at least. Capture light and dark when the app has both.
 - When the change alters something that existed, capture a `before` and an `after` of the same view.
 - When the behavior is a sequence, take one screenshot for each step. Record a video too if the tool can. The video is for people. The reviewer reads the screenshots.
