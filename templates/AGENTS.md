@@ -2,7 +2,7 @@
 
 Project: `<one sentence: what this repo does and why it exists>`. Replace this line.
 
-These rules apply to every coding agent in this repo, in any agent tool. `CLAUDE.md` is a symlink to this file.
+These rules apply to every coding agent in this repo, in any agent tool.
 
 ## Flow
 
