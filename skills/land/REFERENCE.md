@@ -22,8 +22,8 @@ Every failure prints as `FAIL <code>: <what failed>. Fix: <what to do>.` When se
 | 16 | A check is still running. | wait | Wait with `land-wait.mjs`. |
 | 18 | The latest review of a reviewer requests changes. | needs-person | Stop. A person decides. |
 | 19 | A review thread is unresolved. | needs-person | Stop. A person resolves it. |
-| 20 | The review file is missing or stale, or its ranges have a gap or do not cover the branch. A chain that does not start at the merge base of the head and the base of the pull request does not cover it. An open finding that is not of severity low gives 20 too. | fix | Do what step 8 of `SKILL.md` says for exit 20. |
-| 28 | An acceptance check has the status `fail` in the evidence index. `untested` does not block. | fix | Fix the change and run `prove` again. |
+| 20 | The review file is missing or stale, or its ranges have a gap or do not cover the branch. A chain that does not start at the merge base of the head and the base of the pull request does not cover it. An open finding that is not of severity low gives 20 too. | fix, needs-person (open findings) | Do what step 8 of `SKILL.md` says for exit 20. |
+| 28 | An acceptance check has the status `fail` in the evidence index. `untested` does not block. | stopped | Stop. `land` writes no new code for it. The user can type `/build` to fix the change. `prove` runs again there. |
 | 23 | Evidence images or video under `.artifacts/` are in the pull request. Text files there are allowed. | fix | Remove the media from the task branch. Run `land-evidence.mjs <task>`. |
 | 21 | The risk is high and no person approved the head. | needs-person | Hand off. Stop. |
 | 24 | The repo does not allow the merge method of the config. | stopped | Stop. A person fixes the config. |
@@ -81,7 +81,7 @@ One run of `/land` is in one of these states. The exit codes move it.
 | open | The pull request exists. | waiting |
 | waiting | `land-wait.mjs` runs. | checks-green (0), fixing (10), waiting (12 with `--ack all`, 16), merged (13), stopped (11, 14, 15, 18, 19) |
 | fixing | A check failed (at most 2 rounds), or the default branch must come into the task branch. | waiting |
-| checks-green | `land-wait.mjs` exits 0. | merged (gate 0), reviewing (gate 20), needs-person (gate 21, 18, 19), waiting (gate 15, 16), fixing (gate 12, 17, 23, 28), stopped (each other code) |
+| checks-green | `land-wait.mjs` exits 0. | merged (gate 0), reviewing (gate 20), needs-person (gate 21, 18, 19, 20 with open findings), waiting (gate 15, 16), fixing (gate 12, 17, 23), stopped (gate 28 and each other code) |
 | reviewing | `peer-review` runs once for the new commits. | waiting |
 | needs-person | A person must act. `/land` ends. | checks-green (the user types `/land` again) |
 | merged | The gate printed `MERGED`, or exit 10 says "already merged". The ticket closes here. | reported |
@@ -179,7 +179,7 @@ If `gh` is missing, or the host is not GitHub, stop after the push. Print these 
 3. Wait for the checks. If the checks pass on the head and the review is fresh, merge.
 4. If the host shows conflicts, or says that the branch is behind, run `git fetch origin` and `git merge origin/<default branch>` on the task branch. Resolve each conflict. Run the tests. Commit, and push with a plain `git push`. Do not rebase. Then run one new review that covers the merge.
 5. For a high risk, a person other than the author approves first.
-6. After the merge, set `Status: closed` in a local ticket file, or close the issue.
+6. After the merge, close the ticket. In a local ticket file, add the line `Merged in <merge sha>.` under `## Comments`, then set `Status: closed`. After a squash merge, `build` needs that line to start a ticket that this one blocks. For a tracker ticket, close the issue.
 
 This version does not support GitLab. Other hosts are not supported either.
 
