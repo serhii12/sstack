@@ -664,6 +664,15 @@ test("main: refuses an eval with network tools unless --allow-network", async ()
   assert.equal(ok.code, 0, ok.err);
 });
 
+test("main: a dry run lists an eval with network tools, marks it, and needs no --allow-network", async () => {
+  const stack = fakeStack({ "s/01-a.md": evalText({ ...SIMPLE, allowedTools: ["Read", "Bash(gh pr create:*)"] }) });
+  const r = await run(stack, ["--dry-run"], () => assert.fail("must not run"));
+  assert.equal(r.code, 0, r.err);
+  assert.match(r.out, /s\/01-a\.md: 1 run\(s\)[^\n]*needs --allow-network/);
+  const allowed = await run(stack, ["--dry-run", "--allow-network"], () => assert.fail("must not run"));
+  assert.doesNotMatch(allowed.out, /needs --allow-network/);
+});
+
 test("main: an agent that gives no stream is a setup error and stops the run", async () => {
   const stack = fakeStack({ "s/01-a.md": evalText(SIMPLE), "s/02-b.md": evalText(SIMPLE) });
   let calls = 0;

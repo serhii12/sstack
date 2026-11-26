@@ -12,7 +12,7 @@ Scripts and hooks use Node 22 or later, ESM and no dependencies. Bun runs the co
 - `npm run test:node` runs the same tests with `node --test`.
 - `bun run lint:skills` checks the frontmatter, links and `Held by:` targets of each skill.
 - `bun run lint:style` checks the writing rules in skills, templates, evals, `README.md`, `CONVENTIONS.md` and this file. CI runs it in both jobs. It is not part of `bun run test`.
-- `bun run eval -- --dry-run` lists the evals that the runner can run and the budget cap. It starts no agent.
+- `bun run eval -- --dry-run` lists the evals that the runner can run and the budget cap. It marks each eval that needs `--allow-network`. It starts no agent.
 
 Before you report a change as done, run the first four commands. Report each result as you saw it.
 
