@@ -263,6 +263,35 @@ test("T12: the findings template of peer-review parses, and its status words are
   }
 });
 
+test("T12: the severity words of peer-review are the SEVERITIES of land-check.mjs, and each one parses", () => {
+  const step = section(read(PEER), "## 5.", PEER);
+  const template = firstFence(step, PEER);
+  const line = /^Severity: (.+)$/m.exec(template);
+  assert.ok(line, `${PEER}: the findings template has no Severity line`);
+  sameNames(line[1].split("|").map((x) => x.trim()), landCheck.SEVERITIES, `${PEER} (template Severity line)`, `SEVERITIES in ${LAND_CHECK}`);
+  const rule = scan(step).find((l) => !l.fence && l.t.includes("`Severity:` value"));
+  assert.ok(rule, `${PEER}: step 5 has no sentence that lists the \`Severity:\` values`);
+  sameNames(ticks(rule.t).filter((t) => t !== "Severity:"), landCheck.SEVERITIES, `${PEER} (step 5 severity sentence)`, `SEVERITIES in ${LAND_CHECK}`);
+  for (const s of landCheck.SEVERITIES) {
+    const r = landCheck.parseReview(template.replace(/^Severity: .+$/m, `Severity: ${s}`));
+    assert.equal(r.findings[0].severity, s, `${LAND_CHECK} does not read "Severity: ${s}" of ${PEER}`);
+  }
+});
+
+test("T17: the land report uses the words of the scripts for checks, acceptance checks and the review", () => {
+  const report = firstFence(section(read(LAND_SKILL), "## 9.", LAND_SKILL), LAND_SKILL);
+  const words = (key) => {
+    const m = new RegExp(`^${key}: <[^>]+>: (.+?)(?: \\(one per line\\))?$`, "m").exec(report);
+    assert.ok(m, `${LAND_SKILL}: the report has no "${key}: <...>: ..." line`);
+    return m[1].split("|").map((x) => x.trim());
+  };
+  sameNames(words("Checks"), landLib.CHECK_STATES.filter((x) => x !== "none"), `${LAND_SKILL} (report Checks line)`, "CHECK_STATES in skills/land/scripts/land-lib.mjs, without none");
+  sameNames(words("Acceptance checks"), evidence.STATUSES, `${LAND_SKILL} (report Acceptance checks line)`, `STATUSES in ${EVIDENCE}`);
+  const review = /^Review: ([^.]+)\./m.exec(report);
+  assert.ok(review, `${LAND_SKILL}: the report has no Review line`);
+  if (!review[1].includes("<")) sameNames(review[1].split("|").map((x) => x.trim()), REVIEW_STATE_NAMES, `${LAND_SKILL} (report Review line)`, `REVIEW_STATES in ${LAND_CHECK}`);
+});
+
 // ---------------------------------------------------------------------------
 // The land gate, the watcher and the run
 // ---------------------------------------------------------------------------
