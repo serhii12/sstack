@@ -142,15 +142,14 @@ The installer does these steps:
 
 The installer never overwrites a file. If a file already exists, the installer skips it and says so. If the project already has `.claude/settings.json`, the installer prints what to add by hand.
 
-After the install, the installer prints the next steps. Do them before the first `/build`:
+After the install, the installer prints the next steps. It prints only the steps that apply to your project. Do them before the first `/build`:
 
 1. Fill in the `Project:` line and the check commands in `AGENTS.md`.
-2. Put the check command of your project in `.stack/check`. The agent cannot edit that file. Until you do, no commit runs a check, and every commit gets a warning. On an empty repo, the first ticket adds the check command. Put it in `.stack/check` after that ticket.
-3. Type `/setup` once to choose the issue tracker.
-4. Commit the new files and get them into `origin/main`, with a pull request or a push by a person. `/build` makes every worktree from `origin/main`. If the stack is not there, the build has no `AGENTS.md`, no git hook and no check.
-5. Type `/start` and say what you want done.
-
-Then commit and push the installed files before the first `/build`. Each task worktree starts from `origin/main`, so it has no git hook and no skills until these files are there.
+2. If the installer did not set `core.hooksPath`, turn on the git hooks as the installer says. Until then, no commit runs `.stack/check`.
+3. Put the check command of your project in `.stack/check`. The agent cannot edit that file. Until you do, no commit runs a check, and every commit gets a warning. On an empty repo, the first ticket adds the check command. Put it in `.stack/check` after that ticket.
+4. Type `/setup` once to choose the issue tracker.
+5. Commit the new files and get them into `origin/main`, with a pull request or a push by a person. `/build` makes every worktree from `origin/main`. If the stack is not there, the build has no `AGENTS.md`, no skills, no git hook and no check.
+6. Type `/start` and say what you want done.
 
 ## Check the stack
 

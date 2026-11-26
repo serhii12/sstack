@@ -199,7 +199,12 @@ test("cli exit codes: 0 done, 1 refused, 2 usage", () => {
     assert.equal(run(["--source", source, target]).status, 0);
     assert.equal(run(["--source", source, source]).status, 1);
     assert.equal(run([]).status, 2);
-    assert.equal(run(["--bogus", target]).status, 2);
+    const bogus = run(["--bogus", target]);
+    assert.equal(bogus.status, 2);
+    // The "kept" hook message names --replace-git-hooks, so each usage line must name it too.
+    assert.ok(bogus.stderr.includes("Usage: node scripts/install.mjs [--dry-run] [--replace-git-hooks] <target-repo>"), bogus.stderr);
+    assert.ok(run([target, target]).stderr.includes("[--replace-git-hooks]"));
+    assert.ok(run([]).stderr.includes("[--replace-git-hooks]"));
     assert.equal(run(["--source", source, join(target, "nope")]).status, 2);
     const plain = mkdtempSync(join(tmpdir(), "install-plain-"));
     try {

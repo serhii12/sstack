@@ -58,6 +58,8 @@ import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const DEFAULT_SOURCE = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+// The "kept" hook message tells the user to run the install again with --replace-git-hooks, so the usage line names it.
+export const USAGE = "Usage: node scripts/install.mjs [--dry-run] [--replace-git-hooks] <target-repo>";
 
 export class InstallRefusal extends Error {}
 export class InstallUsageError extends Error {}
@@ -622,11 +624,11 @@ function main(argv) {
     else if (a === "--replace-git-hooks") replaceGitHooks = true;
     else if (a === "--source") source = argv[++i];
     else if (a.startsWith("-")) {
-      console.error(`install: unknown option ${a}\nUsage: node scripts/install.mjs [--dry-run] <target-repo>`);
+      console.error(`install: unknown option ${a}\n${USAGE}`);
       return 2;
     } else if (target === undefined) target = a;
     else {
-      console.error("install: too many arguments\nUsage: node scripts/install.mjs [--dry-run] <target-repo>");
+      console.error(`install: too many arguments\n${USAGE}`);
       return 2;
     }
   }
@@ -638,7 +640,7 @@ function main(argv) {
       console.error(`install: refused. ${e.message}`);
       return 1;
     }
-    console.error(`install: ${e.message}${e instanceof InstallUsageError ? "\nUsage: node scripts/install.mjs [--dry-run] <target-repo>" : ""}`);
+    console.error(`install: ${e.message}${e instanceof InstallUsageError ? `\n${USAGE}` : ""}`);
     return 2;
   }
 }
