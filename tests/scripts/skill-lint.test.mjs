@@ -176,6 +176,15 @@ test("held-by: missing path fails", () => {
   assert.match(hits[0].message, /does not exist/);
 });
 
+test("held-by: a reference file beside SKILL.md is checked and counted too", () => {
+  const r = run({ "skills/helper/NOTES.md": "# Notes\n\n- Rule. Held by: tests/hooks/none.test.mjs\n- Rule. Held by: scripts/check.mjs\n- Rule. No fence yet\n" });
+  const hits = rules(r, "held-by");
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].path, "skills/helper/NOTES.md");
+  assert.equal(hits[0].line, 3);
+  assert.equal(r.noFenceYet, 3);
+});
+
 test("held-by: `planned:` target is an error, `No fence yet (planned: ...)` is allowed and counted", () => {
   const bad = run({ "skills/helper/SKILL.md": skillText({ name: "helper", body: "Rule. Held by: planned: tests/x.test.mjs" }) });
   assert.equal(rules(bad, "held-by-planned").length, 1);
