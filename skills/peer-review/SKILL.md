@@ -37,7 +37,7 @@ No fence yet
 - For Spec, use the spec or ticket that the user named. If the user named none, look in `.artifacts/<task>/`. Then look for an issue number in the commit messages. Then look for a file under `docs/`, `specs/` or `.scratch/` that matches the branch. If you find nothing, ask. If the user says there is no spec, skip the Spec reviewer and record "no spec available". Do not write requirements from the code.
 - For agreed test boundaries, take them from the spec or ticket. If none are written, say "none agreed".
 
-Use the task name that the caller or the user gave. If nobody gave a name, use the last part of the branch name, for example `user-auth-0816a` in `agent/user-auth-0816a`. `build` and `land` use the same name. If the branch is `main` or `master`, ask.
+Use the task name that the caller or the user gave. If nobody gave a name, use the branch name after its last `/`. Examples: `user-auth-0816a` from `agent/user-auth-0816a`, and `worktree-user-auth` from `worktree-user-auth`. `build` and `land` use the same name. If the branch is `main` or `master`, ask.
 No fence yet
 
 ## 3. Run the two reviewers

@@ -45,7 +45,7 @@ Never build in a checkout that another task uses. Two sessions in one checkout s
    - The in-work check said that this checkout is on a branch of the ticket: keep the branch. Its commits are earlier work on this ticket.
    - The count is 0: keep the branch. The agent tool or a runner made it for this session. Do not make a second branch.
    - Any other branch holds the commits of another task. Stop as blocked.
-   When you keep a branch, the task name is the last part of that branch, for example `worktree-user-auth`.
+   When you keep a branch, the task name is the branch name after its last `/`. A name with no `/` is the task name as a whole, for example `worktree-user-auth`.
    To stop as blocked, start your reply with `Cannot build <ticket>. Blocked: <why>.` Name the checkout path, the branch and what you found. Change no file and no branch.
 6. Push the task branch once: `git push -u origin <branch>`. The in-work check on another machine sees only pushed branches. If the repo has no `origin` remote, or the push fails, say so in the report and go on. No fence yet
 7. `git branch --show-current` must print the task branch. If it prints `main`, stop. Never use `git checkout <branch>` to make or change a branch. Make sure that the runtime version fits the repo. If the checks need dependencies, install them in this checkout.

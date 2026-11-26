@@ -41,7 +41,7 @@ If the exit code is 0, go on. If it is 30 to 34, stop and print the message. Exi
 
 ## 2. Collect the inputs
 
-1. Find the task name. It is the last part of the branch name, for example `user-auth-0816a` in `agent/user-auth-0816a`.
+1. Find the task name. It is the branch name after its last `/`. Examples: `user-auth-0816a` from `agent/user-auth-0816a`, and `worktree-user-auth` from `worktree-user-auth`.
 2. Read the ticket. Use the text after `/land`, or the ticket that the build report names. `docs/agents/tracker.md` says where the tracker is.
 3. Find the review file `.artifacts/<task>/review.md`. If it does not exist, stop. Tell the user that the review did not run. The user can type `/peer-review` and commit its review file, or type `/build` again for a ticket.
 4. Print the evidence table: `node .claude/skills/prove/scripts/evidence-check.mjs report <task>`. If it fails, mark every Acceptance check `untested`.
