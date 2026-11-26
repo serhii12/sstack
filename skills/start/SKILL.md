@@ -45,13 +45,13 @@ prototype | agent | Build throwaway code on its own branch to answer one design 
 land | typed | Push a finished ticket branch, open its pull request, wait for checks, and merge
 <!-- skills:end -->
 
-**Not built yet:** `ship`, `pr-body`, `skill-craft`, `security-review`. Mention each one only as "not built yet". Say what to do by hand in the meantime. Never tell the user to type one. No fence yet
+**Not built yet:** `pr-body`, `skill-craft`, `security-review`. Mention each one only as "not built yet". Say what to do by hand in the meantime. Never tell the user to type one. No fence yet
 
 ## Steps
 
 1. Read the text that the user typed after `/start`. If there is no text, ask one question: "What do you want done?"
 2. If the project has an `AGENTS.md`, read it. Its rules apply to every type below.
-3. Sort the task into one type from the table. If two types fit, pick the type that needs more proof (bug, then code change, then docs-only, then read-only). If another person filed the bug or the request on the tracker, sort it as a report from someone else. If you cannot tell which type fits, ask the user one question. If the user wants a pull request for a change that is not made yet, sort by the change itself. List `ship` under "Not built yet" in the note.
+3. Sort the task into one type from the table. If two types fit, pick the type that needs more proof (bug, then code change, then docs-only, then read-only). If another person filed the bug or the request on the tracker, sort it as a report from someone else. If you cannot tell which type fits, ask the user one question. If the user wants a pull request for a change that is not made yet, sort by the change itself.
 4. Take the evidence level from the same row.
 5. Write the handoff note (format below). Fill every field. Write `none` in a field that has no value.
 6. Reply to the user with five items. These are the type, the evidence level, one line on why, the note path, and the next command. Write the command in a code span. Then list the steps that follow as "not built yet" where they are not built.
@@ -62,12 +62,12 @@ land | typed | Push a finished ticket branch, open its pull request, wait for ch
 | Type | How to tell | Evidence level | Next command today | Not built yet |
 | --- | --- | --- | --- | --- |
 | Read-only question | Explain, review, or investigate. Nothing changes in the repo. | `cite` | None. Ask the question in this session. For a survey of the shape of the code, the user can type `/improve-codebase`. | |
-| Docs-only change | Edits only to docs, comments or text files. | `content` | If the change is unclear, `/grill`. Otherwise none: edit by hand on a new branch. | `ship` |
+| Docs-only change | Edits only to docs, comments or text files. | `content` | If the change is unclear, `/grill`. Otherwise edit by hand on a new branch, then type `/land`. | |
 | Code change | Changes behavior, config or dependencies. | `behavior` | `/grill`. After it, the user types `/spec`, then `/tickets`, then `/build` for each ticket. | |
 | Bug | Something works wrong today. | `red-then-green` | If the right behavior is unclear, `/grill`. Otherwise `/diagnose`. | |
 | Report from someone else | A bug report or a request that another person filed on the tracker. | `cite` | The user types `/triage`. After it, `/build <issue>` for a `ready-for-agent` issue, or `/grill` for a design question. | |
 | Design question | A question about logic or a screen that talk cannot settle. Nothing ships. | `behavior` | `/prototype`. After it, `/grill` with the verdict. | |
-| Ship request | The change is made. The user wants it delivered, as a pull request or a finished change in the repo. | `checks` | None. Follow `AGENTS.md` by hand. | `pr-body`, `ship` |
+| Ship request | The change is made. The user wants it delivered, as a pull request or a finished change in the repo. | `checks` | The user types `/land`. It opens the pull request and merges only through its merge gate. | `pr-body` |
 
 What each type needs:
 
