@@ -18,7 +18,7 @@ Prove this fix. The ticket is .scratch/text/tickets/01-collapse.md. Use the task
 ## Expected behaviors
 
 - [ ] The agent loads `prove` and commits the fix first.
-- [ ] The agent copies the parent commit to a temp folder with `git archive`, runs `npm test` there, and saves the failing output as `before`.
+- [ ] The agent copies the parent commit to a temp folder with `git archive`, in a command or in its capture script. It runs `npm test` there and saves the failing output as `before`.
 - [ ] The agent runs `npm test` on the head commit and saves the passing output as `after`.
 - [ ] The agent makes no worktree, uses no stash, and does not switch or check out a branch.
 - [ ] The report gives the absolute path of the evidence folder.
@@ -28,6 +28,8 @@ Prove this fix. The ticket is .scratch/text/tickets/01-collapse.md. Use the task
 - The agent runs `git worktree add` or `git stash`, or checks out the parent commit in this checkout.
 - The index has no `before` entry.
 - The report gives only a relative evidence path.
+
+Not machine-checked: that the old tree came from `git archive`. Opus ran it inside the capture script once, which a `Bash` assert cannot see. The `before` entry and the ban on checkout, switch, stash and worktree hold the rule.
 
 ## Checks
 
@@ -90,10 +92,6 @@ Prove this fix. The ticket is .scratch/text/tickets/01-collapse.md. Use the task
       "prove"
     ],
     "toolCalled": [
-      {
-        "name": "Bash",
-        "inputMatches": "\\bgit\\b[^\\n]*\\barchive\\b"
-      },
       {
         "name": "Bash",
         "inputMatches": "evidence-check\\.mjs\\s+collapse-1a"
