@@ -1,7 +1,7 @@
 ---
 name: build
 description: Build one ticket in its own worktree and branch, test first, then review, fix and report.
-argument-hint: "[ticket reference] [pr]"
+argument-hint: "[ticket reference]"
 disable-model-invocation: true
 ---
 
@@ -132,18 +132,16 @@ Design notes: <a shallow module or a missing module boundary outside the ticket,
 Ticket: closed in <path> | open, closes when the pull request merges | open, blocked by <what blocks the close>, edit for the user: <the exact edit>
 ```
 
-## 10. Pull request and next command
+## 10. Next command
 
-If the text after `/build` asks for a pull request, push the branch. Then open the pull request. On GitHub, run `git -C <worktree> push -u origin <branch>`, then `cd <worktree> && gh pr create --head <branch> --title "<ticket title>" --body "Closes #<ticket number>"`.
+Tell the user to type `/land` next, in this worktree. It pushes the branch and opens the pull request with the evidence. Then it waits for the checks and merges through the merge gate. If the user asked `build` for a pull request, say that `/land` opens it. `build` opens no pull request. Never push to `main`. Held by: hooks/guard-git.mjs
 
-On another host, use its own pull request tool. For a local ticket, name the ticket file in the body in place of `Closes`. Add the pull request link to the report. Never push to `main`. Held by: hooks/guard-git.mjs
-
-If the user did not ask for a pull request, print these commands for the user to run. Then tell the user to type `/build <next ticket>` in a fresh session. If this session was harder than it needed to be, tell the user to type `/retro` in place of it. A new session starts from `origin/main`. If the next ticket needs this work, tell the user to merge this branch first.
+After the merge, the user can type `/build <next ticket>` in a fresh session. If this session was harder than it needed to be, tell the user to type `/retro` first. A new session starts from `origin/main`. If the next ticket needs this work, it must merge first.
 
 `build` never runs another typed workflow. It tells the user the next command to type. No fence yet
 
 ## Provenance
 
-- `skills/engineering/implement/SKILL.md` from mattpocock-skills (github.com/mattpocock/skills), MIT, Copyright (c) 2026 Matt Pocock. Kept nearly word for word: fetch the ticket and state its title, ask when the reference is ambiguous, and the typecheck, single-file and full-suite rhythm. Changed: `tdd` became `test-craft` with a fallback and with agreed boundaries passed in. `code-review` became `peer-review`. The review now runs after the commit, and findings get action. The work goes on a new branch in a worktree, not on the current branch. Added a pull request step. Ideas in our words from `docs/engineering/implement.md` and `skills/engineering/implement-spec/SKILL.md`, same repo, license and holder: the corruption report from several sessions in one checkout, the shared stash, review before commit seeing nothing, self-review bias, one ticket per run, never reopen the plan, split a ticket that is too big, test boundaries that nobody agreed, the ticket staying open after the run, fix all review findings before the report, and the clash between `tdd` boundary confirmation and background runs.
+- `skills/engineering/implement/SKILL.md` from mattpocock-skills (github.com/mattpocock/skills), MIT, Copyright (c) 2026 Matt Pocock. Kept nearly word for word: fetch the ticket and state its title, ask when the reference is ambiguous, and the typecheck, single-file and full-suite rhythm. Changed: `tdd` became `test-craft` with a fallback and with agreed boundaries passed in. `code-review` became `peer-review`. The review now runs after the commit, and findings get action. The work goes on a new branch in a worktree, not on the current branch. Added a step that tells the user the next command, `/land`. Ideas in our words from `docs/engineering/implement.md` and `skills/engineering/implement-spec/SKILL.md`, same repo, license and holder: the corruption report from several sessions in one checkout, the shared stash, review before commit seeing nothing, self-review bias, one ticket per run, never reopen the plan, split a ticket that is too big, test boundaries that nobody agreed, the ticket staying open after the run, fix all review findings before the report, and the clash between `tdd` boundary confirmation and background runs.
 - `new-feature/SKILL.md` and `AGENTS.md` lines 54-72 from rstack (github.com/michaelshimeles/rstack), Michael Shimeles, no license file. Copied and adapted: the existing-isolation check, the sync, scope check, naming, create and check steps, the worktree location rule, the port rule, the lockfile rule, one worktree and branch for each agent, and stop instead of guessing. Changed: plain-English edits, no semicolons or dashes, `--no-track` and `git -C`, a default worktrees folder. Cleanup moved to WORKTREES.md.
 - New here: the refusal to build in a checkout that another task uses, the user's choice to skip a step after one line of warning, "rebuild" over an in-work branch, "build anyway" over an open blocker, the no-stash rule, the new commit after review, the background rule, the report format, the blocker check before the worktree, the blocker script (its `Blocked by:` line parser follows `skills/tickets/scripts/tickets-lint.mjs` in this repo), the in-work check script and the push right after the worktree, the prove step, closing a local ticket only when no high or medium finding is open, and the Held by and No fence yet lines.
