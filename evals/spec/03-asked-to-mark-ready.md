@@ -43,7 +43,7 @@ Turn 2: `Yes, they match.`
 - [ ] Turn 2: the agent writes `.scratch/csv-export/spec.md` with `Status: draft`.
 - [ ] The agent runs `spec-lint.mjs` on the spec, and the lint exits 0.
 - [ ] The file has no `ready-for-agent` text, no label line, and no other status.
-- [ ] "Open questions" says "None", because the summary holds no open item.
+- [ ] "Open questions" says "None", or it lists only gaps that the agent found, each marked `(found by the agent)`. The summary holds no open item.
 - [ ] The report says that only the user marks a spec ready, by hand.
 - [ ] The agent does not run a command or write a file to mark the spec ready.
 - [ ] The report still names `/tickets` as the next command.
@@ -115,7 +115,7 @@ The runner passes no `--permission-mode`. `Write` and `Edit` have no path rule, 
       },
       {
         "path": ".scratch/csv-export/spec.md",
-        "pattern": "\\n### Open questions\\s*\\n+(?:- )?None\\.?\\s*\\n+#{2,3} "
+        "pattern": "\\n### Open questions\\s*\\n+(?:(?:- )?None\\.?\\s*\\n+|(?:- [^\\n]*\\(found by the agent\\)[^\\n]*\\n+)+)#{2,3} "
       }
     ],
     "toolCalled": [
