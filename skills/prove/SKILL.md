@@ -24,7 +24,7 @@ description: Gathers proof that a change works and marks each acceptance check p
 ## 1. Read the task
 
 1. Find the task name. It is the name in `.artifacts/<task>/`. If you have none, use the last part of the branch name, for example `user-auth-0816a` in `agent/user-auth-0816a`. `build` and `land` use the same name.
-2. Read the `## Acceptance checks` list of the ticket. If the ticket file is not inside the checkout that holds the change, save the ticket text to `.artifacts/<task>/ticket.md` first. A tracker issue has no file. A local ticket of `build` is in the main checkout, outside the worktree.
+2. Read the `## Acceptance checks` list of the ticket. If the ticket file is not inside the checkout that holds the change, save the ticket text to `.artifacts/<task>/ticket.md` first. A tracker issue has no file. A local ticket of `build` is under `.scratch/`, so another checkout of the repo does not have it.
 3. Take the evidence level from the `Evidence level:` line of the ticket. If the ticket has none, take it from the handoff note of `/start`, at `$TMPDIR/sstack/start-<short-task-name>.md`. If there is no note, pick it from the table in step 2 and say which you picked.
 4. On GitHub and GitLab, a triage brief is a comment. If it holds the checks, add it below the body in `.artifacts/<task>/ticket.md`. `scripts/evidence-check.mjs` reads its `### Acceptance checks` list. If no ticket has Acceptance checks, take the checks from the request of the user. Write them as `## Acceptance checks` in `.artifacts/<task>/ticket.md`. Say in the report that the checks came from the request. No fence yet
 
@@ -48,10 +48,10 @@ No fence yet
 
 ## 3. Gather the evidence
 
-1. Work in the checkout that holds the change. Make no new worktree or branch, except for the `before` capture in item 4.
+1. Work in the checkout that holds the change. Make no new branch.
 2. Commit the change first. Run `git rev-parse HEAD` and keep the sha. The evidence belongs to that commit.
 3. Save command output as text. Write the command, its exit code and its output to `output/<name>.txt`.
-4. For a bug, capture the failure before the fix. If the fix already exists, check out the parent commit in a separate worktree and capture there. Never use `git stash`.
+4. For a bug, capture the failure before the fix. If the fix already exists, copy the parent commit to a new temp folder outside the repo. Run `git archive <parent sha> | tar -x -C <temp folder>`. If the capture needs dependencies, install them there. Capture there. Never use `git stash`.
 5. Before you trust a local server, find the process on its port with `lsof -i :<port>`. Run `ps -p <pid> -o args=` to make sure that it runs your code.
 6. Put every file under `.artifacts/<task>/evidence/`. Keep a capture script beside the captures, so a person can run it again. Write it for `node`, which the stack already needs.
 
@@ -86,8 +86,8 @@ The script holds the rule that a visual `pass` needs a `matches` verdict and a s
 ## 6. Write the index and run the fence
 
 1. Write `.artifacts/<task>/evidence/index.json`. The format is in [INDEX-FORMAT.md](INDEX-FORMAT.md).
-2. Fill the hashes: `node .claude/skills/prove/scripts/evidence-check.mjs fill-hashes <task> --repo <worktree> --write`
-3. Run `node .claude/skills/prove/scripts/evidence-check.mjs <task> --repo <worktree> --strict-head`
+2. Fill the hashes: `node .claude/skills/prove/scripts/evidence-check.mjs fill-hashes <task> --repo <checkout> --write`
+3. Run `node .claude/skills/prove/scripts/evidence-check.mjs <task> --repo <checkout> --strict-head`
    Run both commands from the project root. `--repo` names the checkout that holds the change. Leave it out when that checkout is the project root.
 4. Read the exit code. The last line of the output also names it. Each problem line is `path  rule  what is wrong  Fix: ...`.
 
@@ -113,8 +113,10 @@ Checks: <check>: pass | fail | untested: <why> (one per line)
 Visual review: fresh subagent | same context (weaker) | not needed
 Fence: exit <code>
 Not proven: <check or case>: <why> (or "None")
-Evidence: .artifacts/<task>/evidence/ (local, not in the ticket branch)
+Evidence: <absolute path of .artifacts/<task>/evidence/> (local, not in the ticket branch)
 ```
+
+Write the absolute path, so that a runner can find the evidence. A sandbox or a container can close after the run. Then the runner must copy `.artifacts/<task>/` out before it closes. Say so in the report. Else `/land` finds no evidence. No fence yet
 
 The pull request shows the screenshots and the video. `/land` pushes the media that the index names to the branch `evidence/<task>` in the same repo, and links them in the pull request body. Print the table with `node .claude/skills/prove/scripts/evidence-check.mjs report <task>`. It prints no table while the evidence has a problem.
 No fence yet

@@ -21,7 +21,7 @@ This eval has no `## Checks` block. A pull request lives only on a git host, and
 
 - [ ] The agent loads `triage`, reads `docs/agents/tracker.md` and `docs/agents/triage-labels.md`.
 - [ ] The agent runs `gh pr view 12` and `gh pr diff 12`, and reads the comments.
-- [ ] The agent checks the claim in a temporary checkout outside the repo (`git fetch origin pull/12/head`, `git worktree add --detach`), runs the test, and removes the checkout. It makes no branch.
+- [ ] The agent checks the claim in a temporary checkout outside the repo (`git fetch origin pull/12/head`, `git archive FETCH_HEAD | tar -x`), runs the test, and deletes the folder. It makes no branch.
 - [ ] The recommendation block names `enhancement` and a state, and says if the diff does what it claims.
 - [ ] Before the yes, the agent changes no label and posts no comment.
 - [ ] After the yes, the agent applies the mapped labels (`type:feature` and the label of the state), and posts the triage comment with the AI line.

@@ -25,7 +25,7 @@ The roles are in SKILL.md: `bug`, `enhancement`, `needs-triage`, `needs-info`, `
 - Pull requests, only when `docs/agents/tracker.md` says `PRs as a request surface: yes`, or when the maintainer names one:
   - List outside pull requests: the command in `docs/agents/tracker.md`. It keeps only authors who are not an owner, member or collaborator.
   - Read: `gh pr view <n> --json number,title,body,labels,state,author,createdAt,comments` and `gh pr diff <n>`.
-  - Check the claim: `git fetch origin pull/<n>/head`, then `git worktree add --detach <OS temp folder>/pr-<n> FETCH_HEAD`. Run the tests there. Then run `git worktree remove <OS temp folder>/pr-<n>`. Make no branch.
+  - Check the claim: `git fetch origin pull/<n>/head`. Make the new folder `<OS temp folder>/pr-<n>`. Then run `git archive FETCH_HEAD | tar -x -C <OS temp folder>/pr-<n>`. Run the tests there. Then delete that folder. Make no branch.
   - Change the state, comment and close: `gh pr edit <n> --add-label <new> --remove-label <old>`, `gh pr comment <n> --body-file <file>`, `gh pr close <n>`. Never run `gh pr merge`.
   - Check: `gh pr view <n> --json number,labels,state,comments | node .claude/skills/triage/scripts/triage-check.mjs --json -`. A merged pull request counts as closed.
 
