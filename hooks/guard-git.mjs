@@ -11,11 +11,11 @@
 // node failing to start, and a syntax error in this file. The settings template handles those
 // with `|| exit 2` after the node command.
 //
-// Confirm in Claude Code: stdin shape, exit code 2 semantics and the settings wiring
-// (docs: https://code.claude.com/docs/en/hooks). See templates/claude-settings.json.
-//
 // Adapted with hooks/git-policy.mjs from scripts/vcs-command-policy.js in joelhooks/rat-stack
 // (MIT, Copyright (c) 2026 Joel Hooks). See NOTICE.
+//
+// Confirm in Claude Code: stdin shape, exit code 2 semantics and the settings wiring
+// (docs: https://code.claude.com/docs/en/hooks). See templates/claude-settings.json.
 
 import { execFileSync } from "node:child_process";
 import { writeSync } from "node:fs";
