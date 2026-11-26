@@ -60,7 +60,7 @@ A `ready-for-agent` issue of `/triage` enters at in work. A hand-made change goe
 | Acceptance check | `pass`, `fail`, `untested` | `.artifacts/<task>/evidence/index.json`. It is never committed. | The agent. A visual `pass` needs the verdict `matches` of the image reviewer. | `STATUSES` in `prove/scripts/evidence-check.mjs` | No. One machine. The pull request body shows the results. |
 | Image verdict | `matches`, `does-not-match`, `cannot-tell` | The evidence index and the saved reply | A fresh reviewer | `VERDICTS` in `prove/scripts/evidence-check.mjs` | No. One machine. |
 | Image reviewer | `fresh-subagent`, `same-context` | The evidence index | The agent | `REVIEWERS` in `prove/scripts/evidence-check.mjs` | No. One machine. |
-| Prototype | open, verdict given, back on the base | The branch `prototype/<name>` and the `Verdict:` line | The user gives the verdict | `prototype/scripts/prototype-check.mjs` | Only if the user pushes the branch |
+| Prototype | open, verdict given, back on the base | The branch `prototype/<name>` and the `Verdict:` line. A `Prototype:` line on the ticket points to it. | The user gives the verdict | `prototype/scripts/prototype-check.mjs` | Only if the user pushes the branch |
 
 ## Ship
 
@@ -81,7 +81,7 @@ A `ready-for-agent` issue of `/triage` enters at in work. A hand-made change goe
 
 | Thing | States | Stored in | Moved by | Read by | Travels |
 | --- | --- | --- | --- | --- | --- |
-| Triage state | `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix` | Tracker labels, or the `Labels:` line of `.scratch/reports/NN-title.md` | The maintainer | `STATES` in `triage/scripts/triage-check.mjs` | Tracker: yes. `.scratch/`: one machine. |
+| Triage state | `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix` | Tracker labels, or the `Labels:` line of a local report or ticket | The maintainer. `/tickets` gives `ready-for-agent` to each new ticket. | `STATES` in `triage/scripts/triage-check.mjs` | Tracker: yes. `.scratch/`: one machine. |
 | Triage category | `bug`, `enhancement` | Tracker labels or the `Labels:` line | The maintainer | `CATEGORIES` in `triage/scripts/triage-check.mjs` | As the triage state |
 | Priority | `P0`, `P1`, `P2`, `P3` | Tracker labels or the `Labels:` line | The maintainer, or the agent in `friction` | `PRIORITIES` in `triage/scripts/triage-check.mjs` | As the triage state |
 | Out-of-scope record | absent, written, extended, deleted | `.out-of-scope/<idea>.md` | The maintainer | `triage/scripts/triage-check.mjs` checks that the file exists | Yes, in git |
