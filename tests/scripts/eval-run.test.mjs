@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import {
   FORBIDDEN_FLAGS, UsageError, assertSafeArgs, buildCommand, forbiddenText, globToRegExp, hookBlocks, mergeTranscripts, removeSessionData,
   sessionDirName, stripSkillAsserts, summarizeBaseline, baselineSettings, defaultSpawn, buildPlan, discoverEvals, evaluateAsserts, childEnv, findClaude, formatReport,
-  git, isWrapper, loadedSkills, main, makeLayout, networkWritingTools, parseCli, parseEvalFile, parseTranscript,
+  git, isGuardPath, isWrapper, loadedSkills, main, makeLayout, networkWritingTools, parseCli, parseEvalFile, parseTranscript,
   prepareSetup, resolveClaude, runBudget, runOnce, summarize, toRegExp,
   AGENT_ENV, agentEnv, scriptPath, workTreeState, withoutGitVars,
 } from "../../scripts/eval-run.mjs";
@@ -396,6 +396,20 @@ test("setup: a file under .claude/ or .git/ is refused, a ref under .git/refs/ i
   } finally {
     rmSync(layout.root, { recursive: true, force: true });
   }
+});
+
+test("setup: the fake gh state under .git/fake-gh/ is allowed, other .git paths stay refused", () => {
+  const withFile = (path, key = "files") => ({ ...GOOD, setup: { gitInit: true, [key]: [{ path, content: "{}" }] } });
+  parseEvalFile(evalText(withFile(".git/fake-gh/scenario.json")));
+  parseEvalFile(evalText(withFile(".git/fake-gh/scenario.json", "uncommitted")));
+  assert.equal(isGuardPath(".git/fake-gh/scenario.json"), false);
+  for (const path of [".git/hooks/x", ".git/config", ".git/fake-gh/../hooks/x", ".git/refs/../config", ".git/fake-ghx/a", "sub/.git/fake-gh/a", ".git/fake-gh/.git/config"]) {
+    assert.equal(isGuardPath(path), true, path);
+  }
+  for (const path of [".git/hooks/x", ".git/config", ".git/fake-ghx/a", ".git/fake-gh/.git/config"]) {
+    assert.throws(() => parseEvalFile(evalText(withFile(path))), /under \.claude\/ or \.git\//, path);
+  }
+  assert.throws(() => parseEvalFile(evalText(withFile(".git/fake-gh/../hooks/x"))), /must be relative and stay inside the repo/);
 });
 
 test("setup remote: adds an https remote origin, and refuses other values", () => {

@@ -188,11 +188,17 @@ function validateSetup(s) {
 /**
  * True for a path that the agent settings or git read as config: any `.claude` part, or a `.git` part.
  * `.git/refs/` is allowed, because a ref file holds only a commit or a ref name.
+ * `.git/fake-gh/` is allowed, because git reads nothing from it. The fake `gh` of the land evals keeps its state there.
+ * A `..` part is never allowed, so `.git/fake-gh/../hooks/x` stays a guard path.
  */
+const GIT_DATA_DIRS = ["refs", "fake-gh"];
+
 export function isGuardPath(p) {
   const parts = p.split(/[\\/]/).filter((x) => x !== "" && x !== ".").map((x) => x.toLowerCase());
   if (parts.includes(".claude")) return true;
-  return parts.includes(".git") && !(parts[0] === ".git" && parts[1] === "refs" && parts.lastIndexOf(".git") === 0);
+  if (!parts.includes(".git")) return false;
+  const dataDir = parts[0] === ".git" && GIT_DATA_DIRS.includes(parts[1]) && parts.lastIndexOf(".git") === 0 && !parts.includes("..");
+  return !dataDir;
 }
 
 export function isSafeRelPath(p) {
