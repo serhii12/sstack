@@ -133,7 +133,7 @@ Open questions: How many retries?
 
 ## Notes
 
-Platform facts that this skill relies on, and open questions, are in [NOTES.md](NOTES.md). When you change this skill or add a skill, read that file.
+Platform facts that this skill relies on, and open questions, are in [NOTES.md](NOTES.md). When you change this skill or add a skill, read that file. To find where a task stands, where its state is stored and who moves it, read [STATES.md](STATES.md).
 
 ## Provenance
 

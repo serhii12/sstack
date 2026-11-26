@@ -117,6 +117,57 @@ function codes(cell) {
 const stateWords = (cell) => cell.replace(/\([^)]*\)/g, "").split(",").map((x) => x.trim()).filter(Boolean);
 
 // ---------------------------------------------------------------------------
+// The map: skills/start/STATES.md
+// ---------------------------------------------------------------------------
+
+const MAP = "skills/start/STATES.md";
+/** Hosts and agent tools have their own commands. They are not skills. */
+const HOST_COMMANDS = ["hooks"];
+/** A path in the map starts in the skills folder, except a path that starts with `scripts/`. */
+const mapPath = (p) => join(ROOT, p.startsWith("scripts/") ? p : join("skills", p));
+
+/** The names that one export gives: an array gives its items, an object of rows with a name gives the names, any other object gives its keys. */
+function exportNames(value) {
+  if (Array.isArray(value)) return value.map(String);
+  const rows = Object.values(value);
+  if (rows.length && rows.every((r) => r && typeof r === "object" && typeof r.name === "string")) return rows.map((r) => r.name);
+  return Object.keys(value);
+}
+
+test("T1: each row of the map that names an export lists the same states as that export", async () => {
+  const rows = tableRows(read(MAP));
+  let checked = 0;
+  for (const row of rows) {
+    for (const cell of row) {
+      for (const m of cell.matchAll(/`([A-Z][A-Z_]+)` in `([^`]+\.mjs)`/g)) {
+        const [, name, path] = m;
+        const mod = await import(mapPath(path));
+        assert.ok(name in mod, `${MAP} (row "${row[0]}") names ${name} in ${path}, and that script does not export it`);
+        sameNames(ticks(row[1]), exportNames(mod[name]), `${MAP} (row "${row[0]}")`, `${name} in ${path}`);
+        checked++;
+      }
+    }
+  }
+  assert.ok(checked >= 20, `${MAP}: the test checked only ${checked} rows against an export`);
+});
+
+test("T2: each command that the map names is a skill folder or a host command", () => {
+  const text = read(MAP);
+  const names = [...text.matchAll(/(?:^|[\s`(])\/([a-z][a-z-]*)\b/gm)].map((m) => m[1]);
+  assert.ok(names.length > 0, `${MAP} names no command`);
+  const folders = readdirSync(join(ROOT, "skills"));
+  for (const n of names) assert.ok(folders.includes(n) || HOST_COMMANDS.includes(n), `${MAP} names the command /${n}, and skills/${n}/ does not exist`);
+  for (const m of text.matchAll(/`([^`]+\/[^`]+\.mjs)`/g)) {
+    if (/[<>]/.test(m[1]) || !/^[\w.-]+\/scripts\/|^scripts\//.test(m[1])) continue;
+    assert.ok(readdirSync(dirname(mapPath(m[1]))).includes(m[1].split("/").pop()), `${MAP} names ${m[1]}, and that file does not exist`);
+  }
+});
+
+test("T3: start links to the map", () => {
+  assert.match(read("skills/start/SKILL.md"), /\]\(STATES\.md\)/, "skills/start/SKILL.md has no link to STATES.md");
+});
+
+// ---------------------------------------------------------------------------
 // Evidence levels and the evidence index (prove)
 // ---------------------------------------------------------------------------
 
@@ -406,6 +457,9 @@ test("T15: the moves of a land run agree with gateState() of land-check.mjs and 
   const watched = waiting.leaves.filter((g) => !g.gate).flatMap((g) => g.codes);
   const stops = Object.values(landWait.EXIT).filter((c) => c !== landWait.EXIT.usage && c !== landWait.EXIT.data);
   sameNames(watched.map(String), stops.map(String), `${LAND_REF} (the moves of "waiting")`, `EXIT in ${LAND_WAIT}`);
+  const row = tableRows(read(MAP)).find((r) => r[0] === "Land run");
+  assert.ok(row, `${MAP} has no "Land run" row`);
+  sameNames(row[1].split(",").map((x) => x.trim()), names, `${MAP} (row "Land run")`, `${LAND_REF} (States of a land run)`);
 });
 
 test("T16: each table that REFERENCE.md names is an export of the script that it names", () => {
