@@ -25,12 +25,13 @@ export const maxLevel = (a, b) => (RANK[a] >= RANK[b] ? a : b);
 export const CONFIG_PATH = ".stack/risk.json";
 
 // The fences. These files and folders hold the checks themselves, so the config cannot lower them.
-// A folder name counts anywhere in the path.
-const FENCE_DIRS = new Set([".claude", ".githooks", ".husky", ".stack"]);
+// A folder name counts anywhere in the path. `.agents` and `.codex` hold the skills and the hooks of
+// Codex, as `.claude` does for Claude Code (an owner ruling of 25 Nov 2026).
+const FENCE_DIRS = new Set([".claude", ".agents", ".codex", ".githooks", ".husky", ".stack"]);
 const CI_ROOT_DIRS = new Set([".circleci", ".buildkite", ".woodpecker"]);
 const CI_HOSTS_WITH_WORKFLOWS = new Set([".github", ".gitea", ".forgejo"]);
 const CI_ROOT_FILES = new Set([".gitlab-ci.yml", "jenkinsfile", "azure-pipelines.yml", ".travis.yml", "bitbucket-pipelines.yml", ".drone.yml", "appveyor.yml"]);
-const SHORT_NAME = /^(claude|github|githoo|husky|stack|circle|buildk|woodpe)~\d+$/;
+const SHORT_NAME = /^(claude|agents|codex|github|githoo|husky|stack|circle|buildk|woodpe)~\d+$/;
 
 // Zero-width, bidi, tag and other invisible characters. They can hide an instruction from a person.
 const HIDDEN = /[\u00ad\u034f\u061c\u115f\u1160\u17b4\u17b5\u180b-\u180f\u200b-\u200f\u202a-\u202e\u2060-\u206f\u3164\ufe00-\ufe0f\ufeff\uffa0\ufff0-\ufff8]|[\u{e0000}-\u{e0fff}]|[\u{1d173}-\u{1d17a}]/gu;

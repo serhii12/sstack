@@ -138,7 +138,7 @@ The config cannot lower these paths. They hold the checks themselves. Case does 
 
 - CI workflow files: `.github/workflows/`, `.github/actions/`, `.circleci/`, `.buildkite/`, `.woodpecker/`, and `.gitlab-ci.yml`, `Jenkinsfile` and similar files at the root.
 - Git hook folders: `.githooks/` and `.husky/`, in any folder.
-- The agent tool folder that holds the guard: `.claude/`, in any folder.
+- The agent tool folders that hold the guard, the skills and the hooks: `.claude/`, `.agents/` and `.codex/`, in any folder.
 - `.stack/`, with the risk config `.stack/risk.json`.
 - `CODEOWNERS`, in any folder.
 - A path with `..`, `.`, an empty part, a backslash or a control character. A fence name with a hidden character, a dot or a space at its end also counts as the fence.

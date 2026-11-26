@@ -9,8 +9,9 @@
 // Rules, per path (land-lib.mjs has the code):
 //   path-not-plain       a path with `..`, `.`, an empty part, a backslash or a control character is high
 //   builtin:*            the fences are high: CI workflow files, the hook folders (.githooks/, .husky/),
-//                        .claude/, .stack/ with the risk config, and CODEOWNERS. The config cannot lower
-//                        them. Case, a dot or space at the end of a name and hidden characters do not matter.
+//                        .claude/, .agents/, .codex/, .stack/ with the risk config, and CODEOWNERS. The
+//                        config cannot lower them. Case, a dot or space at the end of a name and hidden
+//                        characters do not matter.
 //   config:<level>:<glob> the first matching glob of the config, checked high, then medium, then low.
 //                        High and medium globs ignore case. Low globs need the exact case.
 //   unmatched            a path that matches no rule is medium
