@@ -13,7 +13,7 @@ disable-model-invocation: true
 
 - If the ticket is unclear or clashes with the code, stop. Tell the user. If the ticket needs a design choice that `build` does not make, do the same. The user can type `/grill` to settle it. No fence yet
 - `build` can run in the background, so it must not wait for an answer in the middle of a step. If a step says "ask" and nobody can answer, take the safe branch that the step names. Put the question in the report. No fence yet
-- Never commit on `main` or `master`. Held by: hooks/guard-git.mjs (Claude Code only)
+- Never commit on `main` or `master`. Held by: hooks/guard-git.mjs (Claude Code plus Codex after the user trusts the hook)
   In other agent tools, nothing blocks the commit itself. Branch protection on the git host blocks the push to `main`. No fence yet
 - Never skip the git hooks. Never use `--no-verify` or `-n`. If a hook fails, read its output. Fix the cause. Commit again. Held by: hooks/guard-git.mjs
 - If the user asks you to skip a step, say in one line what is lost. Then skip it. Such a step can be the failing test first, the review or `prove`. Name each skipped step in the report. A request never lifts the two rules above. If a step cannot run, report it as `not run`. No fence yet
