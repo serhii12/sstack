@@ -12,7 +12,7 @@ These rules apply to every skill, hook and script in this repo. The rules for sk
 | `hooks/` | Hook scripts that the agent tool runs. Node, ESM, no dependencies. |
 | `scripts/` | Command-line scripts. Node, ESM, no dependencies. |
 | `tests/` | Test files for `bun test` and `node --test`. `tests/hooks/` and `tests/scripts/`. |
-| `templates/` | Files that get copied into a project repo: `AGENTS.md`, `GLOSSARY.md`, ADR template, settings, git hooks. |
+| `templates/` | Files that get copied into a project repo: `AGENTS.md`, `GLOSSARY.md`, ADR template, Claude Code settings, Codex hook file, git hooks. |
 | `.stack/enforcement.md` | Every rule and what enforces it. |
 | `NOTICE` | Copyright notices for everything copied from another project. |
 | `LICENSE` | The license of this repo: MIT. |

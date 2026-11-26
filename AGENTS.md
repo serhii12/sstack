@@ -1,6 +1,6 @@
 # sstack
 
-sstack is our own set of skills, hooks and scripts for AI coding agents. The installer copies it into a project repo. It must work in any agent tool, and Claude Code is the first one that we support.
+sstack is our own set of skills, hooks and scripts for AI coding agents. The installer copies it into a project repo. It must work in any agent tool. The installer supports Claude Code and Codex.
 
 This file is for agents and people who work on this repo. A project that installs the stack gets `templates/AGENTS.md`. `CLAUDE.md` is a symlink to this file.
 
