@@ -53,6 +53,7 @@ No fence yet
 2. Commit the change first. Run `git rev-parse HEAD` and keep the sha. The evidence belongs to that commit.
 3. Save command output as text. Write the command, its exit code and its output to `output/<name>.txt`.
 4. For a bug, capture the failure before the fix. If the fix already exists, copy the parent commit to a new temp folder outside the repo. Run `git archive <parent sha> | tar -x -C <temp folder>`. If the capture needs dependencies, install them there. Capture there. Never use `git stash`.
+   The copy has no ignored files and no submodule content. Read the `before` output. It must fail for the reason of the bug. If it fails for another reason, the old tree cannot run, for example because a file is missing. Then mark the check `untested` and give that reason. Never mark it `pass` from the `after` capture alone. No fence yet
 5. Before you trust a local server, find the process on its port with `lsof -i :<port>`. Run `ps -p <pid> -o args=` to make sure that it runs your code.
 6. Put every file under `.artifacts/<task>/evidence/`. Keep a capture script beside the captures, so a person can run it again. Write it for `node`, which the stack already needs.
 
