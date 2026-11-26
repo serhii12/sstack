@@ -321,7 +321,7 @@ function repo(files) {
 }
 const run = (args) => spawnSync(process.execPath, [SCRIPT, ...args], { encoding: "utf8" });
 
-test("lintStyle checks skills, templates, evals, README, CONVENTIONS and AGENTS only", () => {
+test("lintStyle checks skills, templates, evals, docs, README, CONVENTIONS and AGENTS only", () => {
   const root = repo({
     "skills/a/SKILL.md": "The agent should stop.\n",
     "skills/a/deep/ref.md": "The agent should stop.\n",
@@ -338,8 +338,8 @@ test("lintStyle checks skills, templates, evals, README, CONVENTIONS and AGENTS 
   });
   try {
     const r = lintStyle(root);
-    assert.equal(r.files, 8);
-    assert.deepEqual(Object.keys(r.perFile).sort(), ["AGENTS.md", "CONVENTIONS.md", "README.md", "evals/README.md", "evals/a/01.md", "skills/a/SKILL.md", "skills/a/deep/ref.md", "templates/t.md"]);
+    assert.equal(r.files, 9);
+    assert.deepEqual(Object.keys(r.perFile).sort(), ["AGENTS.md", "CONVENTIONS.md", "README.md", "docs/other.md", "evals/README.md", "evals/a/01.md", "skills/a/SKILL.md", "skills/a/deep/ref.md", "templates/t.md"]);
   } finally {
     rmSync(root, { recursive: true });
   }

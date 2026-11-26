@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // style-lint: checks the writing rules of CONVENTIONS.md in skills/**/*.md, templates/**/*.md,
-// evals/**/*.md, README.md, CONVENTIONS.md and AGENTS.md.
+// evals/**/*.md, docs/**/*.md, README.md, CONVENTIONS.md and AGENTS.md.
 //
 // Each rule has a basis, printed with every finding:
 //   - "STE <rule>": a rule from ASD-STE100 Issue 9, Part 1 (the writing rules).
@@ -621,6 +621,7 @@ export function listFiles(root) {
   walkMd(join(root, "skills"), files);
   walkMd(join(root, "templates"), files);
   walkMd(join(root, "evals"), files);
+  walkMd(join(root, "docs"), files);
   for (const f of ["README.md", "CONVENTIONS.md", "AGENTS.md"]) {
     const p = join(root, f);
     if (existsSync(p) && statSync(p).isFile()) files.push(p);

@@ -110,7 +110,7 @@ skills/engineering/implement/SKILL.md
 skills/engineering/implement-spec/SKILL.md
     -> skills/build/SKILL.md. Idea only.
 docs/engineering/implement.md
-    -> skills/build/SKILL.md. Ideas, and a field report close to the source.
+    -> skills/build/SKILL.md, docs/parallel-work.md. Ideas, and a field report close to the source.
 skills/engineering/tdd/SKILL.md
     -> skills/test-craft/SKILL.md. Adapted. One of the two bases of the skill.
 skills/engineering/tdd/tests.md
@@ -234,6 +234,7 @@ AGENTS.md (lines 27-33 and 83-86), no license file
        and a pull request body where every claim has evidence.
 new-feature/SKILL.md, no license file
     -> skills/build/SKILL.md. Adapted: the sync, scope check, naming and check steps.
+    -> docs/parallel-work.md. Copied nearly word for word: the cleanup commands and the -D reason.
 evidence-driven-testing/SKILL.md, no license file
 evidence-driven-testing/scripts/evidence.py, no license file
     -> skills/prove/SKILL.md, skills/prove/CAPTURE.md (the Playwright recipe, from the

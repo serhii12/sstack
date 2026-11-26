@@ -11,7 +11,7 @@ Scripts and hooks use Node 22 or later, ESM and no dependencies. Bun runs the co
 - `bun run test` runs every test with Bun.
 - `npm run test:node` runs the same tests with `node --test`.
 - `bun run lint:skills` checks the frontmatter, links and `Held by:` targets of each skill.
-- `bun run lint:style` checks the writing rules in skills, templates, evals, `README.md`, `CONVENTIONS.md` and this file. CI runs it in both jobs. It is not part of `bun run test`.
+- `bun run lint:style` checks the writing rules in skills, templates, evals, `docs/`, `README.md`, `CONVENTIONS.md` and this file. CI runs it in both jobs. It is not part of `bun run test`.
 - `bun run eval -- --dry-run` lists the evals that the runner can run and the budget cap. It marks each eval that needs `--allow-network`. It starts no agent.
 
 Before you report a change as done, run the first four commands. Report each result as you saw it.
@@ -26,6 +26,7 @@ Before you report a change as done, run the first four commands. Report each res
 | `scripts/` | The installer, the lints and the eval runner. |
 | `tests/` | The tests for hooks and scripts. |
 | `templates/` | The files that the installer copies into a project. |
+| `docs/` | Docs for people who use the stack. The installer does not copy them. |
 
 `CONVENTIONS.md` has the full layout and every rule for skills, code and text. Read it before you change a skill.
 
