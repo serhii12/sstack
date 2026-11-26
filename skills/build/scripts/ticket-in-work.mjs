@@ -25,6 +25,9 @@
 // builds the ticket here. The remote copies of that branch are not other work either.
 // The current checkout is found by its path, else by its branch. In a container the path that
 // git lists for a linked checkout can be the host path, while the session sees a mount path.
+// The current checkout is on the ticket when its branch matches the key. A linked checkout is on the
+// ticket also when its folder name matches the key, because a tool can name the folder and not the
+// branch. The folder name of the main checkout does not count.
 //
 // Exit codes:
 //   0  no other work on the ticket
@@ -140,7 +143,10 @@ export function checkInWork(key, cwd = process.cwd()) {
     }
   }
   const checked = worktrees.length + names.length;
-  return { code: messages.length > 0 ? EXIT.IN_WORK : EXIT.FREE, messages, checked, ownBranch: ownBranch && matchesKey(ownBranch, key) ? ownBranch : null };
+  // A tool can name the folder of a linked checkout for the ticket, but not the branch: `claude --worktree
+  // slugify` gives the branch worktree-slugify. The main checkout (the first entry) never counts by its folder.
+  const ownFolder = ownBranch !== null && current !== undefined && worktrees.indexOf(current) > 0 && matchesKey(basename(current.path), key) ? basename(current.path) : null;
+  return { code: messages.length > 0 ? EXIT.IN_WORK : EXIT.FREE, messages, checked, ownBranch: ownBranch && matchesKey(ownBranch, key) ? ownBranch : null, ownFolder: ownBranch && !matchesKey(ownBranch, key) ? ownFolder : null, branch: ownBranch };
 }
 
 function main(argv) {
@@ -158,6 +164,7 @@ function main(argv) {
   if (r.code === EXIT.FREE) {
     console.log(`No other work on ticket ${key}. Checked ${r.checked} worktree(s) and branch(es).`);
     if (r.ownBranch) console.log(`This checkout is on ${r.ownBranch}, which matches the ticket. Keep using it.`);
+    else if (r.ownFolder) console.log(`This checkout is on ${r.branch}. Its folder name ${r.ownFolder} matches the ticket. Keep using it.`);
   }
   return r.code;
 }

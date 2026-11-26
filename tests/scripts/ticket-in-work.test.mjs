@@ -154,6 +154,37 @@ test("exit 0: a fresh branch that the agent tool made is not other work, also wh
   sh(root, "worktree", "add", "-q", "-b", "worktree-slugify", wt, "main");
   const r = run(["slugify"], wt);
   assert.equal(r.code, EXIT.FREE, r.err);
+  assert.equal(r.err, "");
+  assert.doesNotMatch(r.out, /is on worktree-slugify, which matches/, "the branch name does not match the key");
+  assert.match(r.out, /Its folder name slugify matches the ticket/);
+});
+
+test("exit 0: a tool branch with earlier commits, in a linked checkout whose folder name is the key, matches the ticket", () => {
+  // `claude --worktree slugify` gives the folder slugify and the branch worktree-slugify. To finish the
+  // ticket, the user types /build again there. The folder name tells `build` that the commits are this ticket.
+  const root = repo();
+  const wt = join(root, ".claude", "worktrees", "slugify");
+  sh(root, "worktree", "add", "-q", "-b", "worktree-slugify", wt, "main");
+  writeFileSync(join(wt, "s.txt"), "part 1\n");
+  sh(wt, "add", "-A");
+  sh(wt, "commit", "-q", "-m", "slugify part 1");
+  const r = run(["slugify"], wt);
+  assert.equal(r.code, EXIT.FREE, r.err);
+  assert.match(r.out, /This checkout is on worktree-slugify\. Its folder name slugify matches the ticket\. Keep using it\./);
+});
+
+test("the folder name of the main checkout does not make its branch a branch of the ticket", () => {
+  const base = realpathSync(mkdtempSync(join(tmpdir(), "ticket-in-work-main-")));
+  dirs.push(base);
+  const root = join(base, "slugify");
+  mkdirSync(root);
+  sh(root, "init", "-q", "-b", "main");
+  writeFileSync(join(root, "README.md"), "# demo\n");
+  sh(root, "add", "-A");
+  sh(root, "commit", "-q", "-m", "init");
+  sh(root, "switch", "-q", "-c", "agent/other-1a2");
+  const r = run(["slugify"], root);
+  assert.equal(r.code, EXIT.FREE, r.err);
   assert.doesNotMatch(r.out, /matches the ticket/);
 });
 
