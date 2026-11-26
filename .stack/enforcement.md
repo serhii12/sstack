@@ -53,6 +53,7 @@ The header of `hooks/git-policy.mjs` lists what the guard cannot see. Branch pro
 | The router list in `skills/start` matches the `skills/` folder and the type of each skill | `scripts/skill-lint.mjs` | `tests/scripts/skill-lint.test.mjs` |
 | Every skill has a `## Provenance` section | `scripts/skill-lint.mjs` | `tests/scripts/skill-lint.test.mjs` |
 | Skill text has no semicolons and no em or en dashes | `scripts/skill-lint.mjs` | `tests/scripts/skill-lint.test.mjs` |
+| Each state name and exit code that skill text lists equals the list that its script exports. The test compares names only. It never checks a move that a person makes | `tests/scripts/state-names.test.mjs` | `tests/scripts/state-names.test.mjs` |
 | The writing rules of `CONVENTIONS.md` in skills, templates, evals, `README.md`, `CONVENTIONS.md` and `AGENTS.md`: STE rules and house rules, American spelling, and every pattern of the owner's slop checker. CI runs it in both jobs. It is not part of `bun run test` | `scripts/style-lint.mjs` | `tests/scripts/style-lint.test.mjs` |
 
 ## Scripts inside skills
