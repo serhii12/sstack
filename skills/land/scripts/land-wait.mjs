@@ -38,7 +38,8 @@
 //   15 deadline         --total seconds passed for this head commit and its checks did not end
 //   16 still-waiting    --max-wait seconds passed in this run and nothing happened. Run it again
 //   18 no-checks        no check exists on the head after --grace seconds, or the config has an error
-//   19 fix-cap          a check failed on a third head: the fix rounds are used (--max-fix-rounds)
+//   19 fix-cap          a check failed on a third head: the fix rounds are used (--max-fix-rounds). A head
+//                       whose checks pass after a rerun does not count
 //   2  usage error      3 gh or data error after the retries
 // Several events in one poll all print. The exit code is that of the first in the order
 // 13, 14, 19, 10, 11, 18, 12, 0. Events 10, 11, 12, 18 and 19 stay in the state file until --ack.
@@ -281,6 +282,8 @@ export function poll(state, snap, ctx) {
       head,
     });
   }
+  // A head whose checks all pass is not a fix round, also when a run on it failed before (a CI rerun).
+  if (checks.passed) state.failedHeads = state.failedHeads.filter((h) => h !== head);
   // Green needs two polls in a row with the same runs. With no check at all, it also needs the grace time.
   const green = checks.passed && (!checks.none || waited >= grace);
   if (green) {
