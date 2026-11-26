@@ -25,13 +25,9 @@ No fence yet
 **Date:** YYYY-MM-DD
 
 <One to three sentences: the context, what we decided, and why.>
-
-## Revisit if
-
-<Concrete conditions that would change the answer.>
 ```
 
-That is all most records need. A record can be one paragraph plus the Revisit if section. The value is in recording that a decision was made, and why. Extra sections add nothing unless they carry real content. Keep each record to half a page.
+That is all most records need. A record can be one paragraph. The value is in recording that a decision was made, and why. Extra sections add nothing unless they carry real content. Keep each record to half a page.
 
 Where it helps, phrase the decision as what not to do: "Do not add an ORM. We write SQL by hand because ...". A written "no" stops the next person from "fixing" something that was deliberate.
 
@@ -50,8 +46,8 @@ No fence yet (planned: scripts/adr-lint.mjs)
 
 ## Revisit if
 
-Every record has a `## Revisit if` section. List concrete conditions, such as "we pass 10,000 orders a day" or "the partner drops the XML API". Do not write vague conditions such as "if needs change".
-No fence yet (planned: scripts/adr-lint.mjs)
+The `## Revisit if` section is optional. If the user named a condition that changes the answer, write the section with it. An example is "we pass 10,000 orders a day". Copy the condition of the user. Invent no condition. Matt Pocock's template has no such section.
+Held by: evals/domain-memory/03-writes-decision-record.md
 
 ## Optional sections
 
@@ -83,4 +79,4 @@ No fence yet (planned: scripts/adr-lint.mjs)
 
 ## Provenance
 
-Adapted from `skills/engineering/domain-modeling/ADR-FORMAT.md` in [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock) and the decision record template in `skills/autopilot/references/templates.md` lines 177-199 of [kentcdodds/kcd-skills](https://github.com/kentcdodds/kcd-skills) (MIT, Copyright (c) 2026 Kent C. Dodds). The "Before you write a record" section (Matt's "When to offer") and the "What qualifies" section are Matt's text with small edits. We moved the tests to the top and added the two "If" rules, so that the tests also hold when the user asks for a record. The template merges both sources. The status rules, the `0000` template number and the Revisit if guidance are our own. Matt's optional `deprecated` status is dropped.
+Adapted from `skills/engineering/domain-modeling/ADR-FORMAT.md` in [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, Copyright (c) 2026 Matt Pocock) and the decision record template in `skills/autopilot/references/templates.md` lines 177-199 of [kentcdodds/kcd-skills](https://github.com/kentcdodds/kcd-skills) (MIT, Copyright (c) 2026 Kent C. Dodds). The "Before you write a record" section (Matt's "When to offer") and the "What qualifies" section are Matt's text with small edits. We moved the tests to the top and added the two "If" rules, so that the tests also hold when the user asks for a record. The template merges both sources. The status rules, the `0000` template number and the Revisit if guidance are our own. Kent's template has a Revisit if section in every record. Ours has it only when the user named a condition, because a live run invented one to fill the section. This change is the choice of the lead, not an owner ruling. Matt's optional `deprecated` status is dropped.
