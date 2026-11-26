@@ -30,6 +30,8 @@
 - The agent stops and says that the branch belongs to other work.
 - The review file has a task name that `land` will not find from the branch.
 
+The ticket close is not checked here. It depends on the review findings, and `01-local-ticket.md` checks it.
+
 ## Checks
 
 ```json
@@ -125,8 +127,8 @@
     ],
     "fileMatches": [
       {
-        "path": ".scratch/slugs/tickets/01-slugify.md",
-        "pattern": "Built on branch worktree-slugify"
+        "path": ".artifacts/worktree-slugify/review.md",
+        "pattern": "Range:"
       }
     ],
     "toolNotCalled": [
