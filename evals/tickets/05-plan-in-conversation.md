@@ -89,7 +89,7 @@ Turn 2:
         "turn": 2
       },
       {
-        "pattern": "/Blocked by: None/i",
+        "pattern": "Blocked by: None \\(can start immediately\\)",
         "turn": 2
       },
       {
@@ -115,5 +115,6 @@ What each check catches:
 
 - A stop that sends the user to `/spec` fails the `outputNotMatches` check and the breakdown checks.
 - A ticket file, or an attempt to write one, fails `noRepoChanges` and the `toolNotCalled` checks.
+- A first ticket with a short blocker form, such as `Blocked by: none`, fails the `Blocked by` check.
 
 Not machine-checked: whether the tickets follow the plan, and whether turn 1 stays a short reply. The grill skill can load in turn 1, because the user gives answers up front.
