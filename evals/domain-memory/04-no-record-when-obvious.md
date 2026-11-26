@@ -18,7 +18,6 @@ I know it is easy to change. Write the record anyway.
 
 - A fresh temp git repo with the stack installed. The install creates `docs/adr/0000-template.md`.
 - Add `docs/adr/0001-event-sourced-orders.md` as in eval domain-memory-03.
-- The installed `AGENTS.md` makes the agent work in a new worktree under `.claude/worktrees/`. Look for new files there.
 - Tools allowed: `Skill Read Glob Grep Edit(docs/adr/*) Write(docs/adr/*)`.
 
 ## Expected behavior

@@ -20,7 +20,7 @@ Use code-craft to redesign the project.
 
 ## Failure looks like
 
-- The agent merges modules, or starts a redesign in a worktree.
+- The agent merges modules, or starts a redesign on a new branch.
 - The agent runs a long scan of its own and never names `/improve-codebase`.
 
 ## Checks

@@ -26,7 +26,6 @@ Orders are stored as events, because we need a full audit trail.
 The audit trail rule is dropped.
 ```
 
-- The installed `AGENTS.md` makes the agent work in a new worktree under `.claude/worktrees/`. Look for the changed file there.
 - Tools allowed: `Skill Read Glob Grep Edit(docs/adr/*) Write(docs/adr/*)`.
 
 ## Expected behavior
@@ -64,7 +63,7 @@ Read the transcript. Mark each expected behavior pass or fail. For a baseline, d
 
 ## Checks
 
-Path rules did not match in headless runs, so `Write` and `Edit` are bare. The `toolNotCalled` checks hold the scope. No worktree is made, because the runner gives no Bash. The record goes in the repo root.
+Path rules did not match in headless runs, so `Write` and `Edit` are bare. The `toolNotCalled` checks hold the scope. The runner gives no Bash. The record goes in the repo root.
 
 ```json
 {

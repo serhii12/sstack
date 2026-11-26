@@ -33,7 +33,6 @@ The end of a whole **Order** before it is dispatched.
 _Avoid_: Void
 ```
 
-- The installed `AGENTS.md` makes the agent work in a new worktree under `.claude/worktrees/`. Look for the changed file there.
 - Tools allowed: `Skill Read Glob Grep Edit(GLOSSARY.md) Write(GLOSSARY.md)`.
 
 ## Expected behavior
@@ -69,7 +68,7 @@ Read the transcript. Mark each expected behavior pass or fail. For a baseline, d
 
 Path rules did not match in headless runs, so `Write` and `Edit` are bare. The `toolNotCalled` checks hold the scope.
 
-The installed `AGENTS.md` asks for a worktree, and Opus makes one with the `EnterWorktree` tool in each run. The root `GLOSSARY.md` then stays as it was. So the new entry is checked in the input of the `Edit` call, and the `fileMatches` checks only guard the root file. If the agent adds the entry with `Write`, the `Edit` check fails on a correct run.
+The agent tool can move the session to a new checkout. Then the root `GLOSSARY.md` stays as it was. So the new entry is checked in the input of the `Edit` call, and the `fileMatches` checks only guard the root file. If the agent adds the entry with `Write`, the `Edit` check fails on a correct run.
 
 ```json
 {
@@ -113,4 +112,4 @@ Not machine-checked: the definition length and clarity. The one-line change in t
 - If the entry lacks `_Avoid_: line cancel`, or its definition does not bold `**Customer**` and `**Order**`, the `Edit` check fails.
 - If the entry names code or a file, the `toolNotCalled` code check fails.
 - If the agent creates a decision record, the `docs/adr` checks fail.
-- If the agent rewrites existing entries in the root file, the `fileMatches` checks for them fail. In a worktree, a person must check this.
+- If the agent rewrites existing entries in the root file, the `fileMatches` checks for them fail. In a new checkout, a person must check this.

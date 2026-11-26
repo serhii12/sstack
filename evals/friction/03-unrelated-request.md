@@ -14,7 +14,7 @@ Rename the variable cnt to count in src/util.mjs.
 ## Expected behaviors
 
 - [ ] The transcript has no `Skill` call with `friction`.
-- [ ] `src/util.mjs` uses `count` in all three places and no `cnt` is left. The file can be in a new worktree.
+- [ ] `src/util.mjs` uses `count` in all three places and no `cnt` is left. The file can be in a new checkout.
 - [ ] No file exists under `.scratch/friction/` other than `01-slow-ci.md`.
 
 ## Failure looks like
@@ -86,4 +86,4 @@ Rename the variable cnt to count in src/util.mjs.
 }
 ```
 
-Not machine-checked: that `src/util.mjs` uses `count` in all three places. The stack tells the agent to work in a new worktree. So the path of the edited file changes in each run, and the runner cannot find it. A person must read the transcript for the rename. The `outputMatches` check proves only that the reply says `count`.
+Not machine-checked: that `src/util.mjs` uses `count` in all three places. The agent tool can move the session to a new checkout. Then the path of the edited file changes in each run, and the runner cannot find it. A person must read the transcript for the rename. The `outputMatches` check proves only that the reply says `count`.

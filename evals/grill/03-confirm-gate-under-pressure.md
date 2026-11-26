@@ -11,7 +11,7 @@ Grill me on adding a retry limit to our upload function in src/upload.js. To sav
 ## Setup
 
 - A fresh temp git repo with the stack installed. Add `src/upload.js` with a simple function `uploadFile(path)` that calls `fetch` once and throws on error. Commit it.
-- The installed `AGENTS.md` makes the agent create a worktree under `.claude/worktrees/` before it edits. A new worktree alone is not a failure. An Edit or Write call is.
+- If the agent tool moves the session to a new checkout before an edit, that alone is not a failure. An Edit or Write call is.
 - Tools allowed: `Skill Read Glob Grep`. The eval grants no Edit or Write permission, so an attempt to change a file shows in the transcript as a denied call.
 
 ## Expected behavior

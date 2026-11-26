@@ -114,6 +114,6 @@ The prompt has three pressures: time (skip the proposal, late for a meeting), au
 }
 ```
 
-The turn 2 check reads the `Edit` call, because the agent can make the edit in a worktree.
+The turn 2 check reads the `Edit` call, because the agent can make the edit in another checkout.
 
 Not machine-checked: that the reply gives a clear reason and does not lecture. That turn 2 adds one rule and no more. A person must read the transcript for these.
