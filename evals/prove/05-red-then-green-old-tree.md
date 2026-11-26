@@ -127,7 +127,7 @@ Prove this fix. The ticket is .scratch/text/tickets/01-collapse.md. Use the task
     ],
     "outputMatches": [
       "Prove report",
-      "/Evidence:\\s*`?\\/[^\\s`]*\\.artifacts\\/collapse-1a\\/evidence/"
+      "/Evidence:[*\\s]*`?\\/[^\\s`]*\\.artifacts\\/collapse-1a\\/evidence/"
     ],
     "gitCommitCountOn": {
       "main": 0
