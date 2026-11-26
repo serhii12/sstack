@@ -10,7 +10,7 @@ The git guard is the hook adapter for Claude Code and Codex. Codex runs it only 
 |---|---|---|
 | No git flags that skip checks (`--no-verify`, `commit -n`), in any wrapper or nested shell | `hooks/guard-git.mjs`, `hooks/git-policy.mjs` | `tests/hooks/git-policy.test.mjs`, `tests/hooks/redteam.test.mjs` |
 | No change to the hooks path, and no `include.path` or `includeIf` in git config | `hooks/git-policy.mjs` | `tests/hooks/git-policy.test.mjs`, `tests/hooks/redteam.test.mjs` |
-| No command that writes, removes or changes the mode of `.git/hooks`, `.git/config`, `.githooks/`, `.stack/`, `.claude/settings.json`, `.claude/settings.local.json`, `.claude/hooks/`, `.codex/hooks/`, `.codex/hooks.json`, `.codex/config.toml` or `.codex/rules/`. A command that only reads them runs | `hooks/git-policy.mjs` | `tests/hooks/protected-paths.test.mjs`, `tests/hooks/redteam.test.mjs` |
+| No command that writes, removes or changes the mode of `.git/hooks`, `.git/config`, `.git/HEAD`, `.git/packed-refs`, `.git/refs/heads/main` or `master`, `.githooks/`, `.stack/`, `.claude/settings.json`, `.claude/settings.local.json`, `.claude/hooks/`, `.codex/hooks/`, `.codex/hooks.json`, `.codex/config.toml` or `.codex/rules/`. A command that only reads them runs, except code in a string, such as `node -e`, that names them | `hooks/git-policy.mjs` | `tests/hooks/protected-paths.test.mjs`, `tests/hooks/redteam.test.mjs` |
 | No git command that changes a guard file through a pathspec: checkout, restore, rm, mv, clean, reset, checkout-index, stash push, apply, am and output options | `hooks/git-policy.mjs` | `tests/hooks/git-pathspec.test.mjs` |
 | No agent edits to the guard files and the settings files. The guard runs on every Bash call, and a guard that cannot run blocks | deny rules and the hook entry in `templates/claude-settings.json` | `tests/hooks/guard-git.test.mjs` |
 | No commits, cherry-picks, reverts or `commit-tree` while on `main` or `master` | `hooks/git-policy.mjs` | `tests/hooks/git-policy.test.mjs` |
@@ -41,7 +41,7 @@ The header of `hooks/git-policy.mjs` lists what the guard cannot see. Branch pro
 | The installer creates `CLAUDE.md` as a relative symlink to `AGENTS.md`. It never changes a `CLAUDE.md` that exists | `scripts/install.mjs` | `tests/scripts/install.test.mjs` |
 | In this repo, `CLAUDE.md` is a relative symlink to `AGENTS.md`, and `templates/` has no `CLAUDE.md` | `tests/scripts/install.test.mjs` | `tests/scripts/install.test.mjs` |
 | With `--tool codex`, the installer copies the skills to `.agents/skills/`, the guard to `.codex/hooks/` and the hook entry to `.codex/hooks.json`. It makes no `.claude/` folder and no `CLAUDE.md` | `scripts/install.mjs` | `tests/scripts/install-codex.test.mjs` |
-| The installer prints the permission list and writes no allow rule into a settings file | `scripts/install.mjs` | `tests/scripts/install.test.mjs` |
+| For Claude Code, the installer prints the permission list. It writes no allow rule into a settings file | `scripts/install.mjs` | `tests/scripts/install.test.mjs` |
 
 ## The lints
 
