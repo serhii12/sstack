@@ -232,6 +232,17 @@ test("cycle: a ticket blocked by itself fails", () => {
   assert.match(hits[0].message, /blocked by itself/);
 });
 
+// ---- first ----
+
+test("first: the ticket with the lowest number fails when it has a blocker", () => {
+  const r = run({ ".scratch/export/tickets/01-csv.md": ticket({ title: "# 01: Export CSV", blockedBy: "Blocked by: 02-json.md" }) });
+  const hits = rules(r, "first");
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].path, ".scratch/export/tickets/01-csv.md");
+  assert.equal(hits[0].line, 3);
+  assert.deepEqual(rules(r, "cycle"), []);
+});
+
 test("title: a first line that opens a code fence is not a title", () => {
   const text = "```\n# 01: Fake title\n```\n" + ticket({ title: null });
   assert.equal(rules(run({ [`${T}/01-login-form.md`]: text }), "title").length, 1);

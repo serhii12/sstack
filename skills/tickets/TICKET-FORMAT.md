@@ -30,7 +30,7 @@ The `Blocked by:` line says `None (can start immediately)`, or names the blockin
 Blocked by: 01-login-form.md, 02-session-store.md
 ```
 
-`skills/tickets/scripts/tickets-lint.mjs` checks these files. In a project, run it from the project root as `node .claude/skills/tickets/scripts/tickets-lint.mjs`. It checks the file name, a number that no other ticket in the folder uses, and the `# ` title. It checks at least one `- [ ]` item under `## Acceptance checks`. It checks one `Blocked by:` line that names files that exist or says `None (can start immediately)`. It checks that no blocking cycle exists. With `--max <n>`, it checks that one folder holds n ticket files or fewer. With no `--max`, there is no cap. It does not check the `Status:` and `Spec:` lines. Held by: skills/tickets/scripts/tickets-lint.mjs
+`skills/tickets/scripts/tickets-lint.mjs` checks these files. In a project, run it from the project root as `node .claude/skills/tickets/scripts/tickets-lint.mjs`. It checks the file name, a number that no other ticket in the folder uses, and the `# ` title. It checks at least one `- [ ]` item under `## Acceptance checks`. It checks one `Blocked by:` line that names files that exist or says `None (can start immediately)`. It checks that the ticket with the lowest number has no blockers, and that no blocking cycle exists. With `--max <n>`, it checks that one folder holds n ticket files or fewer. With no `--max`, there is no cap. It does not check the `Status:` and `Spec:` lines. Held by: skills/tickets/scripts/tickets-lint.mjs
 
 ## GitHub or GitLab issue
 

@@ -14,6 +14,7 @@
 //               files in the same tickets folder
 //   number      no two ticket files in one folder start with the same number
 //   cycle       no ticket is blocked, directly or through others, by itself
+//   first       the ticket with the lowest number in a folder has no blockers
 //   cap         only with `--max <n>`: no tickets folder holds more than n ticket files
 //               (one spec, one folder). With no `--max` there is no cap.
 //
@@ -286,6 +287,16 @@ export function lint(rootArg, { max } = {}) {
         }
       }
       edges.set(name, out);
+    }
+    const first = byNumber.get(Math.min(...byNumber.keys()));
+    if (first && edges.get(first)?.size) {
+      problems.push({
+        path: relative(root, join(dir, first)),
+        line: blockedByLine.get(first),
+        rule: "first",
+        message: `\`${first}\` has the lowest number, so it must have no blockers`,
+        fix: "number the tickets in dependency order, blockers first, so that the first ticket says `Blocked by: None (can start immediately)`.",
+      });
     }
     for (const comp of components(names, edges)) {
       const self = comp.length === 1 && edges.get(comp[0])?.has(comp[0]);
