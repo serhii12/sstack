@@ -129,7 +129,7 @@ The runner does the steps in this order.
 |---|---|
 | `gitInit` | Run `git init` on branch `main`. |
 | `installStack` | Run `node scripts/install.mjs` on the temp repo. Needs `gitInit`. |
-| `files` | List of `{ "path", "content" }`. The path is relative and stays inside the repo. A path under `.claude/` or `.git/` is refused, so an eval cannot turn off hooks or permission checks. Only `.git/refs/` and `.git/fake-gh/` are allowed. Git reads no config from them. |
+| `files` | List of `{ "path", "content" }`. The path is relative and stays inside the repo. A path under `.claude/` or `.git/` is refused, so an eval cannot turn off hooks or permission checks. Only `.git/refs/` and `.git/fake-gh/` are allowed, because git runs no code from them. |
 | `commit` | Commit all files after the setup. Default true. Set false to leave them uncommitted. |
 | `origin` | `true` makes a local bare repo in the temp folder of the run and adds it as the remote `origin`. The runner pushes the setup commit to it, so `origin/main` exists and `main` tracks it. With `"commit": false` the bare repo stays empty. Nothing leaves the machine. |
 | `remote` | An https URL. The runner adds it as the remote `origin`. Nothing is fetched or pushed. You cannot use it with `origin`. |
